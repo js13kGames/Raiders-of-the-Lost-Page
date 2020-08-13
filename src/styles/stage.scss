@@ -1,0 +1,11 @@
+.stage-container {
+    width: 100%;
+    position: relative;
+}
+canvas{
+    border: 1px solid #000;
+    position: absolute;
+    top:0;
+    left: calc(50% - 400px);
+    
+}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Js13k</title>
+    <link rel="stylesheet" type="text/css" href="styles/main.scss" />
+  </head>
+  <body>
+    <div id="pause-menu-container" class="ctrl-container">
+      <button role="button" id="play-pause-btn" class="btn pause-btn">
+        Pause
+      </button>
+    </div>
+
+    <div id="main-menu-container" class="ctrl-container">
+      <ul class="menu">
+        <li>
+          <button role="button" id="main-manu-start" class="btn">
+            Start Demo
+          </button>
+        </li>
+
+        <li>
+          <button role="button" id="main-manu-continue" class="btn">
+            Continue
+          </button>
+        </li>
+        <li>
+          <button role="button" id="main-manu-sound" class="btn">
+            Play sound
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="stage-container">
+      <canvas id="stage"></canvas>
+    </div>
+    <script src="js/index.js" type="module"></script>
+  </body>
+</html>
