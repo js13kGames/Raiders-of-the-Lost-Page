@@ -228,12 +228,19 @@ function drawBox(gameState, entity) {
   // );
   // ctx.stroke();
 }
+export function getTilesInView(map) {
+  if (!map.centerTile) return {};
+
+  return {
+    startCol: Math.max(0, Math.round(map.centerTile.c - map.viewCols / 2)),
+    endCol: Math.min(map.cols, Math.round(map.centerTile.c + map.viewCols / 2)),
+    startRow: Math.max(0, Math.round(map.centerTile.r - map.viewRows / 2)),
+    endRow: Math.min(map.rows, Math.round(map.centerTile.r + map.viewRows / 2)),
+  };
+}
 function mapTileInView(map, mapFn) {
   // to improve
-  const startCol = 0;
-  const endCol = map.cols;
-  const startRow = 0;
-  const endRow = map.rows;
+  const { startCol, endCol, startRow, endRow } = getTilesInView(map);
 
   for (var r = startRow; r < endRow; r++) {
     for (var c = startCol; c < endCol; c++) {
@@ -275,6 +282,10 @@ export function renderLoop(gameState) {
       x: canvasCenter.x - mapCenter.x,
       y: canvasCenter.y - mapCenter.y,
     };
+    gameState.updateState((gameData) => ({
+      ...gameData,
+      map: { ...gameData.map, pov },
+    }));
 
     ctx.beginPath();
     ctx.fillStyle = "black";

@@ -1,12 +1,31 @@
 import createController, { addEventListener } from "./controller.js";
 import { renderText } from "./rendering.js";
 import createEntity from "./entities.js";
+import { exportMap } from "./map.js";
+import { getTilesInView } from "./engine.js";
+
+function canvasPosToTile(x, y, canvas, map) {
+  const rel = { x: x / canvas.width, y: y / canvas.height };
+
+  const { startCol, endCol, startRow, endRow } = getTilesInView(map);
+
+  return {
+    c: Math.round((endCol - startCol) * rel.x + startCol),
+    r: Math.round((endRow - startRow) * rel.y + startRow),
+  };
+}
 
 export default function demoControllers(gameState) {
   // MAP GENERATION CONTROLLER
-  const onClick = (event, ctrl, gameState) => {
-    const status = gameState.gameStatus();
-    const { canvas, ctx } = gameState.getByKeys(["canvas", "ctx"]);
+  const toggleTile = (event, ctrl, gameState) => {
+    const { canvas, ctx, map, click, key } = gameState.getByKeys([
+      "canvas",
+      "ctx",
+      "map",
+      "click",
+      "key",
+    ]);
+    if (!click) return;
     const x = event.pageX - canvas.offsetLeft;
     const y = event.pageY - canvas.offsetTop;
     let cnt = 10; // get in seconds
@@ -29,13 +48,18 @@ export default function demoControllers(gameState) {
           element.position.x,
           element.position.y,
 
-          10,
+          1,
           0,
           2 * Math.PI
         );
         ctx.fill();
       },
     });
+
+    const clickedTile = canvasPosToTile(x, y, canvas, map);
+    const val = key === "d" ? 1 : 0;
+
+    map.setTile(clickedTile.c, clickedTile.r, val === 0 ? 1 : 0);
 
     gameState.updateState((gameData) => ({
       ...gameData,
@@ -47,8 +71,12 @@ export default function demoControllers(gameState) {
 
     ctx.arc(x, y, 10, 0, 2 * Math.PI);
     ctx.fill();
-
-    console.log(x, y);
+  };
+  const onClickDown = (event, ctrl, gameState) => {
+    gameState.setState("click", true);
+  };
+  const onClickUp = (event, ctrl, gameState) => {
+    gameState.setState("click", false);
   };
 
   const onKeyDown = (event, ctrl, gameState) => {
@@ -66,7 +94,11 @@ export default function demoControllers(gameState) {
       case "ArrowRight":
         gameState.setState("moveH", "right");
         break;
+      case "s":
+        console.log(exportMap(gameState.getState("map")));
+        break;
       default:
+        gameState.setState("key", keyName);
         break;
     }
   };
@@ -82,6 +114,7 @@ export default function demoControllers(gameState) {
       case "ArrowRight":
         gameState.setState("moveH", null);
       default:
+        gameState.setState("key", null);
         break;
     }
   };
@@ -111,12 +144,15 @@ export default function demoControllers(gameState) {
     addEventListener(gameState, keyboardCtrl, eventName, evtFunction);
 
   const mouseCtrl = createController({});
-  const addMouseListener = (evtFunction) =>
-    addEventListener(gameState, mouseCtrl, "click", evtFunction);
+  const addMouseListener = (eventName, evtFunction) =>
+    addEventListener(gameState, mouseCtrl, eventName, evtFunction);
 
   addKeyboardListener("keydown", onKeyDown);
   addKeyboardListener("keyup", onKeyUp);
-  addMouseListener(onClick);
+  addMouseListener("mousedown", onClickDown);
+  addMouseListener("mouseup", onClickUp);
+  addMouseListener("mousemove", toggleTile);
+
   gameState.addCtrl("main", keyboardCtrl);
   gameState.addCtrl("mouse", mouseCtrl);
 }

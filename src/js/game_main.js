@@ -1,10 +1,11 @@
 import createState from "./state.js";
 import { pxXSec2PxXFrame } from "./engine.js";
-import { generateMap, setVOF } from "./map.js";
+import { generateMap, setVOF, importTiles } from "./map.js";
 
 // game specific
 import initPlayer from "./game_player.js";
 import { initMainMenu, initPauseMenu } from "./game_menu.js";
+import { map1 } from "./game_maps.js";
 import demoControllers from "./game_ctrls.js";
 /**
  *  This file contains all the demo game logic
@@ -28,7 +29,7 @@ function startDemo(gameState) {
   gameState.setState(
     "map",
     setVOF(
-      generateMap(160, 120, gameState.getState("tileSize")),
+      generateMap(160, 120, gameState.getState("tileSize"), map1),
       canvas.width,
       canvas.height
     )
