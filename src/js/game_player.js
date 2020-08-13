@@ -51,7 +51,9 @@ export default function initPlayer(gameState) {
           return {
             ...gameData,
             player: { ...player, pts: player.pts + 1 },
-            entities: [gameData.entities.filter((e) => e.id !== obstacle)],
+            entities: [
+              ...gameData.entities.filter((e) => e.id !== obstacle.id),
+            ],
           };
         });
       }

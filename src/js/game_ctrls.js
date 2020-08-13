@@ -74,7 +74,7 @@ export default function demoControllers(gameState) {
             if (val.type !== "404") {
               acc.vs.push(val);
             } else if (!acc.f) {
-              acc.f = true;
+              //acc.f = true;
               acc.vs.push(val);
             }
             return acc;
