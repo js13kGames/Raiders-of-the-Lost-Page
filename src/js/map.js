@@ -20,6 +20,10 @@ export function exportMap(map) {
 
   return JSON.stringify(tiles);
 }
+
+export function pxXSecond(map, tXs) {
+  return tXs * map.tsize;
+}
 export function generateMap(width, height, tsize = 4, loadMap = null) {
   let tiles = [];
 

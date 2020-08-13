@@ -1,4 +1,5 @@
 import createEntity from "./entities.js";
+import { pxXSecond } from "./map.js";
 
 function renderFF(canvas, ctx, element) {
   ctx.beginPath();
@@ -58,7 +59,8 @@ export default function initPlayer(gameState) {
         "map",
       ]);
 
-      const speed = 1.2;
+      const speed = pxXSecond(map, 0.3);
+
       if (element.borderCollide) {
         gameState.updateState((gameData) => {
           let cameraPos = gameData.map.cameraPos;
