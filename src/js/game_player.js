@@ -1,5 +1,28 @@
 import createEntity from "./entities.js";
 
+function renderFF(canvas, ctx, element) {
+  ctx.beginPath();
+  const px = canvas.width / 2;
+  const py = canvas.height / 2;
+
+  const center = ctx.createRadialGradient(px - 1, py - 2, 1, px, py, 10);
+  center.addColorStop(0, "#7f00ff");
+  center.addColorStop(1, "#e100ff");
+  const fox = ctx.createRadialGradient(px, py - 2, 6, px + 5, py, 15);
+  fox.addColorStop(0, "orange");
+  fox.addColorStop(1, "red");
+
+  ctx.fillStyle = center;
+
+  ctx.lineWidth = 1;
+  ctx.arc(px, py, 6, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.strokeStyle = fox;
+  ctx.lineWidth = 6;
+  ctx.arc(px, py, 8, Math.PI * 1.4, Math.PI * 1.1);
+  ctx.stroke();
+}
 export default function initPlayer(gameState) {
   const map = gameState.getState("map");
   if (!map) {
@@ -17,11 +40,7 @@ export default function initPlayer(gameState) {
         "map",
         "canvas",
       ]);
-      ctx.beginPath();
-      ctx.fillStyle = "pink";
-
-      ctx.arc(canvas.width / 2, canvas.height / 2, 10, 0, 2 * Math.PI);
-      ctx.fill();
+      renderFF(canvas, ctx, player);
     },
     collideBox: (element) => {
       const canvas = gameState.getState("canvas");
@@ -45,24 +64,6 @@ export default function initPlayer(gameState) {
           let cameraPos = gameData.map.cameraPos;
           const tsize = gameData.map.tsize;
 
-          switch (element.borderCollide) {
-            case "left":
-              cameraPos.x--;
-              element.position.x += tsize;
-              break;
-            case "right":
-              cameraPos.x++;
-              element.position.x -= tsize;
-              break;
-            case "top":
-              cameraPos.y--;
-              element.position.y += tsize;
-              break;
-            case "bottom":
-              cameraPos.y++;
-              element.position.y -= tsize;
-              break;
-          }
           const newData = {
             ...gameData,
             map: { ...gameData.map, cameraPos },

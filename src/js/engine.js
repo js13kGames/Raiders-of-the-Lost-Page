@@ -33,7 +33,34 @@ function generateSpacialHash(gameState) {
 
   return hash;
 }
+function calcBlocked(elementTile, map) {
+  const blocked = { t: false, r: false, b: false, l: false };
 
+  for (let c = -1; c <= 1; c++) {
+    for (let r = -1; r <= 1; r++) {
+      const tileC = Math.floor(elementTile.c) + c;
+      const tileR = Math.floor(elementTile.r) + r;
+      const tile = map.getTile(tileC, tileR);
+      if (!!tile) {
+        if (c === 0 && r === -1) {
+          blocked.t = true;
+        }
+        if (c === 0 && r === 1) {
+          blocked.b = true;
+        }
+
+        if (c === -1 && r === 0) {
+          blocked.l = true;
+        }
+        if (c === 1 && r === 0) {
+          blocked.r = true;
+        }
+      }
+    }
+  }
+
+  return blocked;
+}
 export default function gameLoop(gameState) {
   const tick = gameState.getState("tick", 0);
   const now = +new Date();
@@ -68,33 +95,20 @@ export default function gameLoop(gameState) {
       player: player.run(gameState, player),
     }));
 
-    const blocked = { t: false, r: false, b: false, l: false };
-
-    for (let c = -1; c <= 1; c++) {
-      for (let r = -1; r <= 1; r++) {
-        const tileC = Math.floor(playerTile.c) + c;
-        const tileR = Math.floor(playerTile.r) + r;
-        const tile = map.getTile(tileC, tileR);
-        if (!!tile) {
-          if (c === 0 && r === -1) {
-            blocked.t = true;
-          }
-          if (c === 0 && r === 1) {
-            blocked.b = true;
-          }
-
-          if (c === -1 && r === 0) {
-            blocked.l = true;
-          }
-          if (c === 1 && r === 0) {
-            blocked.r = true;
-          }
-        }
-      }
-    }
-
-    player.blocked = blocked;
+    player.blocked = calcBlocked(playerTile, map);
   }
+
+  gameState.updateState((gameData) => ({
+    ...gameData,
+    entities: gameData.entities
+      .map((element) => {
+        if (typeof element.run === "function") {
+          element = element.run(gameState, element);
+        }
+        return element;
+      })
+      .filter((element) => !!element),
+  }));
 
   //console.log(player);
   // gameState.updateState((gameData) => ({
@@ -205,14 +219,14 @@ function drawBox(gameState, entity) {
   ctx.lineTo(cb.b, cb.c);
   ctx.lineTo(cb.a, cb.c);
   ctx.stroke();
-  ctx.strokeStyle = "blue";
-  ctx.rect(
-    Math.floor(entity.position.x / map.tsize),
-    Math.floor(entity.position.y / map.tsize),
-    map.tsize,
-    map.tsize
-  );
-  ctx.stroke();
+  // ctx.strokeStyle = "blue";
+  // ctx.rect(
+  //   Math.floor(entity.position.x / map.tsize),
+  //   Math.floor(entity.position.y / map.tsize),
+  //   map.tsize,
+  //   map.tsize
+  // );
+  // ctx.stroke();
 }
 function mapTileInView(map, mapFn) {
   // to improve
@@ -267,7 +281,7 @@ export function renderLoop(gameState) {
 
     mapTileInView(map, (c, r) => {
       var tile = map.getTile(c, r);
-      if (tile) {
+      if (tile === 1) {
         const { x, y } = { x: c * map.tsize + pov.x, y: r * map.tsize + pov.y };
 
         ctx.rect(x, y, map.tsize, map.tsize);
@@ -308,7 +322,7 @@ export function renderLoop(gameState) {
 
   if (player && typeof player.render === "function") {
     player.render(gameState, player);
-    drawBox(gameState, player);
+    //drawBox(gameState, player);
   }
 
   entities.forEach((element) => {

@@ -9,7 +9,7 @@ export function generateMap(width, height, tsize = 4) {
   const rows = height;
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      if (isBorder(c, r, cols, rows) || Math.random() < 0.1) {
+      if (isBorder(c, r, cols, rows)) {
         tiles.push(1);
       } else {
         tiles.push(0);
