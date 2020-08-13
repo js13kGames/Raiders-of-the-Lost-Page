@@ -1,4 +1,5 @@
 import { renderText } from "./rendering.js";
+import { tileToCanvasPos, getTilesInView } from "./map.js";
 
 const loopSpeed = Math.round(1000 / 60);
 const cols = 100;
@@ -11,25 +12,16 @@ function rowIndexToLetter(num, rows, height) {
 function generateSpacialHash(gameState) {
   const cols = 10;
   const row = 10;
-  const entities = gameState.getState("entities", []);
+  const { map, entities, player } = gameState.getByKeys([
+    "map",
+    "entities",
+    "player",
+  ]);
 
-  const canvas = gameState.getState("canvas");
   const cW = canvas.width / cols;
   const rW = canvas.height / row;
 
-  const hash = entities.reduce(
-    (acc, val) => {
-      const pos = val.position;
-
-      const c = Math.floor(pos.x / (canvas.width / cols));
-      const r = rowIndexToLetter(pos.y, row, canvas.height);
-      const idx = c + "-" + r;
-      acc[idx] = acc[idx] || [];
-      acc[idx].push(val);
-      return acc;
-    },
-    { config: { cols: cols, row: row } }
-  );
+  const hash = {};
 
   return hash;
 }
@@ -61,6 +53,25 @@ function calcBlocked(elementTile, map) {
 
   return blocked;
 }
+function elementTiles(element, map) {
+  const centerTile = {
+    c: element.position.x / map.tsize,
+    r: element.position.y / map.tsize,
+  };
+
+  const tiles = [];
+  const dimension = Math.round(element.r / map.tsize);
+  for (let c = -dimension; c < dimension; c++) {
+    for (let r = -dimension; r < dimension; r++) {
+      tiles.push({
+        c: Math.round(centerTile.c + c),
+        r: Math.round(centerTile.r + r),
+      });
+    }
+  }
+
+  return tiles;
+}
 export default function gameLoop(gameState) {
   const tick = gameState.getState("tick", 0);
   const now = +new Date();
@@ -71,11 +82,6 @@ export default function gameLoop(gameState) {
   gameState.setState("actualFps", actualFps);
   gameState.setState("tick", tick + 1);
 
-  // Handle entities
-
-  // TODO
-  // -
-
   // Improve collision detection
   // https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
 
@@ -85,7 +91,7 @@ export default function gameLoop(gameState) {
       c: player.position.x / map.tsize,
       r: player.position.y / map.tsize,
     };
-
+    player.currentTile = playerTile;
     gameState.updateState((gameData) => ({
       ...gameData,
       map: {
@@ -94,6 +100,7 @@ export default function gameLoop(gameState) {
       },
       player: player.run(gameState, player),
     }));
+    player.currentTiles = elementTiles(player, map);
 
     player.blocked = calcBlocked(playerTile, map);
   }
@@ -104,140 +111,62 @@ export default function gameLoop(gameState) {
       .map((element) => {
         if (typeof element.run === "function") {
           element = element.run(gameState, element);
+          if (element) {
+            element.currentTiles = elementTiles(element, map);
+          }
         }
         return element;
       })
       .filter((element) => !!element),
   }));
 
-  //console.log(player);
-  // gameState.updateState((gameData) => ({
-  //   ...gameData,
-  //   entities: gameState
-  //     .getState("entities", [])
-  //     .map((element) => {
-  //       const map = gameData.map;
-
-  //       if (!element.position && element.player) {
-  //         // set starting player position
-  //         element.position = {
-  //           x: (map.cols / 2) * map.tsize,
-  //           y: (map.rows / 2) * map.tsize,
-  //         };
-  //       }
-  //       const tiledPos = {
-  //         x: element.position.x / map.tsize,
-  //         y: element.position.y / map.tsize,
-  //       };
-  //       const currentTile = {
-  //         c: Math.floor(tiledPos.x),
-  //         r: Math.floor(tiledPos.y),
-  //       };
-
-  //       const adj = [];
-
-  //       for (let r = -1; r <= 1; r++) {
-  //         for (let c = -1; c <= 1; c++) {
-  //           adj.push(map.getTile(currentTile.c + c, currentTile.r + r));
-  //         }
-  //       }
-  //       element.adj = adj;
-
-  //       if (element.position.x <= 0) {
-  //         element.borderCollide = "left";
-  //       } else if (element.position.x >= canvas.width) {
-  //         element.borderCollide = "right";
-  //       } else if (element.position.y <= 0) {
-  //         element.borderCollide = "top";
-  //       } else if (element.position.y >= canvas.height) {
-  //         element.borderCollide = "bottom";
-  //       } else {
-  //         element.borderCollide = null;
-  //       }
-
-  //       element.tiledPos = tiledPos;
-  //       element.currentTile = currentTile;
-  //       if (typeof element.run === "function") {
-  //         element = element.run(gameState, element);
-  //       }
-  //       return element;
-  //     })
-
-  //     .filter((element) => !!element),
-  // }));
-
   const startDebug = +new Date();
 
+  // GENERATE SPACIAL HASH
   // const spacialHash = generateSpacialHash(gameState, cols, row);
 
-  // gameState
-  //   .getState("entities", [])
-  //   .map((el) => {
-  //     el.isColliding = false;
-  //     return el;
-  //   })
-  //   .forEach((element) => {
-  //     for (let k in spacialHash) {
-  //       if (k !== "config" && spacialHash.hasOwnProperty(k)) {
-  //         if (spacialHash[k].some((v) => v.id === element.id)) {
-  //           const ks = k.split("-");
-  //           const c = parseInt(ks[0], 10);
-  //           const r = ks[1].charCodeAt(0);
-  //           let adj = [...spacialHash[k]];
-  //           for (let i = 0; i < adj.length; i++) {
-  //             if (
-  //               (element.moving || adj[i].moving) &&
-  //               adj[i].id !== element.id &&
-  //               element.canCollide &&
-  //               collide(element, adj[i])
-  //             ) {
-  //               element.isColliding = true;
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-  //     return element;
-  //   });
-  //console.log("end", +new Date() - startDebug);
+  const elems = [
+    ...(gameState.getState("entities") || []),
+    gameState.getState("player"),
+  ]
+    .filter((e) => !!e && e.currentTiles)
+    .map((e) => {
+      e.tilesIds = e.currentTiles.map((t) => "c" + t.c + "r" + t.r);
+      return e;
+    });
+
+  for (const subj of elems) {
+    for (const el of elems) {
+      if (
+        subj.id !== el.id &&
+        subj.tilesIds.some((t) => el.tilesIds.indexOf(t) >= 0)
+      ) {
+        console.log("COLLIDE!!");
+      }
+    }
+  }
 
   gameState.setState("lastTime", now);
   setTimeout(() => gameLoop(gameState), loopSpeed);
 }
-
+function calcAngleDegrees(x, y) {
+  return (Math.atan2(y, x) * 180) / Math.PI;
+}
 function drawBox(gameState, entity) {
-  if (typeof entity.collideBox !== "function") return false;
-  const { ctx, map } = gameState.getByKeys(["ctx", "map"]);
+  const { ctx, canvas, map } = gameState.getByKeys(["ctx", "canvas", "map"]);
+  if (!entity.currentTiles) return;
 
   ctx.beginPath(); // Start a new path
-  ctx.strokeStyle = "red";
-  // adjust with pov
-  const cb = entity.collideBox(entity);
-  ctx.moveTo(cb.a, cb.c);
-  ctx.lineTo(cb.a, cb.d);
-  ctx.lineTo(cb.b, cb.d);
-  ctx.lineTo(cb.b, cb.c);
-  ctx.lineTo(cb.a, cb.c);
-  ctx.stroke();
-  // ctx.strokeStyle = "blue";
-  // ctx.rect(
-  //   Math.floor(entity.position.x / map.tsize),
-  //   Math.floor(entity.position.y / map.tsize),
-  //   map.tsize,
-  //   map.tsize
-  // );
-  // ctx.stroke();
-}
-export function getTilesInView(map) {
-  if (!map.centerTile) return {};
+  ctx.strokeStyle = "green";
+  ctx.lineWidth = 1;
+  entity.currentTiles.forEach((t) => {
+    const pos = tileToCanvasPos(t.c, t.r, canvas, map);
+    ctx.rect(pos.x, pos.y, map.tsize, map.tsize);
+  });
 
-  return {
-    startCol: Math.max(0, Math.round(map.centerTile.c - map.viewCols / 2)),
-    endCol: Math.min(map.cols, Math.round(map.centerTile.c + map.viewCols / 2)),
-    startRow: Math.max(0, Math.round(map.centerTile.r - map.viewRows / 2)),
-    endRow: Math.min(map.rows, Math.round(map.centerTile.r + map.viewRows / 2)),
-  };
+  ctx.stroke();
 }
+
 function mapTileInView(map, mapFn) {
   // to improve
   const { startCol, endCol, startRow, endRow } = getTilesInView(map);
@@ -252,11 +181,12 @@ function mapTileInView(map, mapFn) {
 export function renderLoop(gameState) {
   const renderFps = (msg, pos) =>
     renderText(gameState, msg, pos, "green", "10px sans-serif");
-  const { ctx, canvas, map, player } = gameState.getByKeys([
+  const { ctx, canvas, map, player, debug } = gameState.getByKeys([
     "ctx",
     "canvas",
     "map",
     "player",
+    "debug",
   ]);
   const lastTime = gameState.getState("lastTimeRender", +new Date());
 
@@ -299,15 +229,31 @@ export function renderLoop(gameState) {
       }
     });
     ctx.fill();
+
+    if (player && typeof player.render === "function") {
+      player.render(gameState, player);
+      if (debug) drawBox(gameState, player);
+    }
+    const { startCol, endCol, startRow, endRow } = getTilesInView(map);
+    const entities = gameState.getState("entities", []);
+    entities.forEach((element) => {
+      if (typeof element.render === "function" && element.position) {
+        const col = Math.round(element.position.x / map.tsize);
+        const row = Math.round(element.position.y / map.tsize);
+        if (
+          (col >= startCol && col <= endCol) ||
+          (row >= startRow && row <= endRow)
+        ) {
+          element.render(gameState, element, {
+            x: element.position.x + pov.x,
+            y: element.position.y + pov.y,
+          });
+        }
+
+        if (debug) drawBox(gameState, element);
+      }
+    });
   }
-
-  renderFps(`${gameState.getState("actualFps")} FPS`, { x: 755, y: 580 });
-  renderFps(`${gameState.getState("actualFpsRender")} FPSR`, {
-    x: 755,
-    y: 590,
-  });
-
-  const entities = gameState.getState("entities", []);
   const menus = gameState.getState("menus");
   const ctrls = gameState.getState("ctrls");
 
@@ -329,19 +275,12 @@ export function renderLoop(gameState) {
     }
   }
 
-  // render player
-
-  if (player && typeof player.render === "function") {
-    player.render(gameState, player);
-    //drawBox(gameState, player);
-  }
-
-  entities.forEach((element) => {
-    if (typeof element.render === "function" && element.position) {
-      element.render(gameState, element);
-      drawBox(gameState, element);
-    }
+  renderFps(`${gameState.getState("actualFps")} FPS`, { x: 755, y: 580 });
+  renderFps(`${gameState.getState("actualFpsRender")} FPSR`, {
+    x: 755,
+    y: 590,
   });
+
   gameState.setState("lastTimeRender", now);
 
   window.requestAnimationFrame(() => renderLoop(gameState));

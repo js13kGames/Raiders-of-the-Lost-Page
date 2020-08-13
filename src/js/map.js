@@ -3,11 +3,17 @@ function generateTileContent(cols, rows, c, r) {}
 function isBorder(c, r, cols, rows) {
   return c === 0 || r === 0 || r === rows - 1 || c === cols - 1;
 }
-export function importTiles(tiles) {
-  return JSON.parse(tiles);
-}
+export function getTilesInView(map) {
+  if (!map.centerTile) return {};
 
-export function exportMap(map) {
+  return {
+    startCol: Math.max(0, Math.round(map.centerTile.c - map.viewCols / 2)),
+    endCol: Math.min(map.cols, Math.round(map.centerTile.c + map.viewCols / 2)),
+    startRow: Math.max(0, Math.round(map.centerTile.r - map.viewRows / 2)),
+    endRow: Math.min(map.rows, Math.round(map.centerTile.r + map.viewRows / 2)),
+  };
+}
+export function exportMap(map, entities) {
   const tiles = {};
   for (let r = 0; r < map.rows; r++) {
     for (let c = 0; c < map.cols; c++) {
@@ -17,8 +23,29 @@ export function exportMap(map) {
       }
     }
   }
+  const exptEntities = entities.map((e) => ({
+    position: e.position,
+    type: e.type,
+  }));
 
-  return JSON.stringify(tiles);
+  return JSON.stringify({ tiles, entities: exptEntities });
+}
+export function canvasPosToTile(x, y, canvas, map) {
+  const rel = { x: x / canvas.width, y: y / canvas.height };
+
+  const { startCol, endCol, startRow, endRow } = getTilesInView(map);
+
+  return {
+    c: Math.round((endCol - startCol) * rel.x + startCol),
+    r: Math.round((endRow - startRow) * rel.y + startRow),
+  };
+}
+
+export function tileToCanvasPos(c, r, canvas, map) {
+  return {
+    x: Math.round(c * map.tsize + map.pov.x),
+    y: Math.round(r * map.tsize + map.pov.y),
+  };
 }
 
 export function pxXSecond(map, tXs) {
@@ -27,14 +54,13 @@ export function pxXSecond(map, tXs) {
 export function generateMap(width, height, tsize = 4, loadMap = null) {
   let tiles = [];
 
-  const cols = width;
-  const rows = height;
+  const cols = Math.ceil(width / tsize);
+  const rows = Math.ceil(height / tsize);
   if (loadMap) {
-    const tileData = importTiles(loadMap);
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        if (tileData["" + c + "-" + r]) {
-          tiles.push(tileData["" + c + "-" + r]);
+        if (loadMap["" + c + "-" + r]) {
+          tiles.push(loadMap["" + c + "-" + r]);
         } else {
           tiles.push(0);
         }

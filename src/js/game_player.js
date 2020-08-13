@@ -32,7 +32,7 @@ export default function initPlayer(gameState) {
   }
 
   const player = createEntity({
-    box: { w: 5, h: 5 },
+    r: 10,
     position: { x: (map.cols / 2) * map.tsize, y: (map.rows / 2) * map.tsize },
     player: true,
     render: (gameState, player) => {
@@ -43,15 +43,7 @@ export default function initPlayer(gameState) {
       ]);
       renderFF(canvas, ctx, player);
     },
-    collideBox: (element) => {
-      const canvas = gameState.getState("canvas");
-      return {
-        a: canvas.width / 2 - element.box.w,
-        b: canvas.width / 2 + element.box.w,
-        c: canvas.height / 2 - element.box.h,
-        d: canvas.height / 2 + element.box.h,
-      };
-    },
+
     run: (gameState, element) => {
       const { moveV, moveH, map } = gameState.getByKeys([
         "moveV",
@@ -59,7 +51,7 @@ export default function initPlayer(gameState) {
         "map",
       ]);
 
-      const speed = pxXSecond(map, 0.3);
+      const speed = pxXSecond(map, 0.8);
 
       if (element.borderCollide) {
         gameState.updateState((gameData) => {

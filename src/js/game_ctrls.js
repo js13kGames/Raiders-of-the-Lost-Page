@@ -1,19 +1,9 @@
 import createController, { addEventListener } from "./controller.js";
 import { renderText } from "./rendering.js";
 import createEntity from "./entities.js";
-import { exportMap } from "./map.js";
-import { getTilesInView } from "./engine.js";
+import { exportMap, canvasPosToTile } from "./map.js";
 
-function canvasPosToTile(x, y, canvas, map) {
-  const rel = { x: x / canvas.width, y: y / canvas.height };
-
-  const { startCol, endCol, startRow, endRow } = getTilesInView(map);
-
-  return {
-    c: Math.round((endCol - startCol) * rel.x + startCol),
-    r: Math.round((endRow - startRow) * rel.y + startRow),
-  };
-}
+import { create404Entity } from "./game_entities.js";
 
 export default function demoControllers(gameState) {
   // MAP GENERATION CONTROLLER
@@ -44,14 +34,7 @@ export default function demoControllers(gameState) {
         ctx.beginPath();
         ctx.fillStyle = "pink";
 
-        ctx.arc(
-          element.position.x,
-          element.position.y,
-
-          1,
-          0,
-          2 * Math.PI
-        );
+        ctx.arc(element.position.x, element.position.y, 1, 0, 2 * Math.PI);
         ctx.fill();
       },
     });
@@ -73,7 +56,38 @@ export default function demoControllers(gameState) {
     ctx.fill();
   };
   const onClickDown = (event, ctrl, gameState) => {
-    gameState.setState("click", true);
+    const { key, canvas, map } = gameState.getByKeys(["key", "canvas", "map"]);
+    console.log();
+    if (key === "e") {
+      const x = event.pageX - canvas.offsetLeft;
+      const y = event.pageY - canvas.offsetTop;
+      const clickedTile = canvasPosToTile(x, y, canvas, map);
+      gameState.updateState((gameData) => {
+        const entities = [
+          create404Entity({
+            x: clickedTile.c * map.tsize,
+            y: clickedTile.r * map.tsize,
+          }),
+          ...gameData.entities,
+        ].reduce(
+          (acc, val) => {
+            if (val.type !== "exit") {
+              acc.vs.push(val);
+            } else if (!acc.f) {
+              acc.f = true;
+              acc.vs.push(val);
+            }
+            return acc;
+          },
+          { f: false, vs: [] }
+        ).vs;
+
+        return { ...gameData, entities };
+      });
+      //create404Entity
+    } else {
+      gameState.setState("click", true);
+    }
   };
   const onClickUp = (event, ctrl, gameState) => {
     gameState.setState("click", false);
@@ -95,7 +109,9 @@ export default function demoControllers(gameState) {
         gameState.setState("moveH", "right");
         break;
       case "s":
-        console.log(exportMap(gameState.getState("map")));
+        console.log(
+          exportMap(gameState.getState("map"), gameState.getState("entities"))
+        );
         break;
       default:
         gameState.setState("key", keyName);
