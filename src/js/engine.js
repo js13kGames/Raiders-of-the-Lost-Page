@@ -1,7 +1,7 @@
 import { renderText } from "./rendering.js";
 import { tileToCanvasPos, getTilesInView } from "./map.js";
 
-const loopSpeed = Math.round(1000 / 60);
+const loopSpeed = Math.round(1000 / 75);
 const cols = 100;
 const row = 100;
 
@@ -25,31 +25,68 @@ function generateSpacialHash(gameState) {
 
   return hash;
 }
-function calcBlocked(elementTile, map) {
+function calcBlocked(elementTiles, map) {
   const blocked = { t: false, r: false, b: false, l: false };
+  const vtx = elementTiles.reduce((acc, v) => {
+    if (typeof acc.tr === "undefined" || v.r > acc.tr) {
+      acc.tr = v.r;
+    }
+    if (typeof acc.br === "undefined" || v.r < acc.br) {
+      acc.br = v.r;
+    }
+    if (typeof acc.tc === "undefined" || v.c > acc.tc) {
+      acc.tc = v.c;
+    }
+    if (typeof acc.bc === "undefined" || v.c < acc.bc) {
+      acc.bc = v.c;
+    }
+    return acc;
+  }, {});
 
-  for (let c = -1; c <= 1; c++) {
-    for (let r = -1; r <= 1; r++) {
-      const tileC = Math.floor(elementTile.c) + c;
-      const tileR = Math.floor(elementTile.r) + r;
-      const tile = map.getTile(tileC, tileR);
+  const cs = [vtx.bc - 1, vtx.bc, vtx.tc + 1, vtx.tc];
+  const rs = [vtx.br - 1, vtx.br, vtx.tr + 1, vtx.tr];
+  for (const c of cs) {
+    for (const r of rs) {
+      const tile = map.getTile(c, r);
       if (!!tile) {
-        if (c === 0 && r === -1) {
+        if (r === rs[0] && (c === cs[1] || c === cs[3])) {
           blocked.t = true;
         }
-        if (c === 0 && r === 1) {
+        if (r === rs[2] && (c === cs[1] || c === cs[3])) {
           blocked.b = true;
         }
 
-        if (c === -1 && r === 0) {
+        if (c === cs[0] && (r === rs[1] || r === rs[3])) {
           blocked.l = true;
         }
-        if (c === 1 && r === 0) {
+        if (c === cs[2] && (r === rs[1] || r === rs[3])) {
           blocked.r = true;
         }
       }
     }
   }
+  // for (let c = -1; c <= 1; c++) {
+  //   for (let r = -1; r <= 1; r++) {
+  //     const tileC = Math.floor(elementTile.c) + c;
+  //     const tileR = Math.floor(elementTile.r) + r;
+  //     const tile = map.getTile(tileC, tileR);
+  //     if (!!tile) {
+  //       if (c === 0 && r === -1) {
+  //         blocked.t = true;
+  //       }
+  //       if (c === 0 && r === 1) {
+  //         blocked.b = true;
+  //       }
+
+  //       if (c === -1 && r === 0) {
+  //         blocked.l = true;
+  //       }
+  //       if (c === 1 && r === 0) {
+  //         blocked.r = true;
+  //       }
+  //     }
+  //   }
+  // }
 
   return blocked;
 }
@@ -102,7 +139,7 @@ export default function gameLoop(gameState) {
     }));
     player.currentTiles = elementTiles(player, map);
 
-    player.blocked = calcBlocked(playerTile, map);
+    player.blocked = calcBlocked(player.currentTiles, map);
   }
 
   gameState.updateState((gameData) => ({
@@ -141,7 +178,9 @@ export default function gameLoop(gameState) {
         subj.id !== el.id &&
         subj.tilesIds.some((t) => el.tilesIds.indexOf(t) >= 0)
       ) {
-        console.log("COLLIDE!!");
+        if (typeof subj.onCollide === "function") {
+          subj.onCollide(gameState, subj, el);
+        }
       }
     }
   }

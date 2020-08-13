@@ -35,6 +35,7 @@ export default function initPlayer(gameState) {
     r: 10,
     position: { x: (map.cols / 2) * map.tsize, y: (map.rows / 2) * map.tsize },
     player: true,
+    pts: 0,
     render: (gameState, player) => {
       const { ctx, map, canvas } = gameState.getByKeys([
         "ctx",
@@ -43,7 +44,18 @@ export default function initPlayer(gameState) {
       ]);
       renderFF(canvas, ctx, player);
     },
-
+    onCollide: (gameState, player, obstacle) => {
+      if (obstacle.type === "404") {
+        gameState.updateState((gameData) => {
+          console.log("OOOO");
+          return {
+            ...gameData,
+            player: { ...player, pts: player.pts + 1 },
+            entities: [gameData.entities.filter((e) => e.id !== obstacle)],
+          };
+        });
+      }
+    },
     run: (gameState, element) => {
       const { moveV, moveH, map } = gameState.getByKeys([
         "moveV",

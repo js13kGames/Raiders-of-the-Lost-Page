@@ -71,7 +71,7 @@ export default function demoControllers(gameState) {
           ...gameData.entities,
         ].reduce(
           (acc, val) => {
-            if (val.type !== "exit") {
+            if (val.type !== "404") {
               acc.vs.push(val);
             } else if (!acc.f) {
               acc.f = true;
