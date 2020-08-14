@@ -13,7 +13,7 @@ export function create404Entity(position) {
       ]);
 
       ctx.beginPath();
-      ctx.fillStyle = "green";
+      ctx.fillStyle = "blue";
 
       ctx.arc(relPos.x, relPos.y, element.r, 0, 2 * Math.PI);
       ctx.fill();
@@ -23,8 +23,45 @@ export function create404Entity(position) {
   return entity;
 }
 
+export function createExitEntity(position) {
+  const entity = createEntity({
+    position,
+    type: "exit",
+    opened: false,
+    r: 10,
+    render: (gameState, element, relPos) => {
+      const { ctx, map, canvas } = gameState.getByKeys([
+        "ctx",
+        "map",
+        "canvas",
+      ]);
+
+      ctx.beginPath();
+      ctx.fillStyle = element.opened ? "green" : "red";
+
+      ctx.arc(relPos.x, relPos.y, element.r, 0, 2 * Math.PI);
+      ctx.fill();
+    },
+    onCollide: (gameState, entity, oth) => {
+      if (oth.player && entity.opened) {
+        console.log("WIIIIIn");
+      }
+    },
+    run: (gameState, entity) => {
+      const f0f = gameState
+        .getState("entities", [])
+        .some((e) => e.type === "404");
+
+      if (!f0f) entity.opened = true;
+      return entity;
+    },
+  });
+
+  return entity;
+}
+
 export function createEnemyEntity(position) {
-  const speed = 3;
+  const speed = 2;
   const entity = createEntity({
     start: { ...position },
     end: { x: position.x + 100, y: position.y },

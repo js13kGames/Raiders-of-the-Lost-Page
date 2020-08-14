@@ -7,14 +7,18 @@ import initPlayer from "./game_player.js";
 import { initMainMenu, initPauseMenu } from "./game_menu.js";
 import { map1 } from "./game_maps.js";
 import demoControllers from "./game_ctrls.js";
-import { create404Entity, createEnemyEntity } from "./game_entities.js";
+import {
+  create404Entity,
+  createEnemyEntity,
+  createExitEntity,
+} from "./game_entities.js";
 /**
  *  This file contains all the demo game logic
  *
  * Everithing interacts with the gameState that is than exported
  */
 
-const tileSize = 4;
+const tileSize = 3;
 const gameState = createState({
   debug: false,
   showFps: true,
@@ -50,6 +54,9 @@ function startDemo(gameState) {
         break;
       case "enemy":
         entities.push(createEnemyEntity({ x: e.position.x, y: e.position.y }));
+        break;
+      case "exit":
+        entities.push(createExitEntity({ x: e.position.x, y: e.position.y }));
         break;
       default:
         break;
