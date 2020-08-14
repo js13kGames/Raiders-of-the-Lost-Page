@@ -13,6 +13,29 @@ export function create404Entity(position) {
       ]);
 
       ctx.beginPath();
+      ctx.fillStyle = "green";
+
+      ctx.arc(relPos.x, relPos.y, element.r, 0, 2 * Math.PI);
+      ctx.fill();
+    },
+  });
+
+  return entity;
+}
+
+export function createEnemyEntity(position) {
+  const entity = createEntity({
+    position,
+    type: "enemy",
+    r: 10,
+    render: (gameState, element, relPos) => {
+      const { ctx, map, canvas } = gameState.getByKeys([
+        "ctx",
+        "map",
+        "canvas",
+      ]);
+
+      ctx.beginPath();
       ctx.fillStyle = "tomato";
 
       ctx.arc(relPos.x, relPos.y, element.r, 0, 2 * Math.PI);

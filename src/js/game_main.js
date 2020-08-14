@@ -1,5 +1,5 @@
 import createState from "./state.js";
-import { pxXSec2PxXFrame } from "./engine.js";
+
 import { generateMap, setVOF } from "./map.js";
 
 // game specific
@@ -7,7 +7,7 @@ import initPlayer from "./game_player.js";
 import { initMainMenu, initPauseMenu } from "./game_menu.js";
 import { map1 } from "./game_maps.js";
 import demoControllers from "./game_ctrls.js";
-import { create404Entity } from "./game_entities.js";
+import { create404Entity, createEnemyEntity } from "./game_entities.js";
 /**
  *  This file contains all the demo game logic
  *
@@ -47,6 +47,9 @@ function startDemo(gameState) {
     switch (e.type) {
       case "404":
         entities.push(create404Entity({ x: e.position.x, y: e.position.y }));
+        break;
+      case "enemy":
+        entities.push(createEnemyEntity({ x: e.position.x, y: e.position.y }));
         break;
       default:
         break;

@@ -122,24 +122,25 @@ export default function gameLoop(gameState) {
   // Improve collision detection
   // https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
 
-  const { player, map } = gameState.getByKeys(["player", "map"]);
+  let { player, map } = gameState.getByKeys(["player", "map"]);
   if (player && map) {
     const playerTile = {
       c: player.position.x / map.tsize,
       r: player.position.y / map.tsize,
     };
     player.currentTile = playerTile;
+    //console.log(player.currentTile);
     gameState.updateState((gameData) => ({
       ...gameData,
       map: {
         ...gameData.map,
         centerTile: playerTile,
       },
-      player: player.run(gameState, player),
     }));
+    player = player.run(gameState, player);
     player.currentTiles = elementTiles(player, map);
-
     player.blocked = calcBlocked(player.currentTiles, map);
+    gameState.setState("player", player);
   }
 
   gameState.updateState((gameData) => ({

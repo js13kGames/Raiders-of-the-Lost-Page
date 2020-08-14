@@ -34,6 +34,10 @@ export default function initPlayer(gameState) {
   const player = createEntity({
     r: 10,
     position: { x: (map.cols / 2) * map.tsize, y: (map.rows / 2) * map.tsize },
+    lastPosition: {
+      x: (map.cols / 2) * map.tsize,
+      y: (map.rows / 2) * map.tsize,
+    },
     player: true,
     pts: 0,
     render: (gameState, player) => {
@@ -47,24 +51,41 @@ export default function initPlayer(gameState) {
     onCollide: (gameState, player, obstacle) => {
       if (obstacle.type === "404") {
         gameState.updateState((gameData) => {
-          console.log("OOOO");
           return {
             ...gameData,
-            player: { ...player, pts: player.pts + 1 },
+            player: {
+              ...player,
+              lastPosition: { ...gameData.player.position },
+              pts: gameData.player.pts + 1,
+            },
             entities: [
               ...gameData.entities.filter((e) => e.id !== obstacle.id),
             ],
           };
         });
+      } else if (obstacle.type === "enemy") {
+        gameState.updateState((gameData) => {
+          return {
+            ...gameData,
+            player: {
+              ...gameData.player,
+              position: { ...gameData.player.lastPosition },
+            },
+          };
+        });
       }
     },
     run: (gameState, element) => {
-      const { moveV, moveH, map } = gameState.getByKeys([
+      const { moveV, moveH, map, tick } = gameState.getByKeys([
         "moveV",
         "moveH",
         "map",
+        "tick",
       ]);
 
+      if (tick % 10 === 0) {
+        //element.lastPosition = element.position;
+      }
       const speed = pxXSecond(map, 0.8);
 
       if (element.borderCollide) {
