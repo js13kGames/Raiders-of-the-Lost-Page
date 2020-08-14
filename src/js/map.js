@@ -17,9 +17,11 @@ export function exportMap(map, entities) {
   const tiles = {};
   for (let r = 0; r < map.rows; r++) {
     for (let c = 0; c < map.cols; c++) {
-      const tile = map.getTile(c, r);
-      if (tile) {
-        tiles["" + c + "-" + r] = tile;
+      if (!isBorder(c, r, map.cols, map.rows)) {
+        const tile = map.getTile(c, r);
+        if (tile) {
+          tiles["" + c + "-" + r] = tile;
+        }
       }
     }
   }
@@ -56,24 +58,14 @@ export function generateMap(width, height, tsize = 4, loadMap = null) {
 
   const cols = Math.ceil(width / tsize);
   const rows = Math.ceil(height / tsize);
-  if (loadMap) {
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        if (loadMap["" + c + "-" + r]) {
-          tiles.push(loadMap["" + c + "-" + r]);
-        } else {
-          tiles.push(0);
-        }
-      }
-    }
-  } else {
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        if (isBorder(c, r, cols, rows)) {
-          tiles.push(1);
-        } else {
-          tiles.push(0);
-        }
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (isBorder(c, r, cols, rows)) {
+        tiles.push(1);
+      } else if (loadMap && loadMap["" + c + "-" + r]) {
+        tiles.push(loadMap["" + c + "-" + r]);
+      } else {
+        tiles.push(0);
       }
     }
   }
