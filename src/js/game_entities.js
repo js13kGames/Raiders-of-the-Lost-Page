@@ -60,15 +60,13 @@ export function createExitEntity(position) {
   return entity;
 }
 
-export function createEnemyEntity(position) {
-  const speed = 2;
-  const entity = createEntity({
-    start: { ...position },
-    end: { x: position.x + 100, y: position.y },
-    position: { ...position },
+function movingEntitity(start, end, speed) {
+  return {
+    start: { ...start },
+    end: { ...end },
+    position: { ...start },
+    speed,
     direction: 0,
-    type: "enemy",
-    r: 10,
     run: (gameState, element) => {
       if (element.position.x < element.end.x && element.direction === 0) {
         element.position.x += speed;
@@ -85,6 +83,17 @@ export function createEnemyEntity(position) {
 
       return element;
     },
+  };
+}
+
+export function createEnemyEntity(position) {
+  const speed = 2;
+  const entity = createEntity({
+    ...movingEntitity(position, { x: position.x + 100, y: position.y }, speed),
+
+    type: "enemy",
+    r: 10,
+
     render: (gameState, element, relPos) => {
       const { ctx, map, canvas } = gameState.getByKeys([
         "ctx",

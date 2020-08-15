@@ -26,7 +26,7 @@ export function exportMap(map, entities) {
     }
   }
   const exptEntities = entities.map((e) => ({
-    position: e.position,
+    position: e.start || e.position,
     type: e.type,
   }));
 
