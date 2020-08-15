@@ -1,5 +1,5 @@
 import createEntity from "./entities.js";
-import { pntBtw2Pnts } from "./map.js";
+import { pntBtw2Pnts, dstBtw2Pnts } from "./map.js";
 
 export function create404Entity(position) {
   const entity = createEntity({
@@ -72,6 +72,13 @@ function incStep(step, direction) {
   const incr = direction === 0 ? 1 : -1;
   return step + incr;
 }
+function easeInSine(x) {
+  return 1 - Math.cos((x * Math.PI) / 2);
+}
+function easeInOutCubic(x) {
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
+
 function movingEntitity(start, steps, speed, loop = false) {
   return {
     start: { ...start },
@@ -79,15 +86,32 @@ function movingEntitity(start, steps, speed, loop = false) {
     step: 0,
     position: { ...start },
     speed,
+    easingSpeed: 150,
+    easingFunc: easeInOutCubic,
+    lastVisited: 0,
+    easingTicks: 0,
     direction: 0,
     loop,
     run: (gameState, element) => {
-      const { steps, step, direction, position, loop } = element;
-      let nextStep = element.steps[incStep(step, direction)] || null;
+      const {
+        steps,
+        step,
+        direction,
+        position,
+        loop,
+        easingSpeed,
+        easingMaxMult,
+        easingFunc,
+      } = element;
+      const newStp = incStep(step, direction);
+      let nextStep = element.steps[newStp] || null;
       // FIX for last step
+      element.easingTicks++;
       if (nextStep) {
         // se in step
         if (isInLocation(position, nextStep)) {
+          element.lastVisited = newStp;
+          element.easingTicks = 0;
           // se primo o ultimo step
           if (
             (step === steps.length - 1 && direction === 0) ||
@@ -100,14 +124,14 @@ function movingEntitity(start, steps, speed, loop = false) {
           // aggiorna lo step
           element.step = incStep(step, direction);
         }
+
         const nextPos = pntBtw2Pnts(
           element.position,
-          element.steps[incStep(step, direction)],
-          element.speed
+          element.steps[newStp],
+          element.speed * easingFunc(element.easingTicks / easingSpeed)
         );
         element.position = nextPos || position;
       } else if (loop) {
-        debugger;
         element.step = -1;
       } else {
         element.direction = direction === 0 ? 1 : 0;
@@ -119,7 +143,7 @@ function movingEntitity(start, steps, speed, loop = false) {
 }
 
 export function createEnemyEntity(position) {
-  const speed = 2;
+  const speed = 4;
   const entity = createEntity({
     ...movingEntitity(
       position,
