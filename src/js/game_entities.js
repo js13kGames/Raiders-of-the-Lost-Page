@@ -1,4 +1,5 @@
 import createEntity from "./entities.js";
+import { pntBtw2Pnts } from "./map.js";
 
 export function create404Entity(position) {
   const entity = createEntity({
@@ -60,25 +61,56 @@ export function createExitEntity(position) {
   return entity;
 }
 
-function movingEntitity(start, end, speed) {
+function isInLocation(position, location) {
+  return (
+    Math.floor(position.x - location.x) === 0 &&
+    Math.floor(position.y - location.y) === 0
+  );
+}
+
+function incStep(step, direction) {
+  const incr = direction === 0 ? 1 : -1;
+  return step + incr;
+}
+function movingEntitity(start, steps, speed, loop = false) {
   return {
     start: { ...start },
-    end: { ...end },
+    steps: [start, ...steps],
+    step: 0,
     position: { ...start },
     speed,
     direction: 0,
+    loop,
     run: (gameState, element) => {
-      if (element.position.x < element.end.x && element.direction === 0) {
-        element.position.x += speed;
-      } else if (
-        element.position.x > element.start.x &&
-        element.direction === 1
-      ) {
-        element.position.x -= speed;
-      } else if (element.position.x >= element.end.x) {
-        element.direction = 1;
-      } else if (element.position.x <= element.start.x) {
-        element.direction = 0;
+      const { steps, step, direction, position, loop } = element;
+      let nextStep = element.steps[incStep(step, direction)] || null;
+      // FIX for last step
+      if (nextStep) {
+        // se in step
+        if (isInLocation(position, nextStep)) {
+          // se primo o ultimo step
+          if (
+            (step === steps.length - 1 && direction === 0) ||
+            (step === 0 && direction === 1)
+          ) {
+            // cambia direzione
+            element.direction = direction === 0 ? 1 : 0;
+            // altrimenti
+          }
+          // aggiorna lo step
+          element.step = incStep(step, direction);
+        }
+        const nextPos = pntBtw2Pnts(
+          element.position,
+          element.steps[incStep(step, direction)],
+          element.speed
+        );
+        element.position = nextPos || position;
+      } else if (loop) {
+        debugger;
+        element.step = -1;
+      } else {
+        element.direction = direction === 0 ? 1 : 0;
       }
 
       return element;
@@ -89,11 +121,17 @@ function movingEntitity(start, end, speed) {
 export function createEnemyEntity(position) {
   const speed = 2;
   const entity = createEntity({
-    ...movingEntitity(position, { x: position.x + 100, y: position.y }, speed),
-
+    ...movingEntitity(
+      position,
+      [
+        { x: position.x + 100, y: position.y },
+        { x: position.x + 100, y: position.y + 100 },
+      ],
+      speed,
+      true
+    ),
     type: "enemy",
     r: 10,
-
     render: (gameState, element, relPos) => {
       const { ctx, map, canvas } = gameState.getByKeys([
         "ctx",

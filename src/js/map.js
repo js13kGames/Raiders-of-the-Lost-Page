@@ -100,3 +100,20 @@ export function setVOF(map, width, height) {
 
   return { ...map, ...camera };
 }
+
+export function dstBtw2Pnts(p1, p2) {
+  const dx = p1.x - p2.x;
+  const dy = p1.y - p2.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+export function pntBtw2Pnts(p1, p2, dist) {
+  const ptsDist = dstBtw2Pnts(p1, p2);
+  if (ptsDist < dist) {
+    return { ...p2 };
+  }
+  const distRatio = ptsDist ? dist / ptsDist : 0;
+  return {
+    x: p1.x + distRatio * (p2.x - p1.x),
+    y: p1.y + distRatio * (p2.y - p1.y),
+  };
+}
