@@ -5,6 +5,9 @@ function renderFF(canvas, ctx, element) {
   ctx.beginPath();
   const px = canvas.width / 2;
   const py = canvas.height / 2;
+  const playerAngle = element.angle || 0;
+  //const angle = (3 / 2) * Math.PI;
+  const angle = playerAngle ? playerAngle * Math.PI : 0;
 
   const center = ctx.createRadialGradient(px - 1, py - 2, 1, px, py, 10);
   center.addColorStop(0, "#7f00ff");
@@ -21,7 +24,7 @@ function renderFF(canvas, ctx, element) {
   ctx.beginPath();
   ctx.strokeStyle = fox;
   ctx.lineWidth = 6;
-  ctx.arc(px, py, 8, Math.PI * 1.4, Math.PI * 1.1);
+  ctx.arc(px, py, 8, Math.PI * 1.72 + angle, Math.PI * 1.22 + angle);
   ctx.stroke();
 }
 
@@ -50,6 +53,7 @@ export default function initPlayer(gameState) {
   }
   const playerConfig = {
     r: 10,
+    angle: 0,
     position: { x: (map.cols / 2) * map.tsize, y: (map.rows / 2) * map.tsize },
     lastPosition: {
       x: (map.cols / 2) * map.tsize,
@@ -100,7 +104,24 @@ export default function initPlayer(gameState) {
       }
 
       const blocked = element.blocked;
-
+      // TODO refactor
+      if (moveV === "up" && moveH === "left") {
+        element.angle = 1.8;
+      } else if (moveV === "up" && moveH === "right") {
+        element.angle = 2.3;
+      } else if (moveV === "down" && moveH === "left") {
+        element.angle = 1.3;
+      } else if (moveV === "down" && moveH === "right") {
+        element.angle = 2.8;
+      } else if (moveV === "up") {
+        element.angle = 0;
+      } else if (moveV === "down") {
+        element.angle = 1;
+      } else if (moveH === "left") {
+        element.angle = 1.5;
+      } else if (moveH === "right") {
+        element.angle = 2.5;
+      }
       if (moveV === "up" && element.borderCollide !== "top" && !blocked.t) {
         element.position.y -= speed;
       } else if (moveV === "down" && element.borderCollide !== "bottom" && !blocked.b) {

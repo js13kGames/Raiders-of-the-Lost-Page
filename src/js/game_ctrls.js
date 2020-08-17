@@ -117,9 +117,11 @@ export default function gameControllers(gameState) {
       case "ArrowUp":
       case "ArrowDown":
         gameState.setState("moveV", null);
+        break;
       case "ArrowLeft":
       case "ArrowRight":
         gameState.setState("moveH", null);
+        break;
       default:
         gameState.setState("key", null);
         break;
