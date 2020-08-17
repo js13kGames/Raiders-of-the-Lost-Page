@@ -75,6 +75,7 @@ export function generateMap(width, height, tsize = 4, loadMap = null) {
     rows,
     tsize,
     tiles,
+    centerTile: { c: Math.round(cols / 2), r: Math.round(rows / 2) },
     getTile: (col, row) => map.tiles[row * map.cols + col],
     setTile: (col, row, val) => (map.tiles[row * map.cols + col] = val),
     renderTile: () => null,

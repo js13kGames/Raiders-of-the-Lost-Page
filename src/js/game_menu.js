@@ -1,14 +1,51 @@
 import createMenu from "./menus.js";
 import { domElement, hide, show } from "./domUtils.js";
 import { playSound } from "./audio.js";
+function playImperialMarch(gameState) {
+  const waveNote = (note) => ({ ...note, oscillator: "triangle" });
 
-export function initMainMenu(gameState, startFn) {
+  const sectOctave = (note) => `${note}3`;
+  playSound(gameState, waveNote({ note: sectOctave("G"), duration: 0.3 }))
+    .then(() => playSound(gameState, waveNote({ note: null, duration: 0.3 })))
+    .then(() => playSound(gameState, waveNote({ note: sectOctave("G"), duration: 0.3 })))
+    .then(() => playSound(gameState, waveNote({ note: null, duration: 0.3 })))
+    .then(() => playSound(gameState, waveNote({ note: sectOctave("G"), duration: 0.3 })))
+    .then(() => playSound(gameState, waveNote({ note: null, duration: 0.3 })))
+    .then(() => playSound(gameState, waveNote({ note: sectOctave("D#"), duration: 0.4 })))
+    .then(() => playSound(gameState, waveNote({ note: null, duration: 0.05 })))
+    .then(() => playSound(gameState, waveNote({ note: sectOctave("A#"), duration: 0.2 })))
+    .then(() => playSound(gameState, waveNote({ note: null, duration: 0.05 })))
+    .then(() => playSound(gameState, waveNote({ note: sectOctave("G"), duration: 0.2 })))
+    .then(() => playSound(gameState, waveNote({ note: null, duration: 0.3 })))
+    .then(() => playSound(gameState, waveNote({ note: sectOctave("D#"), duration: 0.4 })))
+    .then(() => playSound(gameState, waveNote({ note: null, duration: 0.05 })))
+    .then(() => playSound(gameState, waveNote({ note: sectOctave("A#"), duration: 0.2 })))
+    .then(() => playSound(gameState, waveNote({ note: null, duration: 0.05 })))
+    .then(() => playSound(gameState, waveNote({ note: sectOctave("G"), duration: 0.2 })));
+}
+
+export function initMainMenu(gameState, startFn, levelsFn) {
   const mainMenu = createMenu(gameState, (menu, gameState) => {
     const menuContainer = domElement("#main-menu-container");
     const startBtn = domElement("#main-manu-start");
-
     const continueBtn = domElement("#main-manu-continue");
     const playButton = domElement("#main-manu-sound");
+
+    const { unlockedLevels } = gameState.getByKeys(["unlockedLevels"]);
+
+    for (let i = 0; i <= unlockedLevels; i++) {
+      const startLevel = levelsFn[i];
+      if (typeof startLevel === "function") {
+        const el = document.createElement("li");
+        el.innerHTML = `<button role="button" id="main-manu-level-${i}" class="btn">Load level ${i}</button>`;
+        domElement("#main-menu-container ul").appendChild(el);
+        el.addEventListener("click", (evt) => {
+          evt.preventDefault();
+          startLevel(gameState);
+        });
+      }
+    }
+
     startBtn.addEventListener("click", (evt) => {
       evt.preventDefault();
       startFn(gameState);
@@ -22,90 +59,20 @@ export function initMainMenu(gameState, startFn) {
     playButton.addEventListener("click", (evt) => {
       evt.preventDefault();
 
-      const waveNote = (note) => ({ ...note, oscillator: "triangle" });
-
-      const sectOctave = (note) => `${note}3`;
-      playSound(gameState, waveNote({ note: sectOctave("G"), duration: 0.3 }))
-        .then(() =>
-          playSound(gameState, waveNote({ note: null, duration: 0.3 }))
-        )
-        .then(() =>
-          playSound(
-            gameState,
-            waveNote({ note: sectOctave("G"), duration: 0.3 })
-          )
-        )
-        .then(() =>
-          playSound(gameState, waveNote({ note: null, duration: 0.3 }))
-        )
-        .then(() =>
-          playSound(
-            gameState,
-            waveNote({ note: sectOctave("G"), duration: 0.3 })
-          )
-        )
-        .then(() =>
-          playSound(gameState, waveNote({ note: null, duration: 0.3 }))
-        )
-        .then(() =>
-          playSound(
-            gameState,
-            waveNote({ note: sectOctave("D#"), duration: 0.4 })
-          )
-        )
-        .then(() =>
-          playSound(gameState, waveNote({ note: null, duration: 0.05 }))
-        )
-        .then(() =>
-          playSound(
-            gameState,
-            waveNote({ note: sectOctave("A#"), duration: 0.2 })
-          )
-        )
-        .then(() =>
-          playSound(gameState, waveNote({ note: null, duration: 0.05 }))
-        )
-        .then(() =>
-          playSound(
-            gameState,
-            waveNote({ note: sectOctave("G"), duration: 0.2 })
-          )
-        )
-        .then(() =>
-          playSound(gameState, waveNote({ note: null, duration: 0.3 }))
-        )
-        .then(() =>
-          playSound(
-            gameState,
-            waveNote({ note: sectOctave("D#"), duration: 0.4 })
-          )
-        )
-        .then(() =>
-          playSound(gameState, waveNote({ note: null, duration: 0.05 }))
-        )
-        .then(() =>
-          playSound(
-            gameState,
-            waveNote({ note: sectOctave("A#"), duration: 0.2 })
-          )
-        )
-        .then(() =>
-          playSound(gameState, waveNote({ note: null, duration: 0.05 }))
-        )
-        .then(() =>
-          playSound(
-            gameState,
-            waveNote({ note: sectOctave("G"), duration: 0.2 })
-          )
-        );
+      playImperialMarch(gameState);
     });
 
     const m = {
       render: (gameState) => {
-        if (!!gameState.getState("demo")) {
+        if (gameState.gameStatus() === "paused") {
           show(continueBtn);
         } else {
           hide(continueBtn);
+        }
+        if (gameState.gameStatus() === "init") {
+          show(startBtn);
+        } else {
+          hide(startBtn);
         }
         if (gameState.gameStatus() === "play") {
           hide(menuContainer);

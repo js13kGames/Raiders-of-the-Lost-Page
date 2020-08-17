@@ -5,17 +5,11 @@ import { exportMap, canvasPosToTile } from "./map.js";
 
 import { create404Entity } from "./game_entities.js";
 
-export default function demoControllers(gameState) {
+export default function gameControllers(gameState) {
   // MAP GENERATION CONTROLLER
   const toggleTile = (event, ctrl, gameState) => {
-    const { canvas, ctx, map, click, key } = gameState.getByKeys([
-      "canvas",
-      "ctx",
-      "map",
-      "click",
-      "key",
-    ]);
-    if (!click) return;
+    const { canvas, ctx, map, click, key } = gameState.getByKeys(["canvas", "ctx", "map", "click", "key"]);
+    if (!click || !map) return;
     const x = event.pageX - canvas.offsetLeft;
     const y = event.pageY - canvas.offsetTop;
     let cnt = 10; // get in seconds
@@ -57,7 +51,6 @@ export default function demoControllers(gameState) {
   };
   const onClickDown = (event, ctrl, gameState) => {
     const { key, canvas, map } = gameState.getByKeys(["key", "canvas", "map"]);
-    console.log();
     if (key === "e") {
       const x = event.pageX - canvas.offsetLeft;
       const y = event.pageY - canvas.offsetTop;
@@ -109,9 +102,7 @@ export default function demoControllers(gameState) {
         gameState.setState("moveH", "right");
         break;
       case "s":
-        console.log(
-          exportMap(gameState.getState("map"), gameState.getState("entities"))
-        );
+        console.log(exportMap(gameState.getState("map"), gameState.getState("entities")));
         break;
       default:
         gameState.setState("key", keyName);
@@ -140,8 +131,7 @@ export default function demoControllers(gameState) {
   const keyboardCtrl = createController(initCtrl);
 
   keyboardCtrl.render = (gameState) => {
-    const renderCtrl = (msg, pos) =>
-      renderText(gameState, msg, pos, "black", "60px sans-serif");
+    const renderCtrl = (msg, pos) => renderText(gameState, msg, pos, "black", "60px sans-serif");
     const mv = gameState.getState("moveV");
     const mh = gameState.getState("moveH");
     if (mv === "up") {
@@ -156,12 +146,10 @@ export default function demoControllers(gameState) {
     }
   };
 
-  const addKeyboardListener = (eventName, evtFunction) =>
-    addEventListener(gameState, keyboardCtrl, eventName, evtFunction);
+  const addKeyboardListener = (eventName, evtFunction) => addEventListener(gameState, keyboardCtrl, eventName, evtFunction);
 
   const mouseCtrl = createController({});
-  const addMouseListener = (eventName, evtFunction) =>
-    addEventListener(gameState, mouseCtrl, eventName, evtFunction);
+  const addMouseListener = (eventName, evtFunction) => addEventListener(gameState, mouseCtrl, eventName, evtFunction);
 
   addKeyboardListener("keydown", onKeyDown);
   addKeyboardListener("keyup", onKeyUp);

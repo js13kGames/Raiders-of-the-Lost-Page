@@ -1,5 +1,5 @@
-node_modules/
 dist/
 *.zip
 */.tern-port
 .vscode/
+node_modules

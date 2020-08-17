@@ -12,11 +12,7 @@ function rowIndexToLetter(num, rows, height) {
 function generateSpacialHash(gameState) {
   const cols = 10;
   const row = 10;
-  const { map, entities, player } = gameState.getByKeys([
-    "map",
-    "entities",
-    "player",
-  ]);
+  const { map, entities, player } = gameState.getByKeys(["map", "entities", "player"]);
 
   const cW = canvas.width / cols;
   const rW = canvas.height / row;
@@ -122,65 +118,61 @@ export default function gameLoop(gameState) {
   // Improve collision detection
   // https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
 
-  let { player, map } = gameState.getByKeys(["player", "map"]);
-  if (player && map) {
-    const playerTile = {
-      c: player.position.x / map.tsize,
-      r: player.position.y / map.tsize,
-    };
-    player.currentTile = playerTile;
-    //console.log(player.currentTile);
+  if (gameState.gameStatus() === "play") {
+    let { player, map } = gameState.getByKeys(["player", "map"]);
+    if (player && map) {
+      const playerTile = {
+        c: player.position.x / map.tsize,
+        r: player.position.y / map.tsize,
+      };
+      player.currentTile = playerTile;
+      //console.log(player.currentTile);
+      gameState.updateState((gameData) => ({
+        ...gameData,
+        map: {
+          ...gameData.map,
+          centerTile: playerTile,
+        },
+      }));
+      player = player.run(gameState, player);
+      player.currentTiles = elementTiles(player, map);
+      player.blocked = calcBlocked(player.currentTiles, map);
+      gameState.setState("player", player);
+    }
+
     gameState.updateState((gameData) => ({
       ...gameData,
-      map: {
-        ...gameData.map,
-        centerTile: playerTile,
-      },
-    }));
-    player = player.run(gameState, player);
-    player.currentTiles = elementTiles(player, map);
-    player.blocked = calcBlocked(player.currentTiles, map);
-    gameState.setState("player", player);
-  }
-
-  gameState.updateState((gameData) => ({
-    ...gameData,
-    entities: gameData.entities
-      .map((element) => {
-        if (typeof element.run === "function") {
-          element = element.run(gameState, element);
-          if (element) {
-            element.currentTiles = elementTiles(element, map);
+      entities: gameData.entities
+        .map((element) => {
+          if (typeof element.run === "function") {
+            element = element.run(gameState, element);
+            if (element) {
+              element.currentTiles = elementTiles(element, map);
+            }
           }
-        }
-        return element;
-      })
-      .filter((element) => !!element),
-  }));
+          return element;
+        })
+        .filter((element) => !!element),
+    }));
 
-  const startDebug = +new Date();
+    const startDebug = +new Date();
 
-  // GENERATE SPACIAL HASH
-  // const spacialHash = generateSpacialHash(gameState, cols, row);
+    // GENERATE SPACIAL HASH
+    // const spacialHash = generateSpacialHash(gameState, cols, row);
 
-  const elems = [
-    ...(gameState.getState("entities") || []),
-    gameState.getState("player"),
-  ]
-    .filter((e) => !!e && e.currentTiles)
-    .map((e) => {
-      e.tilesIds = e.currentTiles.map((t) => "c" + t.c + "r" + t.r);
-      return e;
-    });
+    const elems = [...(gameState.getState("entities") || []), gameState.getState("player")]
+      .filter((e) => !!e && e.currentTiles)
+      .map((e) => {
+        e.tilesIds = e.currentTiles.map((t) => "c" + t.c + "r" + t.r);
+        return e;
+      });
 
-  for (const subj of elems) {
-    for (const el of elems) {
-      if (
-        subj.id !== el.id &&
-        subj.tilesIds.some((t) => el.tilesIds.indexOf(t) >= 0)
-      ) {
-        if (typeof subj.onCollide === "function") {
-          subj.onCollide(gameState, subj, el);
+    for (const subj of elems) {
+      for (const el of elems) {
+        if (subj.id !== el.id && subj.tilesIds.some((t) => el.tilesIds.indexOf(t) >= 0)) {
+          if (typeof subj.onCollide === "function") {
+            subj.onCollide(gameState, subj, el);
+          }
         }
       }
     }
@@ -219,15 +211,8 @@ function mapTileInView(map, mapFn) {
 }
 
 export function renderLoop(gameState) {
-  const renderFps = (msg, pos) =>
-    renderText(gameState, msg, pos, "green", "10px sans-serif");
-  const { ctx, canvas, map, player, debug } = gameState.getByKeys([
-    "ctx",
-    "canvas",
-    "map",
-    "player",
-    "debug",
-  ]);
+  const renderFps = (msg, pos) => renderText(gameState, msg, pos, "green", "10px sans-serif");
+  const { ctx, canvas, map, player, debug } = gameState.getByKeys(["ctx", "canvas", "map", "player", "debug"]);
   const lastTime = gameState.getState("lastTimeRender", +new Date());
 
   const now = +new Date();
@@ -276,14 +261,12 @@ export function renderLoop(gameState) {
     }
     const { startCol, endCol, startRow, endRow } = getTilesInView(map);
     const entities = gameState.getState("entities", []);
+
     entities.forEach((element) => {
       if (typeof element.render === "function" && element.position) {
         const col = Math.round(element.position.x / map.tsize);
         const row = Math.round(element.position.y / map.tsize);
-        if (
-          (col >= startCol && col <= endCol) ||
-          (row >= startRow && row <= endRow)
-        ) {
+        if ((col >= startCol && col <= endCol) || (row >= startRow && row <= endRow)) {
           element.render(gameState, element, {
             x: element.position.x + pov.x,
             y: element.position.y + pov.y,
@@ -334,10 +317,7 @@ export function collide(el1, el2) {
   const rect1 = { ...el1.position, ...el1.box };
   const rect2 = { ...el2.position, ...el2.box };
 
-  if (
-    typeof el1.collideBox === "function" &&
-    typeof el2.collideBox === "function"
-  ) {
+  if (typeof el1.collideBox === "function" && typeof el2.collideBox === "function") {
     const cb1 = el1.collideBox(el1);
     const cb2 = el2.collideBox(el2);
     return cb1.a < cb2.b && cb1.b > cb2.a && cb1.c < cb2.d && cb1.d > cb2.c;
