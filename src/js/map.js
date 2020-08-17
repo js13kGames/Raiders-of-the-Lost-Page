@@ -1,5 +1,3 @@
-function generateTileContent(cols, rows, c, r) {}
-
 function isBorder(c, r, cols, rows) {
   return c === 0 || r === 0 || r === rows - 1 || c === cols - 1;
 }

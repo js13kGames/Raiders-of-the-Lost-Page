@@ -34,10 +34,11 @@ export function initMainMenu(gameState, startFn, levelsFn) {
     const { unlockedLevels } = gameState.getByKeys(["unlockedLevels"]);
 
     for (let i = 0; i <= unlockedLevels; i++) {
+      const levelName = i + 1;
       const startLevel = levelsFn[i];
       if (typeof startLevel === "function") {
         const el = document.createElement("li");
-        el.innerHTML = `<button role="button" id="main-manu-level-${i}" class="btn">Load level ${i}</button>`;
+        el.innerHTML = `<button role="button" id="main-manu-level-${i}" class="btn">Load level ${levelName}</button>`;
         domElement("#main-menu-container ul").appendChild(el);
         el.addEventListener("click", (evt) => {
           evt.preventDefault();

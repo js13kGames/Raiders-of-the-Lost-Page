@@ -1,9 +1,7 @@
-import { renderText } from "./rendering.js";
+import { renderText, renderHUD } from "./rendering.js";
 import { tileToCanvasPos, getTilesInView } from "./map.js";
 
 const loopSpeed = Math.round(1000 / 75);
-const cols = 100;
-const row = 100;
 
 function rowIndexToLetter(num, rows, height) {
   return String.fromCharCode(Math.floor(num / (height / rows)) + 97);
@@ -61,28 +59,6 @@ function calcBlocked(elementTiles, map) {
       }
     }
   }
-  // for (let c = -1; c <= 1; c++) {
-  //   for (let r = -1; r <= 1; r++) {
-  //     const tileC = Math.floor(elementTile.c) + c;
-  //     const tileR = Math.floor(elementTile.r) + r;
-  //     const tile = map.getTile(tileC, tileR);
-  //     if (!!tile) {
-  //       if (c === 0 && r === -1) {
-  //         blocked.t = true;
-  //       }
-  //       if (c === 0 && r === 1) {
-  //         blocked.b = true;
-  //       }
-
-  //       if (c === -1 && r === 0) {
-  //         blocked.l = true;
-  //       }
-  //       if (c === 1 && r === 0) {
-  //         blocked.r = true;
-  //       }
-  //     }
-  //   }
-  // }
 
   return blocked;
 }
@@ -296,6 +272,8 @@ export function renderLoop(gameState) {
       }
     }
   }
+
+  if (gameState.gameStatus() === "play") renderHUD(gameState);
 
   renderFps(`${gameState.getState("actualFps")} FPS`, { x: 755, y: 580 });
   renderFps(`${gameState.getState("actualFpsRender")} FPSR`, {

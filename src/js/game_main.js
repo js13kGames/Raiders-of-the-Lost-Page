@@ -30,11 +30,12 @@ const gameState = createState({
   showFps: true,
   unlockedLevels,
   tileSize,
+  lives: 3,
 });
 
 gameState.updateGameStatus("init");
 
-function loadLevel(map = null) {
+function loadLevel(map = null, levelIdx = 0) {
   return (gameState) => {
     const { canvas } = gameState.getByKeys(["canvas"]);
 
@@ -62,7 +63,7 @@ function loadLevel(map = null) {
       }
     });
 
-    gameState.updateGameStatus("play").updateState((gameData) => ({ ...gameData, player, entities: [...entities] }));
+    gameState.updateGameStatus("play").updateState((gameData) => ({ ...gameData, currentLevel: levelIdx, player, entities: [...entities] }));
 
     return gameState;
   };
