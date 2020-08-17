@@ -65,20 +65,23 @@ export function initMainMenu(gameState, startFn, levelsFn) {
 
     const m = {
       render: (gameState) => {
-        if (gameState.gameStatus() === "paused") {
-          show(continueBtn);
-        } else {
-          hide(continueBtn);
-        }
-        if (gameState.gameStatus() === "init") {
-          show(startBtn);
-        } else {
-          hide(startBtn);
-        }
-        if (gameState.gameStatus() === "play") {
-          hide(menuContainer);
-        } else {
-          show(menuContainer);
+        switch (gameState.gameStatus()) {
+          case "paused":
+            show(continueBtn);
+            show(menuContainer);
+            hide(startBtn);
+            break;
+          case "init":
+            hide(continueBtn);
+            show(startBtn);
+            show(menuContainer);
+            break;
+          case "play":
+            hide(menuContainer);
+            break;
+
+          default:
+            hide(menuContainer);
         }
       },
     };
@@ -123,4 +126,34 @@ export function initPauseMenu(gameState) {
     return { ...menu, ...menuInit };
   });
   return pauseMenu;
+}
+
+export function initGameOverMenu(gameState, continueFn) {
+  const gameoverMenu = createMenu(gameState, (menu, gameState) => {
+    const button = domElement("#restart-btn");
+    const element = domElement("#game-over-menu");
+    const menuInit = {
+      element: element,
+      button: button,
+      render: (gameState) => {
+        // Dynamic menu position
+
+        if (gameState.gameStatus() === "gameover") {
+          show(element);
+        } else {
+          hide(element);
+        }
+      },
+    };
+
+    button.addEventListener("click", (evt) => {
+      console.log("POIOIOIOIoi");
+      evt.preventDefault();
+      if (gameState.gameStatus() === "gameover") {
+        continueFn(gameState);
+      }
+    });
+    return { ...menu, ...menuInit };
+  });
+  return gameoverMenu;
 }

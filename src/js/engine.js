@@ -1,5 +1,6 @@
 import { renderText, renderHUD } from "./rendering.js";
 import { tileToCanvasPos, getTilesInView } from "./map.js";
+import { hasClass, addClass, removeClass } from "./domUtils.js";
 
 const loopSpeed = Math.round(1000 / 75);
 
@@ -188,6 +189,14 @@ function mapTileInView(map, mapFn) {
 export function renderLoop(gameState) {
   const renderFps = (msg, pos) => renderText(gameState, msg, pos, "green", "10px sans-serif");
   const { ctx, canvas, map, player, debug } = gameState.getByKeys(["ctx", "canvas", "map", "player", "debug"]);
+  const status = gameState.gameStatus();
+  const classStatus = `status-${status}`;
+  removeClass(canvas, "status-init");
+  removeClass(canvas, "status-play");
+  removeClass(canvas, "status-paused");
+  removeClass(canvas, "status-gameover");
+  addClass(canvas, classStatus);
+
   const lastTime = gameState.getState("lastTimeRender", +new Date());
 
   const now = +new Date();
@@ -196,90 +205,96 @@ export function renderLoop(gameState) {
 
   gameState.setState("actualFpsRender", actualFps);
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (ctx) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // draw Map
-  if (map && map.centerTile && player) {
-    const playerTile = map.centerTile;
+    // draw Map
 
-    const canvasCenter = { x: canvas.width / 2, y: canvas.height / 2 };
-    const mapCenter = {
-      x: ((map.cols * playerTile.c) / map.cols) * map.tsize,
-      y: ((map.rows * playerTile.r) / map.rows) * map.tsize,
-    };
+    if (gameState.gameStatus() === "play") {
+      if (map && map.centerTile && player) {
+        const playerTile = map.centerTile;
 
-    const pov = {
-      x: canvasCenter.x - mapCenter.x,
-      y: canvasCenter.y - mapCenter.y,
-    };
-    gameState.updateState((gameData) => ({
-      ...gameData,
-      map: { ...gameData.map, pov },
-    }));
+        const canvasCenter = { x: canvas.width / 2, y: canvas.height / 2 };
+        const mapCenter = {
+          x: ((map.cols * playerTile.c) / map.cols) * map.tsize,
+          y: ((map.rows * playerTile.r) / map.rows) * map.tsize,
+        };
 
-    ctx.beginPath();
-    ctx.fillStyle = "black";
+        const pov = {
+          x: canvasCenter.x - mapCenter.x,
+          y: canvasCenter.y - mapCenter.y,
+        };
+        gameState.updateState((gameData) => ({
+          ...gameData,
+          map: { ...gameData.map, pov },
+        }));
 
-    mapTileInView(map, (c, r) => {
-      var tile = map.getTile(c, r);
-      if (tile === 1) {
-        const { x, y } = { x: c * map.tsize + pov.x, y: r * map.tsize + pov.y };
+        ctx.beginPath();
+        ctx.fillStyle = "black";
 
-        ctx.rect(x, y, map.tsize, map.tsize);
-      }
-    });
-    ctx.fill();
+        mapTileInView(map, (c, r) => {
+          var tile = map.getTile(c, r);
+          if (tile === 1) {
+            const { x, y } = { x: c * map.tsize + pov.x, y: r * map.tsize + pov.y };
 
-    if (player && typeof player.render === "function") {
-      player.render(gameState, player);
-      if (debug) drawBox(gameState, player);
-    }
-    const { startCol, endCol, startRow, endRow } = getTilesInView(map);
-    const entities = gameState.getState("entities", []);
+            ctx.rect(x, y, map.tsize, map.tsize);
+          }
+        });
+        ctx.fill();
 
-    entities.forEach((element) => {
-      if (typeof element.render === "function" && element.position) {
-        const col = Math.round(element.position.x / map.tsize);
-        const row = Math.round(element.position.y / map.tsize);
-        if ((col >= startCol && col <= endCol) || (row >= startRow && row <= endRow)) {
-          element.render(gameState, element, {
-            x: element.position.x + pov.x,
-            y: element.position.y + pov.y,
-          });
+        if (player && typeof player.render === "function") {
+          player.render(gameState, player);
+          if (debug) drawBox(gameState, player);
         }
+        const { startCol, endCol, startRow, endRow } = getTilesInView(map);
+        const entities = gameState.getState("entities", []);
 
-        if (debug) drawBox(gameState, element);
+        entities.forEach((element) => {
+          if (typeof element.render === "function" && element.position) {
+            const col = Math.round(element.position.x / map.tsize);
+            const row = Math.round(element.position.y / map.tsize);
+            if ((col >= startCol && col <= endCol) || (row >= startRow && row <= endRow)) {
+              element.render(gameState, element, {
+                x: element.position.x + pov.x,
+                y: element.position.y + pov.y,
+              });
+            }
+
+            if (debug) drawBox(gameState, element);
+          }
+        });
       }
+    }
+
+    const menus = gameState.getState("menus");
+    const ctrls = gameState.getState("ctrls");
+
+    // Render menus
+    for (const menuName in menus) {
+      if (menus.hasOwnProperty(menuName)) {
+        const menu = menus[menuName];
+        if (typeof menu.render === "function") {
+          menu.render(gameState);
+        }
+      }
+    }
+    for (const ctrlName in ctrls) {
+      if (ctrls.hasOwnProperty(ctrlName)) {
+        const ctrl = ctrls[ctrlName];
+        if (typeof ctrl.render === "function") {
+          ctrl.render(gameState);
+        }
+      }
+    }
+
+    if (gameState.gameStatus() === "play") renderHUD(gameState);
+
+    renderFps(`${gameState.getState("actualFps")} FPS`, { x: 755, y: 580 });
+    renderFps(`${gameState.getState("actualFpsRender")} FPSR`, {
+      x: 755,
+      y: 590,
     });
   }
-  const menus = gameState.getState("menus");
-  const ctrls = gameState.getState("ctrls");
-
-  // Render menus
-  for (const menuName in menus) {
-    if (menus.hasOwnProperty(menuName)) {
-      const menu = menus[menuName];
-      if (typeof menu.render === "function") {
-        menu.render(gameState);
-      }
-    }
-  }
-  for (const ctrlName in ctrls) {
-    if (ctrls.hasOwnProperty(ctrlName)) {
-      const ctrl = ctrls[ctrlName];
-      if (typeof ctrl.render === "function") {
-        ctrl.render(gameState);
-      }
-    }
-  }
-
-  if (gameState.gameStatus() === "play") renderHUD(gameState);
-
-  renderFps(`${gameState.getState("actualFps")} FPS`, { x: 755, y: 580 });
-  renderFps(`${gameState.getState("actualFpsRender")} FPSR`, {
-    x: 755,
-    y: 590,
-  });
 
   gameState.setState("lastTimeRender", now);
 

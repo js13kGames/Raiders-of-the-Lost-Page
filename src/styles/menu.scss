@@ -31,3 +31,18 @@ ul.menu{
     }
 }
 
+.gameover-menu {
+    width: 200px;
+    position: absolute;
+    left: calc(50% - 100px);
+    top: 40%;
+    text-align: center;
+
+    btn {
+        display: block;
+        margin: auto;
+        width: 100px;
+        margin-top: 10px;
+    }
+}
+

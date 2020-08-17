@@ -1,10 +1,16 @@
 .stage-container {
   width: 100%;
   position: relative;
+  height: 100vh;
 }
 canvas {
   border: 1px solid #000;
   position: absolute;
   top: 10px;
   left: calc(50% - 400px);
+  background-color: rgba($color: #ccc, $alpha: 0.1);
+
+  &.status-paused {
+    background-color: rgba($color: #000000, $alpha: 0.5);
+  }
 }

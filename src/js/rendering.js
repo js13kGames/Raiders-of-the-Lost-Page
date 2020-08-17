@@ -9,7 +9,8 @@ export function renderText(gameState, msg, pos, color = "black", font = "10px sa
 }
 
 function renderLivesHUD(gameState) {
-  const { canvas, ctx, lives } = gameState.getByKeys(["canvas", "ctx", "lives"]);
+  const { canvas, ctx, player } = gameState.getByKeys(["canvas", "ctx", "player"]);
+  const lives = player.lives;
   const fontSize = 20;
   const font = `${fontSize}px sans-serif`;
 

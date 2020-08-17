@@ -4,7 +4,7 @@ import { generateMap, setVOF } from "./map.js";
 
 // game specific
 import initPlayer from "./game_player.js";
-import { initMainMenu, initPauseMenu } from "./game_menu.js";
+import { initMainMenu, initPauseMenu, initGameOverMenu } from "./game_menu.js";
 import { map1 } from "./game_maps.js";
 import gameControllers from "./game_ctrls.js";
 import { create404Entity, createEnemyEntity, createExitEntity } from "./game_entities.js";
@@ -20,20 +20,25 @@ import { setStageDim } from "./domUtils.js";
 
 const unlockedLevels = 1;
 const levels = [map1, { cols: 200, rows: 200 }];
+const startingLives = 3;
 
 // Starting the game
 
 const tileSize = 3;
-
-const gameState = createState({
-  debug: false,
-  showFps: true,
-  unlockedLevels,
-  tileSize,
-  lives: 3,
-});
-
-gameState.updateGameStatus("init");
+function initGameState() {
+  const state = createState({
+    debug: false,
+    showFps: true,
+    unlockedLevels,
+    tileSize,
+    player: { lives: startingLives },
+  });
+  const canvas = document.getElementById("stage");
+  setStageDim(canvas);
+  state.setState("canvas", canvas);
+  state.setState("ctx", canvas.getContext("2d"));
+  return state;
+}
 
 function loadLevel(map = null, levelIdx = 0) {
   return (gameState) => {
@@ -71,27 +76,30 @@ function loadLevel(map = null, levelIdx = 0) {
 
 // Menus
 
-function initGame(gameState) {
+function initGame() {
+  const gameState = initGameState();
+
+  gameState.updateGameStatus("init");
+
   gameState.removeAllCtrls();
-  const canvas = document.getElementById("stage");
-  setStageDim(canvas);
-  gameState.setState("canvas", canvas);
-  gameState.setState("ctx", canvas.getContext("2d"));
+
   gameControllers(gameState);
   // load from localStorage
-
   const currentLevel = 0;
-  gameState.updateState((gameData) => ({
-    ...gameData,
-    levels,
-    currentLevel,
-  }));
 
   const pauseMenu = initPauseMenu(gameState);
   const mainMenu = initMainMenu(gameState, loadLevel(levels[0]), levels.map(loadLevel));
+  const gameOverMenu = initGameOverMenu(gameState, (gameState) => {
+    gameState.updateState((gameData) => ({
+      ...gameData,
+      player: { lives: startingLives },
+      entities: [],
+    }));
+    gameState.updateGameStatus("init");
+  });
 
   gameState.updateState((state) => {
-    return { ...state, menus: { pause: pauseMenu, main: mainMenu } };
+    return { ...state, menus: { pause: pauseMenu, main: mainMenu, gameover: gameOverMenu } };
   });
 
   return gameState;
@@ -99,4 +107,4 @@ function initGame(gameState) {
 
 // Add the menus to the game state
 
-export default initGame(gameState);
+export default initGame();

@@ -6,9 +6,19 @@
     <link rel="stylesheet" type="text/css" href="styles/main.scss" />
   </head>
   <body>
-    <div id="pause-menu-container" class="ctrl-container">
+    
+
+    <div class="stage-container">
+      <div id="pause-menu-container" class="ctrl-container">
       <button role="button" id="play-pause-btn" class="btn pause-btn">
         Pause
+      </button>
+    </div>
+
+    <div id="game-over-menu" class="ctrl-container gameover-menu"> 
+      <p>Game Over</p>
+      <button role="button" id="restart-btn" class="btn restart-btn">
+        Back to main menu
       </button>
     </div>
 
@@ -32,8 +42,6 @@
         </li>
       </ul>
     </div>
-
-    <div class="stage-container">
       <canvas id="stage"></canvas>
     </div>
     <script src="js/index.js" type="module"></script>
