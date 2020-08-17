@@ -1,5 +1,6 @@
 import createEntity from "./entities.js";
 import { pxXSecond } from "./map.js";
+import { easeInOutCubic } from "./rendering.js";
 
 function renderFF(canvas, ctx, element) {
   ctx.beginPath();
@@ -60,6 +61,7 @@ export default function initPlayer(gameState) {
       y: (map.rows / 2) * map.tsize,
     },
     player: true,
+    movingTicks: 0,
     pts: 0,
     render: (gameState, player) => {
       const { ctx, map, canvas } = gameState.getByKeys(["ctx", "map", "canvas"]);
@@ -122,17 +124,24 @@ export default function initPlayer(gameState) {
       } else if (moveH === "right") {
         element.angle = 2.5;
       }
+      const animSpeed = 2;
+      const speedMult = Math.min(1, easeInOutCubic(element.movingTicks / animSpeed));
       if (moveV === "up" && element.borderCollide !== "top" && !blocked.t) {
-        element.position.y -= speed;
+        element.position.y -= speed * speedMult;
       } else if (moveV === "down" && element.borderCollide !== "bottom" && !blocked.b) {
-        element.position.y += speed;
+        element.position.y += speed * speedMult;
       }
       if (moveH === "left" && element.borderCollide !== "left" && !blocked.l) {
-        element.position.x -= speed;
+        element.position.x -= speed * speedMult;
       } else if (moveH === "right" && element.borderCollide !== "right" && !blocked.r) {
-        element.position.x += speed;
+        element.position.x += speed * speedMult;
       }
 
+      if (!moveH && !moveV) {
+        element.movingTicks = 0;
+      } else {
+        element.movingTicks++;
+      }
       return element;
     },
   };
