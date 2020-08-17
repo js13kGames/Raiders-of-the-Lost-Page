@@ -202,7 +202,6 @@ function drawBox(gameState, entity) {
 function mapTileInView(map, mapFn) {
   // to improve
   const { startCol, endCol, startRow, endRow } = getTilesInView(map);
-
   for (var r = startRow; r < endRow; r++) {
     for (var c = startCol; c < endCol; c++) {
       mapFn(c, r);

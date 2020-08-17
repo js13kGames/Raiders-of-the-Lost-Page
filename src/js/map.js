@@ -5,7 +5,6 @@ function isBorder(c, r, cols, rows) {
 }
 export function getTilesInView(map) {
   if (!map.centerTile) return {};
-
   return {
     startCol: Math.max(0, Math.round(map.centerTile.c - map.viewCols / 2)),
     endCol: Math.min(map.cols, Math.round(map.centerTile.c + map.viewCols / 2)),
@@ -30,7 +29,7 @@ export function exportMap(map, entities) {
     type: e.type,
   }));
 
-  return JSON.stringify({ tiles, entities: exptEntities });
+  return JSON.stringify({ tiles, entities: exptEntities, cols: map.cols, rows: map.rows });
 }
 export function canvasPosToTile(x, y, canvas, map) {
   const rel = { x: x / canvas.width, y: y / canvas.height };
@@ -56,8 +55,8 @@ export function pxXSecond(map, tXs) {
 export function generateMap(width, height, tsize = 4, loadMap = null) {
   let tiles = [];
 
-  const cols = Math.ceil(width / tsize);
-  const rows = Math.ceil(height / tsize);
+  const cols = width;
+  const rows = height;
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       if (isBorder(c, r, cols, rows)) {
@@ -91,8 +90,8 @@ export function setVOF(map, width, height) {
   }
   const visibleWidth = Math.ceil(width / map.tsize);
   const visibleHeight = Math.ceil(height / map.tsize);
-  const viewCols = Math.min(map.cols, visibleWidth);
-  const viewRows = Math.min(map.rows, visibleHeight);
+  const viewCols = visibleWidth;
+  const viewRows = visibleHeight;
 
   const camera = {
     viewCols: viewCols,

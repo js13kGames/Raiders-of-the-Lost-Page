@@ -19,6 +19,7 @@ import { setStageDim } from "./domUtils.js";
 // Load from local storage
 
 const unlockedLevels = 1;
+const levels = [map1, { cols: 200, rows: 200 }];
 
 // Starting the game
 
@@ -37,9 +38,12 @@ function loadLevel(map = null) {
   return (gameState) => {
     const { canvas } = gameState.getByKeys(["canvas"]);
 
-    let startingMap = { tiles: null, entities: [] };
-    if (map) startingMap = JSON.parse(map);
-    gameState.setState("map", setVOF(generateMap(1200, 1200, tileSize, startingMap.tiles), canvas.width, canvas.height));
+    let startingMap = { tiles: null, entities: [], cols: null, rows: null };
+
+    if (map) {
+      startingMap = { ...startingMap, ...(typeof map === "string" ? JSON.parse(map) : { ...map }) };
+    }
+    gameState.setState("map", setVOF(generateMap(startingMap.cols || 400, startingMap.rows || 400, tileSize, startingMap.tiles), canvas.width, canvas.height));
     const player = initPlayer(gameState);
     const entities = [];
     startingMap.entities.forEach((e) => {
@@ -73,8 +77,6 @@ function initGame(gameState) {
   gameState.setState("canvas", canvas);
   gameState.setState("ctx", canvas.getContext("2d"));
   gameControllers(gameState);
-
-  const levels = [map1, null];
   // load from localStorage
 
   const currentLevel = 0;
