@@ -190,11 +190,13 @@ export function renderLoop(gameState) {
   const renderFps = (msg, pos) => renderText(gameState, msg, pos, "green", "10px sans-serif");
   const { ctx, canvas, map, player, debug } = gameState.getByKeys(["ctx", "canvas", "map", "player", "debug"]);
   const status = gameState.gameStatus();
+  // TODO refactor
   const classStatus = `status-${status}`;
   removeClass(canvas, "status-init");
   removeClass(canvas, "status-play");
   removeClass(canvas, "status-paused");
   removeClass(canvas, "status-gameover");
+  removeClass(canvas, "status-died");
   addClass(canvas, classStatus);
 
   const lastTime = gameState.getState("lastTimeRender", +new Date());

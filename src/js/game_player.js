@@ -1,6 +1,7 @@
 import createEntity from "./entities.js";
 import { pxXSecond } from "./map.js";
 import { easeInOutCubic } from "./rendering.js";
+import { domElement, addClass, removeClass, hide, show } from "./domUtils.js";
 
 function renderFF(canvas, ctx, element) {
   ctx.beginPath();
@@ -30,17 +31,37 @@ function renderFF(canvas, ctx, element) {
 }
 
 function playerCollideEnemy(gameState, player) {
+  const youDiedEl = domElement(".you-died-screen");
+  const canvas = gameState.getState("canvas");
   if (player.lives > 0) {
-    gameState.updateState((gameData) => {
-      return {
-        ...gameData,
-        player: {
-          ...gameData.player,
-          position: { ...gameData.player.lastPosition },
-          lives: gameData.player.lives - 1,
-        },
-      };
-    });
+    //TODO refactor move this to a function
+    gameState.updateGameStatus("died");
+    show(youDiedEl);
+    addClass(youDiedEl, "fade-in-out");
+    addClass(canvas, "fade-in");
+    canvas.style.opacity = 0;
+    setTimeout(() => {
+      canvas.style.opacity = 1;
+
+      removeClass(canvas, "fade-in");
+    }, 3000);
+    setTimeout(() => {
+      gameState.updateState((gameData) => {
+        removeClass(youDiedEl, "fade-in-out");
+        return {
+          ...gameData,
+          player: {
+            ...gameData.player,
+            position: { ...gameData.player.lastPosition },
+            lives: gameData.player.lives - 1,
+          },
+        };
+      });
+
+      gameState.updateGameStatus("play");
+
+      hide(youDiedEl);
+    }, 2500);
   } else {
     gameState.updateGameStatus("gameover");
   }

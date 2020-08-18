@@ -56,6 +56,13 @@ function renderCurrentLevelHUD(gameState) {
 }
 
 export function renderHUD(gameState) {
+  const { canvas, ctx } = gameState.getByKeys(["currentLevel", "canvas", "ctx"]);
+  ctx.beginPath();
+  ctx.rect(0, 0, canvas.width, 50);
+
+  ctx.fillStyle = "rgba(0,0,0,0.9)";
+  ctx.fill();
+
   renderLivesHUD(gameState);
   renderCurrentLevelHUD(gameState);
 }
