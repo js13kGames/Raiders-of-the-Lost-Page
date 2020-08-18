@@ -8,7 +8,11 @@ export function create404Entity(position) {
     type: "404",
     r: 10,
     render: (gameState, element, relPos) => {
-      const { ctx, map, canvas } = gameState.getByKeys(["ctx", "map", "canvas"]);
+      const { ctx, map, canvas } = gameState.getByKeys([
+        "ctx",
+        "map",
+        "canvas",
+      ]);
 
       ctx.beginPath();
       ctx.fillStyle = "blue";
@@ -28,7 +32,11 @@ export function createExitEntity(position) {
     opened: false,
     r: 10,
     render: (gameState, element, relPos) => {
-      const { ctx, map, canvas } = gameState.getByKeys(["ctx", "map", "canvas"]);
+      const { ctx, map, canvas } = gameState.getByKeys([
+        "ctx",
+        "map",
+        "canvas",
+      ]);
 
       ctx.beginPath();
       ctx.fillStyle = element.opened ? "green" : "red";
@@ -38,11 +46,15 @@ export function createExitEntity(position) {
     },
     onCollide: (gameState, entity, oth) => {
       if (oth.player && entity.opened) {
-        console.log("WIIIIIn");
+        const { newLevel } = gameState.getByKeys(["newLevel"]);
+
+        newLevel(gameState);
       }
     },
     run: (gameState, entity) => {
-      const f0f = gameState.getState("entities", []).some((e) => e.type === "404");
+      const f0f = gameState
+        .getState("entities", [])
+        .some((e) => e.type === "404");
 
       if (!f0f) entity.opened = true;
       return entity;
@@ -53,7 +65,10 @@ export function createExitEntity(position) {
 }
 
 function isInLocation(position, location) {
-  return Math.floor(position.x - location.x) === 0 && Math.floor(position.y - location.y) === 0;
+  return (
+    Math.floor(position.x - location.x) === 0 &&
+    Math.floor(position.y - location.y) === 0
+  );
 }
 
 function incStep(step, direction) {
@@ -75,7 +90,16 @@ function movingEntitity(start, steps, speed, loop = false) {
     direction: 0,
     loop,
     run: (gameState, element) => {
-      const { steps, step, direction, position, loop, easingSpeed, easingMaxMult, easingFunc } = element;
+      const {
+        steps,
+        step,
+        direction,
+        position,
+        loop,
+        easingSpeed,
+        easingMaxMult,
+        easingFunc,
+      } = element;
       const newStp = incStep(step, direction);
       let nextStep = element.steps[newStp] || null;
       // FIX for last step
@@ -86,7 +110,10 @@ function movingEntitity(start, steps, speed, loop = false) {
           element.lastVisited = newStp;
           element.easingTicks = 0;
           // se primo o ultimo step
-          if ((step === steps.length - 1 && direction === 0) || (step === 0 && direction === 1)) {
+          if (
+            (step === steps.length - 1 && direction === 0) ||
+            (step === 0 && direction === 1)
+          ) {
             // cambia direzione
             element.direction = direction === 0 ? 1 : 0;
             // altrimenti
@@ -95,7 +122,11 @@ function movingEntitity(start, steps, speed, loop = false) {
           element.step = incStep(step, direction);
         }
 
-        const nextPos = pntBtw2Pnts(element.position, element.steps[newStp], element.speed * easingFunc(element.easingTicks / easingSpeed));
+        const nextPos = pntBtw2Pnts(
+          element.position,
+          element.steps[newStp],
+          element.speed * easingFunc(element.easingTicks / easingSpeed)
+        );
         element.position = nextPos || position;
       } else if (loop) {
         element.step = -1;
@@ -123,7 +154,11 @@ export function createEnemyEntity(position) {
     type: "enemy",
     r: 10,
     render: (gameState, element, relPos) => {
-      const { ctx, map, canvas } = gameState.getByKeys(["ctx", "map", "canvas"]);
+      const { ctx, map, canvas } = gameState.getByKeys([
+        "ctx",
+        "map",
+        "canvas",
+      ]);
 
       ctx.beginPath();
       ctx.fillStyle = "tomato";

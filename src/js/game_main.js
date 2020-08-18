@@ -7,7 +7,11 @@ import initPlayer from "./game_player.js";
 import { initMainMenu, initPauseMenu, initGameOverMenu } from "./game_menu.js";
 import { map1 } from "./game_maps.js";
 import gameControllers from "./game_ctrls.js";
-import { create404Entity, createEnemyEntity, createExitEntity } from "./game_entities.js";
+import {
+  create404Entity,
+  createEnemyEntity,
+  createExitEntity,
+} from "./game_entities.js";
 import { setStageDim } from "./domUtils.js";
 
 /**
@@ -30,6 +34,7 @@ function initGameState() {
     debug: false,
     showFps: true,
     unlockedLevels,
+    levels,
     tileSize,
     player: { lives: startingLives },
   });
@@ -47,9 +52,24 @@ function loadLevel(map = null, levelIdx = 0) {
     let startingMap = { tiles: null, entities: [], cols: null, rows: null };
 
     if (map) {
-      startingMap = { ...startingMap, ...(typeof map === "string" ? JSON.parse(map) : { ...map }) };
+      startingMap = {
+        ...startingMap,
+        ...(typeof map === "string" ? JSON.parse(map) : { ...map }),
+      };
     }
-    gameState.setState("map", setVOF(generateMap(startingMap.cols || 400, startingMap.rows || 400, tileSize, startingMap.tiles), canvas.width, canvas.height));
+    gameState.setState(
+      "map",
+      setVOF(
+        generateMap(
+          startingMap.cols || 400,
+          startingMap.rows || 400,
+          tileSize,
+          startingMap.tiles
+        ),
+        canvas.width,
+        canvas.height
+      )
+    );
     const player = initPlayer(gameState);
     const entities = [];
     startingMap.entities.forEach((e) => {
@@ -58,7 +78,9 @@ function loadLevel(map = null, levelIdx = 0) {
           entities.push(create404Entity({ x: e.position.x, y: e.position.y }));
           break;
         case "enemy":
-          entities.push(createEnemyEntity({ x: e.position.x, y: e.position.y }));
+          entities.push(
+            createEnemyEntity({ x: e.position.x, y: e.position.y })
+          );
           break;
         case "exit":
           entities.push(createExitEntity({ x: e.position.x, y: e.position.y }));
@@ -68,7 +90,12 @@ function loadLevel(map = null, levelIdx = 0) {
       }
     });
 
-    gameState.updateGameStatus("play").updateState((gameData) => ({ ...gameData, currentLevel: levelIdx, player, entities: [...entities] }));
+    gameState.updateGameStatus("play").updateState((gameData) => ({
+      ...gameData,
+      currentLevel: levelIdx,
+      player,
+      entities: [...entities],
+    }));
 
     return gameState;
   };
@@ -88,7 +115,29 @@ function initGame() {
   const currentLevel = 0;
 
   const pauseMenu = initPauseMenu(gameState);
-  const mainMenu = initMainMenu(gameState, loadLevel(levels[0]), levels.map(loadLevel));
+  const mainMenu = initMainMenu(
+    gameState,
+    loadLevel(levels[0]),
+    levels.map(loadLevel)
+  );
+
+  const newLevel = (gameState) => {
+    const { player, currentLevel, levels } = gameState.getByKeys([
+      "player",
+      "currentLevel",
+      "levels",
+    ]);
+
+    if (currentLevel !== levels.length - 1) {
+      debugger;
+      const nextLevel = currentLevel + 1;
+      //gameState.updateGameStatus("play");
+
+      loadLevel(levels[nextLevel])(gameState);
+    }
+  };
+  gameState.updateState((gameData) => ({ ...gameData, newLevel }));
+
   const gameOverMenu = initGameOverMenu(gameState, (gameState) => {
     gameState.updateState((gameData) => ({
       ...gameData,
@@ -99,7 +148,10 @@ function initGame() {
   });
 
   gameState.updateState((state) => {
-    return { ...state, menus: { pause: pauseMenu, main: mainMenu, gameover: gameOverMenu } };
+    return {
+      ...state,
+      menus: { pause: pauseMenu, main: mainMenu, gameover: gameOverMenu },
+    };
   });
 
   return gameState;
