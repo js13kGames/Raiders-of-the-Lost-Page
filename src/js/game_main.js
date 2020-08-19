@@ -129,7 +129,7 @@ function initGame() {
     ]);
 
     if (currentLevel !== levels.length - 1) {
-      debugger;
+      // TODO create function for transition between states
       const nextLevel = currentLevel + 1;
       //gameState.updateGameStatus("play");
 
