@@ -116,7 +116,7 @@ export default function initPlayer(gameState) {
     onCollide: (gameState, player, obstacle) => {
       if (obstacle.type === "404") {
         gameState.updateState(compose(partial(playerPickup404, 1), partial(removeEntityById, obstacle.id)));
-      } else if (obstacle.type === "enemy") {
+      } else if (obstacle.enemy) {
         playerCollideEnemy(gameState, player);
       }
     },

@@ -58,46 +58,46 @@ function movingEntitity(start, steps, speed, loop = true) {
   };
 }
 
-export function createEnemyEntity(position) {
-  const speed = 4;
-  const entity = createEntity({
-    ...movingEntitity(
-      position,
-      [
-        { x: position.x + 100, y: position.y },
-        { x: position.x + 100, y: position.y + 100 },
-      ],
-      speed
-    ),
-    type: "enemy",
-    r: 10,
-    render: (gameState, element, relPos) => {
-      const { ctx, map, canvas } = gameState.getByKeys(["ctx", "map", "canvas"]);
-
-      ctx.beginPath();
-      ctx.fillStyle = "tomato";
-
-      ctx.arc(relPos.x, relPos.y, element.r, 0, 2 * Math.PI);
-      ctx.fill();
-    },
-  });
-
-  return entity;
-}
-
 export function create403Entity(position, speed = 4, steps = []) {
   return createEntity({
     ...movingEntitity(position, steps, speed),
     type: "403",
     r: 10,
+    enemy: true,
     render: (gameState, element, relPos) => {
-      const { ctx, map, canvas } = gameState.getByKeys(["ctx", "map", "canvas"]);
+      const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"]);
+      const r = element.r;
 
       ctx.beginPath();
-      ctx.fillStyle = "tomato";
 
-      ctx.arc(relPos.x, relPos.y, element.r, 0, 2 * Math.PI);
+      ctx.arc(relPos.x, relPos.y, r, 0, 2 * Math.PI);
+
+      function toRadiant(angle) {
+        return (angle * Math.PI) / 180;
+      }
+      function findPoint2Angle(angle, start, dist) {
+        const rad = toRadiant(angle);
+        return { x: start.x + dist * Math.sin(rad), y: start.y + dist * Math.cos(rad) };
+      }
+      const start = findPoint2Angle(225, relPos, r);
+      ctx.moveTo(start.x, start.y);
+
+      const end = findPoint2Angle(45, relPos, r);
+
+      ctx.lineTo(end.x, end.y);
+      ctx.strokeStyle = "red";
+      ctx.lineWidth = 3.5;
+      ctx.stroke();
+      ctx.beginPath();
+
+      ctx.rect(relPos.x - r - 2, relPos.y + r / 2, 25, 13);
+      ctx.fillStyle = "rgba(255,0,0,0.8)";
       ctx.fill();
+      ctx.beginPath();
+
+      ctx.font = "12px serif";
+      ctx.fillStyle = "white";
+      ctx.fillText("403", relPos.x - r + 1, relPos.y + r + 6);
     },
   });
 }
