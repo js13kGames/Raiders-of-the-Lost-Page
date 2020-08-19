@@ -7,3 +7,10 @@ export default function createEntity(entity) {
 
   return { ...baseEntity, ...entity };
 }
+
+export function removeEntityById(id, gameData) {
+  return {
+    ...gameData,
+    entities: [...gameData.entities.filter((e) => e.id !== id)],
+  };
+}

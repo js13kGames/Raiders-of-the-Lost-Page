@@ -7,11 +7,7 @@ import initPlayer from "./game_player.js";
 import { initMainMenu, initPauseMenu, initGameOverMenu } from "./game_menu.js";
 import { map1 } from "./game_maps.js";
 import gameControllers from "./game_ctrls.js";
-import {
-  create404Entity,
-  createEnemyEntity,
-  createExitEntity,
-} from "./game_entities.js";
+import { create404Entity, create403Entity, createExitEntity } from "./game_entities.js";
 import { setStageDim } from "./domUtils.js";
 
 /**
@@ -45,6 +41,22 @@ function initGameState() {
   return state;
 }
 
+function loadEntities(entitiesData) {
+  return entitiesData
+    .map((e) => {
+      switch (e.type) {
+        case "404":
+          return create404Entity({ ...e.position });
+        case "403":
+          return create403Entity({ ...e.position }, e.speed || 4, e.steps || []);
+        case "exit":
+          return createExitEntity({ ...e.position });
+        default:
+          return null;
+      }
+    })
+    .filter((e) => !!e);
+}
 function loadLevel(map = null, levelIdx = 0) {
   return (gameState) => {
     const { canvas } = gameState.getByKeys(["canvas"]);
@@ -57,38 +69,9 @@ function loadLevel(map = null, levelIdx = 0) {
         ...(typeof map === "string" ? JSON.parse(map) : { ...map }),
       };
     }
-    gameState.setState(
-      "map",
-      setVOF(
-        generateMap(
-          startingMap.cols || 400,
-          startingMap.rows || 400,
-          tileSize,
-          startingMap.tiles
-        ),
-        canvas.width,
-        canvas.height
-      )
-    );
+    gameState.setState("map", setVOF(generateMap(startingMap.cols || 400, startingMap.rows || 400, tileSize, startingMap.tiles), canvas.width, canvas.height));
     const player = initPlayer(gameState);
-    const entities = [];
-    startingMap.entities.forEach((e) => {
-      switch (e.type) {
-        case "404":
-          entities.push(create404Entity({ x: e.position.x, y: e.position.y }));
-          break;
-        case "enemy":
-          entities.push(
-            createEnemyEntity({ x: e.position.x, y: e.position.y })
-          );
-          break;
-        case "exit":
-          entities.push(createExitEntity({ x: e.position.x, y: e.position.y }));
-          break;
-        default:
-          break;
-      }
-    });
+    const entities = loadEntities(startingMap.entities);
 
     gameState.updateGameStatus("play").updateState((gameData) => ({
       ...gameData,
@@ -115,18 +98,10 @@ function initGame() {
   const currentLevel = 0;
 
   const pauseMenu = initPauseMenu(gameState);
-  const mainMenu = initMainMenu(
-    gameState,
-    loadLevel(levels[0]),
-    levels.map(loadLevel)
-  );
+  const mainMenu = initMainMenu(gameState, loadLevel(levels[0]), levels.map(loadLevel));
 
   const newLevel = (gameState) => {
-    const { player, currentLevel, levels } = gameState.getByKeys([
-      "player",
-      "currentLevel",
-      "levels",
-    ]);
+    const { player, currentLevel, levels } = gameState.getByKeys(["player", "currentLevel", "levels"]);
 
     if (currentLevel !== levels.length - 1) {
       // TODO create function for transition between states

@@ -1,7 +1,8 @@
-import createEntity from "./entities.js";
+import createEntity, { removeEntityById } from "./entities.js";
 import { pxXSecond } from "./map.js";
 import { easeInOutCubic } from "./rendering.js";
 import { domElement, addClass, removeClass, hide, show } from "./domUtils.js";
+import { partial, compose } from "./utils.js";
 
 function renderFF(canvas, ctx, element) {
   ctx.beginPath();
@@ -29,7 +30,38 @@ function renderFF(canvas, ctx, element) {
   ctx.arc(px, py, 8, Math.PI * 1.72 + angle, Math.PI * 1.22 + angle);
   ctx.stroke();
 }
+// Utility functions
+function changePlayerPosition(newPosition, gameData) {
+  return {
+    ...gameData,
+    player: {
+      ...gameData.player,
+      position: { ...newPosition },
+    },
+  };
+}
 
+function changePlayerLive(updateFn, gameData) {
+  return {
+    ...gameData,
+    player: {
+      ...gameData.player,
+      lives: updateFn(gameData.player.lives),
+    },
+  };
+}
+function playerPickup404(pointAdded, gameData) {
+  return {
+    ...gameData,
+    player: {
+      ...gameData.player,
+      lastPosition: { ...gameData.player.position },
+      pts: gameData.player.pts + pointAdded,
+    },
+  };
+}
+
+//
 function playerCollideEnemy(gameState, player) {
   const youDiedEl = domElement(".you-died-screen");
   const canvas = gameState.getState("canvas");
@@ -42,20 +74,12 @@ function playerCollideEnemy(gameState, player) {
     canvas.style.opacity = 0;
     setTimeout(() => {
       canvas.style.opacity = 1;
-
       removeClass(canvas, "fade-in");
     }, 3000);
     setTimeout(() => {
       gameState.updateState((gameData) => {
         removeClass(youDiedEl, "fade-in-out");
-        return {
-          ...gameData,
-          player: {
-            ...gameData.player,
-            position: { ...gameData.player.lastPosition },
-            lives: gameData.player.lives - 1,
-          },
-        };
+        return compose((_) => partial(changePlayerLive, (l) => l - 1), partial(changePlayerPosition, gameData.player.lastPosition))(gameData);
       });
 
       gameState.updateGameStatus("play");
@@ -74,6 +98,7 @@ export default function initPlayer(gameState) {
     return;
   }
   const playerConfig = {
+    pxSpeed: 0.8,
     r: 10,
     angle: 0,
     position: { x: (map.cols / 2) * map.tsize, y: (map.rows / 2) * map.tsize },
@@ -85,39 +110,22 @@ export default function initPlayer(gameState) {
     movingTicks: 0,
     pts: 0,
     render: (gameState, player) => {
-      const { ctx, map, canvas } = gameState.getByKeys(["ctx", "map", "canvas"]);
+      const { ctx, canvas } = gameState.getByKeys(["ctx", "map", "canvas"]);
       renderFF(canvas, ctx, player);
     },
     onCollide: (gameState, player, obstacle) => {
       if (obstacle.type === "404") {
-        gameState.updateState((gameData) => {
-          return {
-            ...gameData,
-            player: {
-              ...player,
-              lastPosition: { ...gameData.player.position },
-              pts: gameData.player.pts + 1,
-            },
-            entities: [...gameData.entities.filter((e) => e.id !== obstacle.id)],
-          };
-        });
+        gameState.updateState(compose(partial(playerPickup404, 1), partial(removeEntityById, obstacle.id)));
       } else if (obstacle.type === "enemy") {
         playerCollideEnemy(gameState, player);
       }
     },
     run: (gameState, element) => {
-      const { moveV, moveH, map, tick } = gameState.getByKeys(["moveV", "moveH", "map", "tick"]);
-
-      if (tick % 10 === 0) {
-        //element.lastPosition = element.position;
-      }
-      const speed = pxXSecond(map, 0.8);
-
+      const { moveV, moveH, map } = gameState.getByKeys(["moveV", "moveH", "map"]);
+      const speed = pxXSecond(map, element.pxSpeed);
       if (element.borderCollide) {
         gameState.updateState((gameData) => {
           let cameraPos = gameData.map.cameraPos;
-          const tsize = gameData.map.tsize;
-
           const newData = {
             ...gameData,
             map: { ...gameData.map, cameraPos },

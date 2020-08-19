@@ -7,6 +7,23 @@ export function renderText(gameState, msg, pos, color = "black", font = "10px sa
   ctx.fillStyle = color;
   ctx.fillText(msg, pos.x, pos.y);
 }
+export function drawPolygon(ctx, start, moves) {
+  ctx.moveTo(start.x, start.y);
+  moves.reduce((p, mv) => {
+    const np = { x: p.x + mv[0], y: p.y + mv[1] };
+    ctx.lineTo(np.x, np.y);
+    return np;
+  }, start);
+}
+export function drawFile(ctx, startingPoint, w, h, fold) {
+  drawPolygon(ctx, startingPoint, [
+    [w * 2 - fold, 0],
+    [fold, fold],
+    [0, h * 2 - fold],
+    [-w * 2, 0],
+    [0, -h * 2],
+  ]);
+}
 
 function renderLivesHUD(gameState) {
   const { canvas, ctx, player } = gameState.getByKeys(["canvas", "ctx", "player"]);

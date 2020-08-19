@@ -22,10 +22,17 @@ export function exportMap(map, entities) {
       }
     }
   }
-  const exptEntities = entities.map((e) => ({
-    position: e.start || e.position,
-    type: e.type,
-  }));
+  const exptEntities = entities.map((e) => {
+    const ret = {
+      position: e.start || e.position,
+      type: e.type,
+    };
+
+    if (e.speed) ret.speed = e.speed;
+    if (e.steps) ret.steps = e.steps.slice(1);
+
+    return ret;
+  });
 
   return JSON.stringify({ tiles, entities: exptEntities, cols: map.cols, rows: map.rows });
 }
