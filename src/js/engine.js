@@ -1,4 +1,4 @@
-import { renderText, renderHUD } from "./rendering.js";
+import { renderText, renderHUD, genFont, resetBlur } from "./rendering.js";
 import { tileToCanvasPos, getTilesInView } from "./map.js";
 import { hasClass, addClass, removeClass } from "./domUtils.js";
 
@@ -187,7 +187,7 @@ function mapTileInView(map, mapFn) {
 }
 
 export function renderLoop(gameState) {
-  const renderFps = (msg, pos) => renderText(gameState, msg, pos, "green", "10px sans-serif");
+  const renderFps = (msg, pos) => renderText(gameState, msg, pos, "lime", genFont({ size: "10px" }));
   const { ctx, canvas, map, player, debug } = gameState.getByKeys(["ctx", "canvas", "map", "player", "debug"]);
   const status = gameState.gameStatus();
   // TODO refactor
@@ -210,6 +210,14 @@ export function renderLoop(gameState) {
   if (ctx) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // background
+    // ctx.beginPath();
+    // ctx.shadowBlur = 10;
+
+    // ctx.rect(0, 0, canvas.width, canvas.height);
+    // ctx.fillStyle = "rgba(0,0,0, 0.6)";
+    // ctx.fill();
+    resetBlur(ctx);
     // draw Map
 
     if (gameState.gameStatus() === "play") {
@@ -291,10 +299,10 @@ export function renderLoop(gameState) {
 
     if (gameState.gameStatus() === "play") renderHUD(gameState);
 
-    renderFps(`${gameState.getState("actualFps")} FPS`, { x: 755, y: 580 });
+    renderFps(`${gameState.getState("actualFps")} FPS`, { x: 755, y: 90 });
     renderFps(`${gameState.getState("actualFpsRender")} FPSR`, {
       x: 755,
-      y: 590,
+      y: 100,
     });
   }
 

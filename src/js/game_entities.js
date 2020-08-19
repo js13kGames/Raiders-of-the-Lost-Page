@@ -1,6 +1,6 @@
 import createEntity from "./entities.js";
 import { pntBtw2Pnts } from "./map.js";
-import { easeInOutCubic, drawPolygon, drawFile } from "./rendering.js";
+import { easeInOutCubic, drawFile } from "./rendering.js";
 
 function isInLocation(position, location) {
   return Math.floor(position.x - location.x) === 0 && Math.floor(position.y - location.y) === 0;
@@ -58,7 +58,8 @@ function movingEntitity(start, steps, speed, loop = true) {
   };
 }
 
-export function create403Entity(position, speed = 4, steps = []) {
+export function create403Entity(baseData) {
+  const { position, speed = 4, steps = [] } = baseData;
   return createEntity({
     ...movingEntitity(position, steps, speed),
     type: "403",
@@ -101,7 +102,8 @@ export function create403Entity(position, speed = 4, steps = []) {
     },
   });
 }
-export function create404Entity(position) {
+export function create404Entity(baseData) {
+  const { position } = baseData;
   const entity = createEntity({
     position,
     fileType: (() => {
@@ -136,9 +138,9 @@ export function create404Entity(position) {
   return entity;
 }
 
-export function createExitEntity(position) {
-  const entity = createEntity({
-    position,
+export function createExitEntity(baseData) {
+  return createEntity({
+    ...baseData,
     type: "exit",
     opened: false,
     r: 10,
@@ -165,6 +167,31 @@ export function createExitEntity(position) {
       return entity;
     },
   });
+}
 
-  return entity;
+export function createAuthEntity(baseData) {
+  return createEntity({
+    ...baseData,
+    type: "auth",
+    r: 4,
+    onCollect: () => ({ auth: true }),
+    render: (gameState, element, relPos) => {
+      const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"]);
+
+      ctx.beginPath();
+      ctx.fillStyle = "pink";
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 0.5;
+
+      ctx.arc(relPos.x, relPos.y, element.r, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+    },
+    run: (gameState, entity) => {
+      const f0f = gameState.getState("entities", []).some((e) => e.type === "404");
+
+      if (!f0f) entity.opened = true;
+      return entity;
+    },
+  });
 }

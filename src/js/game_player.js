@@ -1,11 +1,12 @@
 import createEntity, { removeEntityById } from "./entities.js";
 import { pxXSecond } from "./map.js";
-import { easeInOutCubic } from "./rendering.js";
+import { easeInOutCubic, resetBlur } from "./rendering.js";
 import { domElement, addClass, removeClass, hide, show } from "./domUtils.js";
 import { partial, compose } from "./utils.js";
 
 function renderFF(canvas, ctx, element) {
-  ctx.beginPath();
+  const { auth = false } = element.equip || {};
+
   const px = canvas.width / 2;
   const py = canvas.height / 2;
   const playerAngle = element.angle || 0;
@@ -22,13 +23,37 @@ function renderFF(canvas, ctx, element) {
   ctx.fillStyle = center;
 
   ctx.lineWidth = 1;
+  ctx.beginPath();
+  if (auth) {
+    ctx.shadowBlur = 3;
+    ctx.shadowColor = "orange";
+  }
   ctx.arc(px, py, 6, 0, 2 * Math.PI);
   ctx.fill();
+  resetBlur(ctx);
   ctx.beginPath();
   ctx.strokeStyle = fox;
   ctx.lineWidth = 6;
+  if (auth) {
+    ctx.shadowBlur = 3;
+    ctx.shadowColor = "#e100ff";
+  }
   ctx.arc(px, py, 8, Math.PI * 1.72 + angle, Math.PI * 1.22 + angle);
+
   ctx.stroke();
+  resetBlur(ctx);
+  if (auth) {
+    ctx.beginPath();
+    ctx.strokeStyle = "rgba(0,255,0,1)";
+    ctx.lineWidth = 3;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "rgb(0,255,0)";
+
+    ctx.arc(px, py, 13, Math.PI * 1.72 + angle, Math.PI * 1.22 + angle);
+    ctx.stroke();
+    ctx;
+    resetBlur(ctx);
+  }
 }
 // Utility functions
 function changePlayerPosition(newPosition, gameData) {
@@ -109,15 +134,23 @@ export default function initPlayer(gameState) {
     player: true,
     movingTicks: 0,
     pts: 0,
+
     render: (gameState, player) => {
       const { ctx, canvas } = gameState.getByKeys(["ctx", "map", "canvas"]);
       renderFF(canvas, ctx, player);
     },
     onCollide: (gameState, player, obstacle) => {
+      // refactor
       if (obstacle.type === "404") {
         gameState.updateState(compose(partial(playerPickup404, 1), partial(removeEntityById, obstacle.id)));
       } else if (obstacle.enemy) {
         playerCollideEnemy(gameState, player);
+      } else if (typeof obstacle.onCollect === "function") {
+        gameState.updateState(
+          compose((gameData) => {
+            return { ...gameData, player: { ...gameData.player, equip: { ...gameData.player.equip, ...obstacle.onCollect() } } };
+          }, partial(removeEntityById, obstacle.id))
+        );
       }
     },
     run: (gameState, element) => {

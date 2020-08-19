@@ -1,11 +1,34 @@
 // https://www.color-hex.com/color-palette/74007
 
-export function renderText(gameState, msg, pos, color = "black", font = "10px sans-serif") {
+const baseFont = { name: "arial", size: "14px", style: "" };
+export function resetBlur(ctx) {
+  ctx.shadowBlur = 0;
+}
+
+export function genFont(fontConfig = {}) {
+  const { name, size, style } = { ...baseFont, ...fontConfig };
+  return `${style} ${size} ${name}`;
+}
+
+function setCtx(ctx, configuration = {}) {
+  for (const k in configuration) {
+    if (configuration.hasOwnProperty(k)) {
+      ctx[k] = configuration[k];
+    }
+  }
+}
+
+function renderInCanvas(ctx, renderFn, ctxConfig = {}) {
+  ctx.beginPath();
+  setCtx(ctx, ctxConfig);
+
+  renderFn(ctx);
+}
+
+export function renderText(gameState, msg, pos, color = "black", font = font({ size: "10px" })) {
   const ctx = gameState.getState("ctx");
   if (!ctx) return false;
-  ctx.font = font;
-  ctx.fillStyle = color;
-  ctx.fillText(msg, pos.x, pos.y);
+  renderInCanvas(ctx, (ctx) => ctx.fillText(msg, pos.x, pos.y), { font, fillStyle: color });
 }
 export function drawPolygon(ctx, start, moves) {
   ctx.moveTo(start.x, start.y);

@@ -7,7 +7,7 @@ import initPlayer from "./game_player.js";
 import { initMainMenu, initPauseMenu, initGameOverMenu } from "./game_menu.js";
 import { map1 } from "./game_maps.js";
 import gameControllers from "./game_ctrls.js";
-import { create404Entity, create403Entity, createExitEntity } from "./game_entities.js";
+import { create404Entity, create403Entity, createExitEntity, createAuthEntity } from "./game_entities.js";
 import { setStageDim } from "./domUtils.js";
 
 /**
@@ -42,20 +42,13 @@ function initGameState() {
 }
 
 function loadEntities(entitiesData) {
-  return entitiesData
-    .map((e) => {
-      switch (e.type) {
-        case "404":
-          return create404Entity({ ...e.position });
-        case "403":
-          return create403Entity({ ...e.position }, e.speed || 4, e.steps || []);
-        case "exit":
-          return createExitEntity({ ...e.position });
-        default:
-          return null;
-      }
-    })
-    .filter((e) => !!e);
+  const entitiesFactory = {
+    "404": create404Entity,
+    auth: createAuthEntity,
+    "403": create403Entity,
+    exit: createExitEntity,
+  };
+  return entitiesData.map((e) => (typeof entitiesFactory[e.type] === "function" ? entitiesFactory[e.type]({ ...e }) : null)).filter((e) => !!e);
 }
 function loadLevel(map = null, levelIdx = 0) {
   return (gameState) => {
@@ -76,7 +69,7 @@ function loadLevel(map = null, levelIdx = 0) {
     gameState.updateGameStatus("play").updateState((gameData) => ({
       ...gameData,
       currentLevel: levelIdx,
-      player,
+      player: { ...player, equip: {} },
       entities: [...entities],
     }));
 
