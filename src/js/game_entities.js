@@ -235,7 +235,23 @@ export function createAuthEntity(baseData) {
     type: "auth",
     collide: true,
     r: 4,
-    onCollect: () => ({ auth: true }),
+    ttl: 5,
+    onCollect: (element) => ({
+      auth: {
+        pickedOn: +new Date(),
+        ttl: element.ttl * 1000,
+        rem: element.ttl * 1000,
+        authenticated: true,
+        run: (eq) => {
+          const passed = +new Date() - eq.pickedOn;
+          const rem = eq.ttl - passed;
+          if (rem <= 0) {
+            return null;
+          }
+          return { ...eq, rem: eq.ttl - passed };
+        },
+      },
+    }),
     render: (gameState, element, relPos) => {
       const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"]);
 

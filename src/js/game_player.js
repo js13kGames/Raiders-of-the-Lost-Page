@@ -43,11 +43,18 @@ function renderFF(canvas, ctx, element) {
   ctx.stroke();
   resetBlur(ctx);
   if (auth) {
+    if (auth.rem < 3000) {
+      const factor = Math.sin(auth.rem / 100);
+      ctx.lineWidth = 3 + factor;
+      ctx.shadowBlur = 10 + factor;
+    } else {
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 10;
+    }
+
     ctx.beginPath();
-    ctx.strokeStyle = "rgba(0,255,0,1)";
-    ctx.lineWidth = 3;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = "rgb(0,255,0)";
+    ctx.strokeStyle = "lime";
+    ctx.shadowColor = "lime";
 
     ctx.arc(px, py, 13, Math.PI * 1.72 + angle, Math.PI * 1.22 + angle);
     ctx.stroke();
@@ -151,7 +158,7 @@ export default function initPlayer(gameState) {
       } else if (typeof obstacle.onCollect === "function") {
         gameState.updateState(
           compose((gameData) => {
-            return { ...gameData, player: { ...gameData.player, equip: { ...gameData.player.equip, ...obstacle.onCollect() } } };
+            return { ...gameData, player: { ...gameData.player, equip: { ...gameData.player.equip, ...obstacle.onCollect(obstacle) } } };
           }, partial(removeEntityById, obstacle.id))
         );
       }
@@ -159,6 +166,16 @@ export default function initPlayer(gameState) {
     run: (gameState, element) => {
       const { moveV, moveH, map } = gameState.getByKeys(["moveV", "moveH", "map"]);
       const speed = pxXSecond(map, element.pxSpeed);
+      const equip = element.equip;
+      for (const k in equip) {
+        if (equip.hasOwnProperty(k)) {
+          const eq = equip[k];
+          if (eq && typeof eq.run === "function") {
+            element.equip[k] = eq.run(eq);
+          }
+        }
+      }
+
       if (element.borderCollide) {
         gameState.updateState((gameData) => {
           let cameraPos = gameData.map.cameraPos;
