@@ -1,6 +1,6 @@
-import { renderText, renderHUD, genFont, resetBlur } from "./rendering.js";
+import { renderText, renderHUD, genFont, resetBlur, drawPolygon } from "./rendering.js";
 import { tileToCanvasPos, getTilesInView } from "./map.js";
-import { hasClass, addClass, removeClass } from "./domUtils.js";
+import { addClass, removeClass } from "./domUtils.js";
 
 const loopSpeed = Math.round(1000 / 75);
 
@@ -211,7 +211,7 @@ export function renderLoop(gameState) {
   if (ctx) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // background
+    // backgroundcons
     // ctx.beginPath();
     // ctx.shadowBlur = 10;
 
@@ -239,7 +239,21 @@ export function renderLoop(gameState) {
           ...gameData,
           map: { ...gameData.map, pov },
         }));
-
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        for (let c = 0; c < map.cols * map.tsize; c += 100) {
+          ctx.moveTo(c + pov.x, 0);
+          ctx.lineTo(c + pov.x, canvas.height);
+        }
+        ctx.strokeStyle = "pink";
+        ctx.stroke();
+        ctx.beginPath();
+        for (let r = 0; r < map.rows * map.tsize; r += 100) {
+          ctx.moveTo(0, r + pov.y);
+          ctx.lineTo(canvas.width, r + pov.y);
+        }
+        ctx.strokeStyle = "purple";
+        ctx.stroke();
         ctx.beginPath();
         ctx.fillStyle = "black";
 
