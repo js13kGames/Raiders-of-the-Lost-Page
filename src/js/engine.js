@@ -142,7 +142,8 @@ export default function gameLoop(gameState) {
       .map((e) => {
         e.tilesIds = e.currentTiles.map((t) => "c" + t.c + "r" + t.r);
         return e;
-      });
+      })
+      .filter((e) => e.collide);
 
     for (const subj of elems) {
       for (const el of elems) {

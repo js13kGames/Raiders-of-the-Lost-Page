@@ -104,7 +104,10 @@ function playerCollideEnemy(gameState, player) {
     setTimeout(() => {
       gameState.updateState((gameData) => {
         removeClass(youDiedEl, "fade-in-out");
-        return compose((_) => partial(changePlayerLive, (l) => l - 1), partial(changePlayerPosition, gameData.player.lastPosition))(gameData);
+        return compose(
+          partial(changePlayerLive, (l) => l - 1),
+          partial(changePlayerPosition, gameData.player.lastPosition)
+        )(gameData);
       });
 
       gameState.updateGameStatus("play");
@@ -134,13 +137,13 @@ export default function initPlayer(gameState) {
     player: true,
     movingTicks: 0,
     pts: 0,
-
+    collide: true,
     render: (gameState, player) => {
       const { ctx, canvas } = gameState.getByKeys(["ctx", "map", "canvas"]);
       renderFF(canvas, ctx, player);
     },
     onCollide: (gameState, player, obstacle) => {
-      // refactor
+      // refactor the if
       if (obstacle.type === "404") {
         gameState.updateState(compose(partial(playerPickup404, 1), partial(removeEntityById, obstacle.id)));
       } else if (obstacle.enemy) {

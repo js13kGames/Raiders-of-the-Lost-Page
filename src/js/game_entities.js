@@ -1,6 +1,7 @@
 import createEntity from "./entities.js";
 import { pntBtw2Pnts } from "./map.js";
 import { easeInOutCubic, drawFile } from "./rendering.js";
+import { findPoint2Angle } from "./utils.js";
 
 function isInLocation(position, location) {
   return Math.floor(position.x - location.x) === 0 && Math.floor(position.y - location.y) === 0;
@@ -58,34 +59,39 @@ function movingEntitity(start, steps, speed, loop = true) {
   };
 }
 
-export function create403Entity(baseData) {
+function createEnemyEntity(baseData) {
   const { position, speed = 4, steps = [] } = baseData;
   return createEntity({
     ...movingEntitity(position, steps, speed),
-    type: "403",
     r: 10,
     enemy: true,
+    collide: true,
+  });
+}
+
+function circleWithSlashes(ctx, center, r, slashes = []) {
+  ctx.arc(center.x, center.y, r, 0, 2 * Math.PI);
+  slashes.forEach((s) => {
+    const start = findPoint2Angle(s[0], center, r);
+    ctx.moveTo(start.x, start.y);
+    const end = findPoint2Angle(s[1], center, r);
+    ctx.lineTo(end.x, end.y);
+  });
+}
+export function create403Entity(baseData) {
+  return {
+    ...createEnemyEntity(baseData),
+    type: "403",
     render: (gameState, element, relPos) => {
       const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"]);
       const r = element.r;
 
       ctx.beginPath();
 
-      ctx.arc(relPos.x, relPos.y, r, 0, 2 * Math.PI);
-
-      function toRadiant(angle) {
-        return (angle * Math.PI) / 180;
-      }
-      function findPoint2Angle(angle, start, dist) {
-        const rad = toRadiant(angle);
-        return { x: start.x + dist * Math.sin(rad), y: start.y + dist * Math.cos(rad) };
-      }
-      const start = findPoint2Angle(225, relPos, r);
-      ctx.moveTo(start.x, start.y);
-
-      const end = findPoint2Angle(45, relPos, r);
-
-      ctx.lineTo(end.x, end.y);
+      circleWithSlashes(ctx, relPos, r, [
+        [225, 45],
+        [315, 135],
+      ]);
       ctx.strokeStyle = "red";
       ctx.lineWidth = 3.5;
       ctx.stroke();
@@ -98,9 +104,58 @@ export function create403Entity(baseData) {
 
       ctx.font = "12px serif";
       ctx.fillStyle = "white";
-      ctx.fillText("403", relPos.x - r + 1, relPos.y + r + 6);
+      ctx.fillText(element.type, relPos.x - r + 1, relPos.y + r + 6);
     },
-  });
+  };
+}
+
+export function create401Entity(baseData) {
+  const baseEntity = createEnemyEntity(baseData);
+  return {
+    ...baseEntity,
+    disabled: false,
+    run: (gameState, element) => {
+      const { player } = gameState.getByKeys(["player"]);
+      const { auth = false } = player.equip || {};
+      if (auth) {
+        element.disabled = true;
+        element.collide = false;
+      } else {
+        element.disabled = false;
+        element.collide = true;
+      }
+
+      return baseEntity.run(gameState, element);
+    },
+    type: "401",
+    render: (gameState, element, relPos) => {
+      const { ctx } = gameState.getByKeys(["ctx", "player"]);
+
+      const r = element.r;
+
+      ctx.beginPath();
+
+      circleWithSlashes(ctx, relPos, r, [[225, 45]]);
+      if (!element.disabled) {
+        ctx.strokeStyle = "red";
+      } else {
+        ctx.strokeStyle = "rgba(100,100,200,0.6)";
+      }
+      ctx.lineWidth = 3.5;
+
+      ctx.stroke();
+      ctx.beginPath();
+
+      ctx.rect(relPos.x - r - 2, relPos.y + r / 2, 25, 13);
+      ctx.fillStyle = "rgba(255,0,0,0.8)";
+      ctx.fill();
+      ctx.beginPath();
+
+      ctx.font = "12px serif";
+      ctx.fillStyle = "white";
+      ctx.fillText(element.type, relPos.x - r + 1, relPos.y + r + 6);
+    },
+  };
 }
 export function create404Entity(baseData) {
   const { position } = baseData;
@@ -112,6 +167,7 @@ export function create404Entity(baseData) {
     })(),
     type: "404",
     r: 10,
+    collide: true,
     render: (gameState, element, relPos) => {
       const { ctx, map, canvas } = gameState.getByKeys(["ctx", "map", "canvas"]);
 
@@ -143,9 +199,10 @@ export function createExitEntity(baseData) {
     ...baseData,
     type: "exit",
     opened: false,
+    collide: false,
     r: 10,
     render: (gameState, element, relPos) => {
-      const { ctx, map, canvas } = gameState.getByKeys(["ctx", "map", "canvas"]);
+      const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"]);
 
       ctx.beginPath();
       ctx.fillStyle = element.opened ? "green" : "red";
@@ -163,7 +220,10 @@ export function createExitEntity(baseData) {
     run: (gameState, entity) => {
       const f0f = gameState.getState("entities", []).some((e) => e.type === "404");
 
-      if (!f0f) entity.opened = true;
+      if (!f0f) {
+        entity.opened = true;
+        entity.collide = true;
+      }
       return entity;
     },
   });
@@ -173,6 +233,7 @@ export function createAuthEntity(baseData) {
   return createEntity({
     ...baseData,
     type: "auth",
+    collide: true,
     r: 4,
     onCollect: () => ({ auth: true }),
     render: (gameState, element, relPos) => {
