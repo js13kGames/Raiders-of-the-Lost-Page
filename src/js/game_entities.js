@@ -1,10 +1,13 @@
 import createEntity from "./entities.js";
 import { pntBtw2Pnts } from "./map.js";
 import { easeInOutCubic, drawFile } from "./rendering.js";
-import { findPoint2Angle } from "./utils.js";
+import { render403, render401 } from "./game_rendering.js";
 
 function isInLocation(position, location) {
-  return Math.floor(position.x - location.x) === 0 && Math.floor(position.y - location.y) === 0;
+  return (
+    Math.floor(position.x - location.x) === 0 &&
+    Math.floor(position.y - location.y) === 0
+  );
 }
 
 function incStep(step, direction) {
@@ -26,7 +29,16 @@ function movingEntitity(start, steps, speed, loop = true) {
     direction: 0,
     loop,
     run: (gameState, element) => {
-      const { steps, step, direction, position, loop, easingSpeed, easingMaxMult, easingFunc } = element;
+      const {
+        steps,
+        step,
+        direction,
+        position,
+        loop,
+        easingSpeed,
+        easingMaxMult,
+        easingFunc,
+      } = element;
       const newStp = incStep(step, direction);
       let nextStep = element.steps[newStp] || null;
       // FIX for last step
@@ -37,7 +49,10 @@ function movingEntitity(start, steps, speed, loop = true) {
           element.lastVisited = newStp;
           element.easingTicks = 0;
           // se primo o ultimo step
-          if ((step === steps.length - 1 && direction === 0) || (step === 0 && direction === 1)) {
+          if (
+            (step === steps.length - 1 && direction === 0) ||
+            (step === 0 && direction === 1)
+          ) {
             // cambia direzione
             element.direction = direction === 0 ? 1 : 0;
             // altrimenti
@@ -46,7 +61,11 @@ function movingEntitity(start, steps, speed, loop = true) {
           element.step = incStep(step, direction);
         }
 
-        const nextPos = pntBtw2Pnts(element.position, element.steps[newStp], element.speed * easingFunc(element.easingTicks / easingSpeed));
+        const nextPos = pntBtw2Pnts(
+          element.position,
+          element.steps[newStp],
+          element.speed * easingFunc(element.easingTicks / easingSpeed)
+        );
         element.position = nextPos || position;
       } else if (loop) {
         element.step = -1;
@@ -69,43 +88,11 @@ function createEnemyEntity(baseData) {
   });
 }
 
-function circleWithSlashes(ctx, center, r, slashes = []) {
-  ctx.arc(center.x, center.y, r, 0, 2 * Math.PI);
-  slashes.forEach((s) => {
-    const start = findPoint2Angle(s[0], center, r);
-    ctx.moveTo(start.x, start.y);
-    const end = findPoint2Angle(s[1], center, r);
-    ctx.lineTo(end.x, end.y);
-  });
-}
 export function create403Entity(baseData) {
   return {
     ...createEnemyEntity(baseData),
     type: "403",
-    render: (gameState, element, relPos) => {
-      const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"]);
-      const r = element.r;
-
-      ctx.beginPath();
-
-      circleWithSlashes(ctx, relPos, r, [
-        [225, 45],
-        [315, 135],
-      ]);
-      ctx.strokeStyle = "red";
-      ctx.lineWidth = 3.5;
-      ctx.stroke();
-      ctx.beginPath();
-
-      ctx.rect(relPos.x - r - 2, relPos.y + r / 2, 25, 13);
-      ctx.fillStyle = "rgba(255,0,0,0.8)";
-      ctx.fill();
-      ctx.beginPath();
-
-      ctx.font = "12px serif";
-      ctx.fillStyle = "white";
-      ctx.fillText(element.type, relPos.x - r + 1, relPos.y + r + 6);
-    },
+    render: render403,
   };
 }
 
@@ -128,33 +115,7 @@ export function create401Entity(baseData) {
       return baseEntity.run(gameState, element);
     },
     type: "401",
-    render: (gameState, element, relPos) => {
-      const { ctx } = gameState.getByKeys(["ctx", "player"]);
-
-      const r = element.r;
-
-      ctx.beginPath();
-
-      circleWithSlashes(ctx, relPos, r, [[225, 45]]);
-      if (!element.disabled) {
-        ctx.strokeStyle = "red";
-      } else {
-        ctx.strokeStyle = "rgba(100,100,200,0.6)";
-      }
-      ctx.lineWidth = 3.5;
-
-      ctx.stroke();
-      ctx.beginPath();
-
-      ctx.rect(relPos.x - r - 2, relPos.y + r / 2, 25, 13);
-      ctx.fillStyle = "rgba(255,0,0,0.8)";
-      ctx.fill();
-      ctx.beginPath();
-
-      ctx.font = "12px serif";
-      ctx.fillStyle = "white";
-      ctx.fillText(element.type, relPos.x - r + 1, relPos.y + r + 6);
-    },
+    render: render401,
   };
 }
 export function create404Entity(baseData) {
@@ -169,7 +130,11 @@ export function create404Entity(baseData) {
     r: 10,
     collide: true,
     render: (gameState, element, relPos) => {
-      const { ctx, map, canvas } = gameState.getByKeys(["ctx", "map", "canvas"]);
+      const { ctx, map, canvas } = gameState.getByKeys([
+        "ctx",
+        "map",
+        "canvas",
+      ]);
 
       const w = element.r - 2;
       const h = element.r;
@@ -218,7 +183,9 @@ export function createExitEntity(baseData) {
       }
     },
     run: (gameState, entity) => {
-      const f0f = gameState.getState("entities", []).some((e) => e.type === "404");
+      const f0f = gameState
+        .getState("entities", [])
+        .some((e) => e.type === "404");
 
       if (!f0f) {
         entity.opened = true;
@@ -265,7 +232,9 @@ export function createAuthEntity(baseData) {
       ctx.stroke();
     },
     run: (gameState, entity) => {
-      const f0f = gameState.getState("entities", []).some((e) => e.type === "404");
+      const f0f = gameState
+        .getState("entities", [])
+        .some((e) => e.type === "404");
 
       if (!f0f) entity.opened = true;
       return entity;

@@ -1,6 +1,13 @@
-import { renderText, renderHUD, genFont, resetBlur, drawPolygon } from "./rendering.js";
+import {
+  renderText,
+  renderHUD,
+  genFont,
+  resetBlur,
+  drawPolygon,
+} from "./rendering.js";
 import { tileToCanvasPos, getTilesInView } from "./map.js";
 import { addClass, removeClass } from "./domUtils.js";
+import { renderBackground } from "./game_rendering.js";
 
 const loopSpeed = Math.round(1000 / 75);
 
@@ -11,7 +18,11 @@ function rowIndexToLetter(num, rows, height) {
 function generateSpacialHash(gameState) {
   const cols = 10;
   const row = 10;
-  const { map, entities, player } = gameState.getByKeys(["map", "entities", "player"]);
+  const { map, entities, player } = gameState.getByKeys([
+    "map",
+    "entities",
+    "player",
+  ]);
 
   const cW = canvas.width / cols;
   const rW = canvas.height / row;
@@ -137,7 +148,10 @@ export default function gameLoop(gameState) {
     // GENERATE SPACIAL HASH
     // const spacialHash = generateSpacialHash(gameState, cols, row);
 
-    const elems = [...(gameState.getState("entities") || []), gameState.getState("player")]
+    const elems = [
+      ...(gameState.getState("entities") || []),
+      gameState.getState("player"),
+    ]
       .filter((e) => !!e && e.currentTiles)
       .map((e) => {
         e.tilesIds = e.currentTiles.map((t) => "c" + t.c + "r" + t.r);
@@ -147,7 +161,10 @@ export default function gameLoop(gameState) {
 
     for (const subj of elems) {
       for (const el of elems) {
-        if (subj.id !== el.id && subj.tilesIds.some((t) => el.tilesIds.indexOf(t) >= 0)) {
+        if (
+          subj.id !== el.id &&
+          subj.tilesIds.some((t) => el.tilesIds.indexOf(t) >= 0)
+        ) {
           if (typeof subj.onCollide === "function") {
             subj.onCollide(gameState, subj, el);
           }
@@ -188,8 +205,15 @@ function mapTileInView(map, mapFn) {
 }
 
 export function renderLoop(gameState) {
-  const renderFps = (msg, pos) => renderText(gameState, msg, pos, "lime", genFont({ size: "10px" }));
-  const { ctx, canvas, map, player, debug } = gameState.getByKeys(["ctx", "canvas", "map", "player", "debug"]);
+  const renderFps = (msg, pos) =>
+    renderText(gameState, msg, pos, "lime", genFont({ size: "10px" }));
+  const { ctx, canvas, map, player, debug } = gameState.getByKeys([
+    "ctx",
+    "canvas",
+    "map",
+    "player",
+    "debug",
+  ]);
   const status = gameState.gameStatus();
   // TODO refactor
   const classStatus = `status-${status}`;
@@ -212,12 +236,7 @@ export function renderLoop(gameState) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // backgroundcons
-    // ctx.beginPath();
-    // ctx.shadowBlur = 10;
 
-    // ctx.rect(0, 0, canvas.width, canvas.height);
-    // ctx.fillStyle = "rgba(0,0,0, 0.6)";
-    // ctx.fill();
     resetBlur(ctx);
     // draw Map
 
@@ -239,28 +258,19 @@ export function renderLoop(gameState) {
           ...gameData,
           map: { ...gameData.map, pov },
         }));
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        for (let c = 0; c < map.cols * map.tsize; c += 100) {
-          ctx.moveTo(c + pov.x, 0);
-          ctx.lineTo(c + pov.x, canvas.height);
-        }
-        ctx.strokeStyle = "pink";
-        ctx.stroke();
-        ctx.beginPath();
-        for (let r = 0; r < map.rows * map.tsize; r += 100) {
-          ctx.moveTo(0, r + pov.y);
-          ctx.lineTo(canvas.width, r + pov.y);
-        }
-        ctx.strokeStyle = "purple";
-        ctx.stroke();
+
+        renderBackground(ctx, canvas, map, pov);
+
         ctx.beginPath();
         ctx.fillStyle = "black";
 
         mapTileInView(map, (c, r) => {
           var tile = map.getTile(c, r);
           if (tile === 1) {
-            const { x, y } = { x: c * map.tsize + pov.x, y: r * map.tsize + pov.y };
+            const { x, y } = {
+              x: c * map.tsize + pov.x,
+              y: r * map.tsize + pov.y,
+            };
 
             ctx.rect(x, y, map.tsize, map.tsize);
           }
@@ -278,7 +288,10 @@ export function renderLoop(gameState) {
           if (typeof element.render === "function" && element.position) {
             const col = Math.round(element.position.x / map.tsize);
             const row = Math.round(element.position.y / map.tsize);
-            if ((col >= startCol && col <= endCol) || (row >= startRow && row <= endRow)) {
+            if (
+              (col >= startCol && col <= endCol) ||
+              (row >= startRow && row <= endRow)
+            ) {
               element.render(gameState, element, {
                 x: element.position.x + pov.x,
                 y: element.position.y + pov.y,
@@ -334,7 +347,10 @@ export function collide(el1, el2) {
   const rect1 = { ...el1.position, ...el1.box };
   const rect2 = { ...el2.position, ...el2.box };
 
-  if (typeof el1.collideBox === "function" && typeof el2.collideBox === "function") {
+  if (
+    typeof el1.collideBox === "function" &&
+    typeof el2.collideBox === "function"
+  ) {
     const cb1 = el1.collideBox(el1);
     const cb2 = el2.collideBox(el2);
     return cb1.a < cb2.b && cb1.b > cb2.a && cb1.c < cb2.d && cb1.d > cb2.c;
