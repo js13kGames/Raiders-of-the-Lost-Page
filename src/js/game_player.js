@@ -152,19 +152,37 @@ export default function initPlayer(gameState) {
     onCollide: (gameState, player, obstacle) => {
       // refactor the if
       if (obstacle.type === "404") {
-        gameState.updateState(compose(partial(playerPickup404, 1), partial(removeEntityById, obstacle.id)));
+        gameState.updateState(
+          compose(
+            partial(playerPickup404, 1),
+            partial(removeEntityById, obstacle.id)
+          )
+        );
       } else if (obstacle.enemy) {
         playerCollideEnemy(gameState, player);
       } else if (typeof obstacle.onCollect === "function") {
         gameState.updateState(
           compose((gameData) => {
-            return { ...gameData, player: { ...gameData.player, equip: { ...gameData.player.equip, ...obstacle.onCollect(obstacle) } } };
+            return {
+              ...gameData,
+              player: {
+                ...gameData.player,
+                equip: {
+                  ...gameData.player.equip,
+                  ...obstacle.onCollect(obstacle),
+                },
+              },
+            };
           }, partial(removeEntityById, obstacle.id))
         );
       }
     },
     run: (gameState, element) => {
-      const { moveV, moveH, map } = gameState.getByKeys(["moveV", "moveH", "map"]);
+      const { moveV, moveH, map } = gameState.getByKeys([
+        "moveV",
+        "moveH",
+        "map",
+      ]);
       const speed = pxXSecond(map, element.pxSpeed);
       const equip = element.equip;
       for (const k in equip) {
@@ -207,15 +225,26 @@ export default function initPlayer(gameState) {
         element.angle = 2.5;
       }
       const animSpeed = 2;
-      const speedMult = Math.min(1, easeInOutCubic(element.movingTicks / animSpeed));
+      const speedMult = Math.min(
+        1,
+        easeInOutCubic(element.movingTicks / animSpeed)
+      );
       if (moveV === "up" && element.borderCollide !== "top" && !blocked.t) {
         element.position.y -= speed * speedMult;
-      } else if (moveV === "down" && element.borderCollide !== "bottom" && !blocked.b) {
+      } else if (
+        moveV === "down" &&
+        element.borderCollide !== "bottom" &&
+        !blocked.b
+      ) {
         element.position.y += speed * speedMult;
       }
       if (moveH === "left" && element.borderCollide !== "left" && !blocked.l) {
         element.position.x -= speed * speedMult;
-      } else if (moveH === "right" && element.borderCollide !== "right" && !blocked.r) {
+      } else if (
+        moveH === "right" &&
+        element.borderCollide !== "right" &&
+        !blocked.r
+      ) {
         element.position.x += speed * speedMult;
       }
 

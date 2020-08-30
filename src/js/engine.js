@@ -5,7 +5,7 @@ import {
   resetBlur,
   drawPolygon,
 } from "./rendering.js";
-import { tileToCanvasPos, getTilesInView } from "./map.js";
+import { tileToCanvasPos, getTilesInView, canvasPosToTile } from "./map.js";
 import { addClass, removeClass } from "./domUtils.js";
 import { renderBackground } from "./game_rendering.js";
 
@@ -199,7 +199,7 @@ function mapTileInView(map, mapFn) {
   const { startCol, endCol, startRow, endRow } = getTilesInView(map);
   for (var r = startRow; r < endRow; r++) {
     for (var c = startCol; c < endCol; c++) {
-      mapFn(c, r);
+      mapFn(c, r, { startRow, endRow, startCol, endCol });
     }
   }
 }
@@ -259,23 +259,28 @@ export function renderLoop(gameState) {
           map: { ...gameData.map, pov },
         }));
 
-        renderBackground(ctx, canvas, map, pov);
+        //renderBackground(ctx, canvas, map, pov);
 
         ctx.beginPath();
         ctx.fillStyle = "black";
+        const checked = {};
+        const vtxs = [];
+        ctx.font = "5px Verdana";
 
-        mapTileInView(map, (c, r) => {
-          var tile = map.getTile(c, r);
-          if (tile === 1) {
+        mapTileInView(map, (c, r, cols) => {
+          const tile = map.getTile(c, r);
+
+          if (tile !== 0) {
             const { x, y } = {
               x: c * map.tsize + pov.x,
               y: r * map.tsize + pov.y,
             };
-
-            ctx.rect(x, y, map.tsize, map.tsize);
+            //            ctx.rect(x, y, map.tsize, map.tsize);
+            ctx.fillText(tile, x, y);
           }
         });
         ctx.fill();
+        //ctx.stroke();
 
         if (player && typeof player.render === "function") {
           player.render(gameState, player);
@@ -332,6 +337,13 @@ export function renderLoop(gameState) {
       x: 755,
       y: 100,
     });
+
+    if (player.currentTile) {
+      renderFps(`c: ${player.currentTile.c},r: ${player.currentTile.r}`, {
+        x: 750,
+        y: 110,
+      });
+    }
   }
 
   gameState.setState("lastTimeRender", now);

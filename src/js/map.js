@@ -1,4 +1,4 @@
-function isBorder(c, r, cols, rows) {
+export function isBorder(c, r, cols, rows) {
   return c === 0 || r === 0 || r === rows - 1 || c === cols - 1;
 }
 export function getTilesInView(map) {
@@ -34,7 +34,12 @@ export function exportMap(map, entities) {
     return ret;
   });
 
-  return JSON.stringify({ tiles, entities: exptEntities, cols: map.cols, rows: map.rows });
+  return JSON.stringify({
+    tiles,
+    entities: exptEntities,
+    cols: map.cols,
+    rows: map.rows,
+  });
 }
 export function canvasPosToTile(x, y, canvas, map) {
   const rel = { x: x / canvas.width, y: y / canvas.height };

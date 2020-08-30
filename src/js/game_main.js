@@ -1,13 +1,19 @@
 import createState from "./state.js";
 
 import { generateMap, setVOF } from "./map.js";
-
+import { generateMaze } from "./map_generator.js";
 // game specific
 import initPlayer from "./game_player.js";
 import { initMainMenu, initPauseMenu, initGameOverMenu } from "./game_menu.js";
 import { map1 } from "./game_maps.js";
 import gameControllers from "./game_ctrls.js";
-import { create404Entity, create403Entity, create401Entity, createExitEntity, createAuthEntity } from "./game_entities.js";
+import {
+  create404Entity,
+  create403Entity,
+  create401Entity,
+  createExitEntity,
+  createAuthEntity,
+} from "./game_entities.js";
 import { setStageDim } from "./domUtils.js";
 
 /**
@@ -19,12 +25,12 @@ import { setStageDim } from "./domUtils.js";
 // Load from local storage
 
 const unlockedLevels = 1;
-const levels = [map1, { cols: 200, rows: 200 }];
+const levels = [map1, { cols: 100, rows: 100 }];
 const startingLives = 3;
 
 // Starting the game
 
-const tileSize = 3;
+const tileSize = 10;
 function initGameState() {
   const state = createState({
     debug: false,
@@ -49,21 +55,40 @@ function loadEntities(entitiesData) {
     "401": create401Entity,
     exit: createExitEntity,
   };
-  return entitiesData.map((e) => (typeof entitiesFactory[e.type] === "function" ? entitiesFactory[e.type]({ ...e }) : null)).filter((e) => !!e);
+  return entitiesData
+    .map((e) =>
+      typeof entitiesFactory[e.type] === "function"
+        ? entitiesFactory[e.type]({ ...e })
+        : null
+    )
+    .filter((e) => !!e);
 }
-function loadLevel(map = null, levelIdx = 0) {
+
+// TODO refactor
+function loadLevel(baseMap = null, levelIdx = 0) {
   return (gameState) => {
     const { canvas } = gameState.getByKeys(["canvas"]);
 
     let startingMap = { tiles: null, entities: [], cols: null, rows: null };
 
-    if (map) {
+    if (baseMap) {
       startingMap = {
         ...startingMap,
-        ...(typeof map === "string" ? JSON.parse(map) : { ...map }),
+        ...(typeof baseMap === "string" ? JSON.parse(baseMap) : { ...baseMap }),
       };
     }
-    gameState.setState("map", setVOF(generateMap(startingMap.cols || 400, startingMap.rows || 400, tileSize, startingMap.tiles), canvas.width, canvas.height));
+    const cols = startingMap.cols || 100;
+    const rows = startingMap.rows || 100;
+
+    const map = setVOF(
+      generateMap(cols, rows, tileSize, startingMap.tiles),
+      canvas.width,
+      canvas.height
+    );
+    gameState.setState("map", {
+      ...map,
+      ...generateMaze(map),
+    });
     const player = initPlayer(gameState);
     const entities = loadEntities(startingMap.entities);
 
@@ -92,10 +117,18 @@ function initGame() {
   const currentLevel = 0;
 
   const pauseMenu = initPauseMenu(gameState);
-  const mainMenu = initMainMenu(gameState, loadLevel(levels[0]), levels.map(loadLevel));
+  const mainMenu = initMainMenu(
+    gameState,
+    loadLevel(levels[0]),
+    levels.map(loadLevel)
+  );
 
   const newLevel = (gameState) => {
-    const { player, currentLevel, levels } = gameState.getByKeys(["player", "currentLevel", "levels"]);
+    const { player, currentLevel, levels } = gameState.getByKeys([
+      "player",
+      "currentLevel",
+      "levels",
+    ]);
 
     if (currentLevel !== levels.length - 1) {
       // TODO create function for transition between states
