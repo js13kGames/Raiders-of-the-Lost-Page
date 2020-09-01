@@ -54,7 +54,7 @@ function calcBlocked(elementTiles, map) {
   for (const c of cs) {
     for (const r of rs) {
       const tile = map.getTile(c, r);
-      if (!!tile) {
+      if (tile > 0) {
         if (r === rs[0] && (c === cs[1] || c === cs[3])) {
           blocked.t = true;
         }
@@ -261,25 +261,55 @@ export function renderLoop(gameState) {
 
         //renderBackground(ctx, canvas, map, pov);
 
-        ctx.beginPath();
-        ctx.fillStyle = "black";
         const checked = {};
         const vtxs = [];
-        ctx.font = "5px Verdana";
-
+        ctx.font = "10px Verdana";
+        ctx.beginPath();
+        ctx.fillStyle = "black";
         mapTileInView(map, (c, r, cols) => {
           const tile = map.getTile(c, r);
-
-          if (tile !== 0) {
-            const { x, y } = {
-              x: c * map.tsize + pov.x,
-              y: r * map.tsize + pov.y,
-            };
-            //            ctx.rect(x, y, map.tsize, map.tsize);
-            ctx.fillText(tile, x, y);
+          const { x, y } = {
+            x: c * map.tsize + pov.x,
+            y: r * map.tsize + pov.y,
+          };
+          if (tile > 0) {
+            ctx.rect(x, y, map.tsize, map.tsize);
+            //ctx.fillText(tile, x, y);
           }
+          // else if (
+          //   ((c * map.tsize) / 10) % 3 === 0 &&
+          //   ((r * map.tsize) / 10) % 3 === 0
+          // ) {
+          //   const { sc, sr } = {
+          //     sc: Math.floor(c / 10),
+          //     sr: Math.floor(r / 10),
+          //   };
+          //   const { x, y } = {
+          //     x: c * map.tsize + pov.x,
+          //     y: r * map.tsize + pov.y,
+          //   };
+          //   //ctx.rect(x, y, map.tsize, map.tsize);
+          //   ctx.fillText(`|${sc}/${sr}|`, x, y);
+          // }
         });
         ctx.fill();
+        // ctx.stroke();
+        // ctx.beginPath();
+        // ctx.fillStyle = "rgba(0,100,0,0.4)";
+        // mapTileInView(map, (c, r, cols) => {
+        //   const tile = map.getTile(c, r);
+
+        //   if (tile < 0) {
+        //     const { x, y } = {
+        //       x: c * map.tsize + pov.x,
+        //       y: r * map.tsize + pov.y,
+        //     };
+
+        //     ctx.rect(x, y, map.tsize, map.tsize);
+        //     //ctx.fillText(tile, x, y);
+        //   }
+        // });
+        // ctx.fill();
         //ctx.stroke();
 
         if (player && typeof player.render === "function") {
