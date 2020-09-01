@@ -10,7 +10,22 @@ export function getTilesInView(map) {
     endRow: Math.min(map.rows, Math.round(map.centerTile.r + map.viewRows / 2)),
   };
 }
+export function mapTileInView(map, mapFn) {
+  // to improve
+  const { startCol, endCol, startRow, endRow } = getTilesInView(map);
+  for (var r = startRow; r < endRow; r++) {
+    for (var c = startCol; c < endCol; c++) {
+      mapFn(c, r, { startRow, endRow, startCol, endCol });
+    }
+  }
+}
 
+export function tilePosition(c, r, tsize, pov) {
+  return {
+    x: c * tsize + pov.x,
+    y: r * tsize + pov.y,
+  };
+}
 export function borders(pos, f, map, val, pad = 0, bord = [0, 1, 2, 3]) {
   if (!bord.length) return;
   const st = -pad;

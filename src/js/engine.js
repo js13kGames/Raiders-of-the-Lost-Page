@@ -4,16 +4,17 @@ import {
   genFont,
   resetBlur,
   drawPolygon,
+  easeInSine,
 } from "./rendering.js";
 import {
   tileToCanvasPos,
   getTilesInView,
-  isCenterBlock,
   isBorder,
   borders,
+  tilePosition,
 } from "./map.js";
 import { addClass, removeClass } from "./domUtils.js";
-import { renderBackground } from "./game_rendering.js";
+import { renderBackground, renderTiles } from "./game_rendering.js";
 
 const loopSpeed = Math.round(1000 / 75);
 
@@ -143,11 +144,12 @@ export default function gameLoop(gameState) {
   // https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
 
   if (gameState.gameStatus() === "play") {
-    let { player, map, ghost, walls } = gameState.getByKeys([
+    let { player, map, ghost, walls, levelConfig } = gameState.getByKeys([
       "player",
       "map",
       "ghost",
       "walls",
+      "levelConfig",
     ]);
 
     if (player && map) {
@@ -163,10 +165,16 @@ export default function gameLoop(gameState) {
           centerTile: playerTile,
         },
       }));
-      const config = { resetPct: 90, groupPct: 30, wPct: 40, everyT: 200 };
 
-      if (tick % config.everyT === 0) {
-        gameState.setState("walls", updateWalls(map, walls, config));
+      if (levelConfig) {
+        if (tick > levelConfig.nextT) {
+          const nextT =
+            Math.floor(Math.random() * levelConfig.nextRand) +
+            levelConfig.nextMin;
+          gameState.setState("levelConfig", { ...levelConfig, nextT });
+          gameState.setState("walls", updateWalls(map, walls, levelConfig));
+          gameState.setState("tick", 0);
+        }
       }
 
       player = player.run(gameState, player);
@@ -244,26 +252,25 @@ function drawBox(gameState, entity) {
   ctx.stroke();
 }
 
-function mapTileInView(map, mapFn) {
-  // to improve
-  const { startCol, endCol, startRow, endRow } = getTilesInView(map);
-  for (var r = startRow; r < endRow; r++) {
-    for (var c = startCol; c < endCol; c++) {
-      mapFn(c, r, { startRow, endRow, startCol, endCol });
-    }
-  }
-}
-
 export function renderLoop(gameState) {
   const renderFps = (msg, pos) =>
     renderText(gameState, msg, pos, "lime", genFont({ size: "10px" }));
-  const { ctx, canvas, map, player, debug, ghost } = gameState.getByKeys([
+  const {
+    ctx,
+    canvas,
+    map,
+    player,
+    debug,
+    levelConfig,
+    tick,
+  } = gameState.getByKeys([
     "ctx",
     "canvas",
     "map",
     "player",
     "debug",
-    "ghost",
+    "levelConfig",
+    "tick",
   ]);
   const status = gameState.gameStatus();
   // TODO refactor
@@ -286,8 +293,6 @@ export function renderLoop(gameState) {
   if (ctx) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // backgroundcons
-
     resetBlur(ctx);
     // draw Map
 
@@ -309,40 +314,21 @@ export function renderLoop(gameState) {
           ...gameData,
           map: { ...gameData.map, pov },
         }));
-        function tilePosition(c, r, tsize, pov) {
-          return {
-            x: c * tsize + pov.x,
-            y: r * tsize + pov.y,
-          };
+
+        if (levelConfig) {
+          const animDuration = 50;
+          const step = tick - levelConfig.nextT + animDuration;
+
+          if (step >= 0) {
+            ctx.beginPath();
+
+            ctx.rect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = `rgba(255,255,255, ${step / animDuration})`;
+            ctx.fill();
+          }
         }
-        ctx.font = "10px Verdana";
-        const borders = [];
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(0,0,0,${ghost ? "0.5" : "1"})`;
 
-        mapTileInView(map, (c, r, cols) => {
-          const tile = map.getTile(c, r);
-          const { x, y } = tilePosition(c, r, map.tsize, pov);
-          if (isBorder(c, r, map.cols, map.rows)) {
-            borders.push([c, r]);
-          }
-          if (tile > 0) {
-            ctx.rect(x, y, map.tsize, map.tsize);
-          }
-
-          // if (isCenterBlock(c, r, map)) {
-          //   ctx.arc(x, y, 2, 0, 2 * Math.PI);
-          // }
-        });
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(200,0,0,1)`;
-        borders.forEach(([c, r]) => {
-          const { x, y } = tilePosition(c, r, map.tsize, pov);
-          ctx.rect(x, y, map.tsize, map.tsize);
-        });
-        ctx.fill();
+        renderTiles(gameState);
 
         if (player && typeof player.render === "function") {
           player.render(gameState, player);

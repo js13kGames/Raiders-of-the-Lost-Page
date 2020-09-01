@@ -96,12 +96,20 @@ function loadLevel(baseMap = null, levelIdx = 0) {
     const entities = loadEntities(
       generateEntities(gameState, gameState.getState("map"))
     );
-
+    const levelConfig = {
+      resetPct: 90,
+      groupPct: 30,
+      wPct: 40,
+      nextT: 400,
+      nextRand: 300,
+      nextMin: 200,
+    };
     gameState.updateGameStatus("play").updateState((gameData) => ({
       ...gameData,
       currentLevel: levelIdx,
       player: { ...player, equip: {} },
       entities: [...entities],
+      levelConfig,
     }));
 
     return gameState;

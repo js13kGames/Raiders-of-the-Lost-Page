@@ -1,4 +1,5 @@
 import { findPoint2Angle } from "./utils.js";
+import { mapTileInView, tilePosition, isBorder } from "./map.js";
 
 function circleWithSlashes(ctx, center, r, slashes = []) {
   ctx.arc(center.x, center.y, r, 0, 2 * Math.PI);
@@ -71,17 +72,6 @@ export function renderBackground(ctx, canvas, map, pov) {
   ctx.fillStyle = "rgba(0,0,0, 0.4)";
   ctx.fill();
   ctx.beginPath();
-  // for (let c = 0; c < map.cols * map.tsize; c += 100) {
-  //   ctx.moveTo(c + pov.x, 0);
-  //   ctx.lineTo(c + pov.x, canvas.height);
-  // }
-  // ctx.strokeStyle = "pink";
-  // ctx.stroke();
-  // ctx.beginPath();
-  // for (let r = 0; r < map.rows * map.tsize; r += 100) {
-  //   ctx.moveTo(0, r + pov.y);
-  //   ctx.lineTo(canvas.width, r + pov.y);
-  // }
 
   for (let r = 0; r < map.rows * map.tsize; r += 100) {
     for (let c = 0; c < map.cols * map.tsize; c += 100) {
@@ -90,4 +80,45 @@ export function renderBackground(ctx, canvas, map, pov) {
   }
   ctx.strokeStyle = "purple";
   ctx.stroke();
+}
+
+export function renderTiles(gameState) {
+  const { ctx, map, ghost, levelConfig } = gameState.getByKeys([
+    "ctx",
+    "map",
+    "ghost",
+    "levelConfig",
+  ]);
+  const { pov } = map;
+  ctx.font = "10px Verdana";
+  const borders = [];
+  ctx.beginPath();
+  if (levelConfig) {
+    ctx.fillStyle = `rgba(0,250,0,1)`;
+  } else {
+    ctx.fillStyle = `rgba(0,0,0,${ghost ? "0.5" : "1"})`;
+  }
+
+  mapTileInView(map, (c, r, cols) => {
+    const tile = map.getTile(c, r);
+    const { x, y } = tilePosition(c, r, map.tsize, pov);
+    if (isBorder(c, r, map.cols, map.rows)) {
+      borders.push([c, r]);
+    }
+    if (tile > 0) {
+      ctx.rect(x, y, map.tsize, map.tsize);
+    }
+
+    // if (isCenterBlock(c, r, map)) {
+    //   ctx.arc(x, y, 2, 0, 2 * Math.PI);
+    // }
+  });
+  ctx.fill();
+  ctx.beginPath();
+  ctx.fillStyle = `rgba(200,0,0,1)`;
+  borders.forEach(([c, r]) => {
+    const { x, y } = tilePosition(c, r, map.tsize, pov);
+    ctx.rect(x, y, map.tsize, map.tsize);
+  });
+  ctx.fill();
 }
