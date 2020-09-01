@@ -5,7 +5,12 @@ import {
   resetBlur,
   drawPolygon,
 } from "./rendering.js";
-import { tileToCanvasPos, getTilesInView, canvasPosToTile } from "./map.js";
+import {
+  tileToCanvasPos,
+  getTilesInView,
+  canvasPosToTile,
+  isBorder,
+} from "./map.js";
 import { addClass, removeClass } from "./domUtils.js";
 import { renderBackground } from "./game_rendering.js";
 
@@ -31,7 +36,7 @@ function generateSpacialHash(gameState) {
 
   return hash;
 }
-function calcBlocked(elementTiles, map) {
+function calcBlocked(elementTiles, map, ghost) {
   const blocked = { t: false, r: false, b: false, l: false };
   const vtx = elementTiles.reduce((acc, v) => {
     if (typeof acc.tr === "undefined" || v.r > acc.tr) {
@@ -54,7 +59,9 @@ function calcBlocked(elementTiles, map) {
   for (const c of cs) {
     for (const r of rs) {
       const tile = map.getTile(c, r);
-      if (tile > 0) {
+      const border = isBorder(c, r, map.cols, map.rows);
+
+      if (tile > 0 && (border || !ghost)) {
         if (r === rs[0] && (c === cs[1] || c === cs[3])) {
           blocked.t = true;
         }
@@ -107,7 +114,11 @@ export default function gameLoop(gameState) {
   // https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
 
   if (gameState.gameStatus() === "play") {
-    let { player, map } = gameState.getByKeys(["player", "map"]);
+    let { player, map, ghost } = gameState.getByKeys([
+      "player",
+      "map",
+      "ghost",
+    ]);
     if (player && map) {
       const playerTile = {
         c: player.position.x / map.tsize,
@@ -124,7 +135,8 @@ export default function gameLoop(gameState) {
       }));
       player = player.run(gameState, player);
       player.currentTiles = elementTiles(player, map);
-      player.blocked = calcBlocked(player.currentTiles, map);
+      player.blocked = calcBlocked(player.currentTiles, map, ghost);
+
       gameState.setState("player", player);
     }
 
@@ -207,12 +219,13 @@ function mapTileInView(map, mapFn) {
 export function renderLoop(gameState) {
   const renderFps = (msg, pos) =>
     renderText(gameState, msg, pos, "lime", genFont({ size: "10px" }));
-  const { ctx, canvas, map, player, debug } = gameState.getByKeys([
+  const { ctx, canvas, map, player, debug, ghost } = gameState.getByKeys([
     "ctx",
     "canvas",
     "map",
     "player",
     "debug",
+    "ghost",
   ]);
   const status = gameState.gameStatus();
   // TODO refactor
@@ -258,59 +271,35 @@ export function renderLoop(gameState) {
           ...gameData,
           map: { ...gameData.map, pov },
         }));
-
-        //renderBackground(ctx, canvas, map, pov);
-
-        const checked = {};
-        const vtxs = [];
+        function tilePosition(c, r, tsize, pov) {
+          return {
+            x: c * tsize + pov.x,
+            y: r * tsize + pov.y,
+          };
+        }
         ctx.font = "10px Verdana";
+        const borders = [];
         ctx.beginPath();
-        ctx.fillStyle = "black";
+        ctx.fillStyle = `rgba(0,0,0,${ghost ? "0.5" : "1"})`;
         mapTileInView(map, (c, r, cols) => {
           const tile = map.getTile(c, r);
-          const { x, y } = {
-            x: c * map.tsize + pov.x,
-            y: r * map.tsize + pov.y,
-          };
+          const { x, y } = tilePosition(c, r, map.tsize, pov);
+          if (isBorder(c, r, map.cols, map.rows)) {
+            borders.push([c, r]);
+          }
           if (tile > 0) {
             ctx.rect(x, y, map.tsize, map.tsize);
-            //ctx.fillText(tile, x, y);
           }
-          // else if (
-          //   ((c * map.tsize) / 10) % 3 === 0 &&
-          //   ((r * map.tsize) / 10) % 3 === 0
-          // ) {
-          //   const { sc, sr } = {
-          //     sc: Math.floor(c / 10),
-          //     sr: Math.floor(r / 10),
-          //   };
-          //   const { x, y } = {
-          //     x: c * map.tsize + pov.x,
-          //     y: r * map.tsize + pov.y,
-          //   };
-          //   //ctx.rect(x, y, map.tsize, map.tsize);
-          //   ctx.fillText(`|${sc}/${sr}|`, x, y);
-          // }
         });
         ctx.fill();
-        // ctx.stroke();
-        // ctx.beginPath();
-        // ctx.fillStyle = "rgba(0,100,0,0.4)";
-        // mapTileInView(map, (c, r, cols) => {
-        //   const tile = map.getTile(c, r);
 
-        //   if (tile < 0) {
-        //     const { x, y } = {
-        //       x: c * map.tsize + pov.x,
-        //       y: r * map.tsize + pov.y,
-        //     };
-
-        //     ctx.rect(x, y, map.tsize, map.tsize);
-        //     //ctx.fillText(tile, x, y);
-        //   }
-        // });
-        // ctx.fill();
-        //ctx.stroke();
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(200,0,0,1)`;
+        borders.forEach(([c, r]) => {
+          const { x, y } = tilePosition(c, r, map.tsize, pov);
+          ctx.rect(x, y, map.tsize, map.tsize);
+        });
+        ctx.fill();
 
         if (player && typeof player.render === "function") {
           player.render(gameState, player);
