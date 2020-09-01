@@ -32,7 +32,11 @@ export default function gameControllers(gameState) {
       case " ":
         gameState.setState("ghost", true);
         break;
+      case "Control":
+        gameState.setState("ghost", true);
+        break;
       default:
+        console.log(keyName);
         gameState.setState("key", keyName);
         break;
     }

@@ -10,6 +10,7 @@ import {
   getTilesInView,
   isCenterBlock,
   isBorder,
+  borders,
 } from "./map.js";
 import { addClass, removeClass } from "./domUtils.js";
 import { renderBackground } from "./game_rendering.js";
@@ -100,6 +101,34 @@ function elementTiles(element, map) {
 
   return tiles;
 }
+const chance = (ch) => Math.floor(Math.random() * 100) <= ch;
+
+const updateWalls = (map, walls, config = {}) => {
+  const baseConfig = { resetPct: 90, groupPct: 30, wPct: 40 };
+  const c = { ...baseConfig, ...config };
+  return walls.map((w, i) => {
+    const { pos, bords, step, oBords } = w;
+
+    if (oBords && chance(c.resetPct)) {
+      w.bords = w.oBords;
+      w.oBords = null;
+    } else if (chance(c.groupPct)) {
+      w.oBords = w.bords;
+      w.bords = w.bords.filter(() => chance(c.wPct));
+    }
+    borders(
+      pos,
+      map.scaleFactor,
+      map,
+      0,
+      0,
+      [0, 1, 2, 3].filter((b) => w.bords.indexOf(b) < 0)
+    );
+    borders(pos, map.scaleFactor, map, step, 0, w.bords);
+
+    return { ...w };
+  });
+};
 export default function gameLoop(gameState) {
   const tick = gameState.getState("tick", 0);
   const now = +new Date();
@@ -114,18 +143,19 @@ export default function gameLoop(gameState) {
   // https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
 
   if (gameState.gameStatus() === "play") {
-    let { player, map, ghost } = gameState.getByKeys([
+    let { player, map, ghost, walls } = gameState.getByKeys([
       "player",
       "map",
       "ghost",
+      "walls",
     ]);
+
     if (player && map) {
       const playerTile = {
         c: player.position.x / map.tsize,
         r: player.position.y / map.tsize,
       };
       player.currentTile = playerTile;
-      //console.log(player.currentTile);
       gameState.updateState((gameData) => ({
         ...gameData,
         map: {
@@ -133,6 +163,12 @@ export default function gameLoop(gameState) {
           centerTile: playerTile,
         },
       }));
+      const config = { resetPct: 90, groupPct: 30, wPct: 40, everyT: 200 };
+
+      if (tick % config.everyT === 0) {
+        gameState.setState("walls", updateWalls(map, walls, config));
+      }
+
       player = player.run(gameState, player);
       player.currentTiles = elementTiles(player, map);
       player.blocked = calcBlocked(player.currentTiles, map, ghost);

@@ -1,31 +1,13 @@
-import { isBorder, dstBtw2Pnts, isCenterBlock, surrounding } from "./map.js";
-
-function nearTiles(pos, visited, maxCol, maxRow) {
-  const tiles = [
-    [pos[0], pos[1] - 1],
-    [pos[0] + 1, pos[1]],
-    [pos[0], pos[1] + 1],
-    [pos[0] - 1, pos[1]],
-  ];
-
-  return tiles.filter((t) => {
-    return (
-      t[0] >= 0 &&
-      t[0] < maxCol &&
-      t[1] >= 0 &&
-      t[1] < maxRow &&
-      !visited[`${t[0]}-${t[1]}`]
-    );
-  });
-}
-
-function relPos(p1, p2) {
-  if (p1[1] - 1 === p2[1]) return 0;
-  else if (p1[0] + 1 === p2[0]) return 1;
-  else if (p1[1] + 1 === p2[1]) return 2;
-  else if (p1[0] - 1 === p2[0]) return 3;
-  else return false;
-}
+import {
+  isBorder,
+  dstBtw2Pnts,
+  isCenterBlock,
+  surrounding,
+  calcRoute,
+  nearTiles,
+  relPos,
+  borders,
+} from "./map.js";
 
 function scaleTiles(map, fact = 10) {
   return {
@@ -36,29 +18,58 @@ function scaleTiles(map, fact = 10) {
   };
 }
 
-function borders(pos, f, map, val, pad = 0, bord = [0, 1, 2, 3]) {
-  if (!bord.length) return;
-  const st = -pad;
-  const end = f + pad;
-  for (let i = st; i < end; i++) {
-    for (let j = st; j < end; j++) {
-      let ok = false;
+function listLinked() {}
+function linkedToCenter(start) {}
+const findWall = (walls, pos) =>
+  walls.filter(
+    (w) => `${pos[0]}-${pos[1]}` === `${w.pos[0]}-${w.pos[1]}`
+  )[0] || {
+    bords: [],
+  };
 
-      if (bord.indexOf(0) >= 0 && j <= 0) ok = true;
-      else if (bord.indexOf(1) >= 0 && i >= f - 1) ok = true;
-      else if (bord.indexOf(2) >= 0 && j >= f - 1) ok = true;
-      else if (bord.indexOf(3) >= 0 && i <= 0) ok = true;
+function openToCenter(start, arrive, walls, cols, rows) {
+  let stack = [];
+  let visited = {};
+  let pos = start;
+  let it = 0;
 
-      const c = pos[0] * f + i;
-      const r = pos[1] * f + j;
-      if (!isBorder(c, r, map.cols, map.rows) && ok && map.getTile(c, r) >= 0) {
-        map.setTile(c, r, val);
-      }
+  const maxTry = 100;
+  while (
+    !!pos &&
+    `${pos[0]}-${pos[1]}` !== `${arrive[0]}-${arrive[1]}` &&
+    it < maxTry
+  ) {
+    it++;
+    visited[`${pos[0]}-${pos[1]}`] = true;
+    // BUG -> walls filter not consider border of near tiles!!!
+
+    const w = findWall(walls, pos);
+    const near = nearTiles(pos, visited, cols, rows);
+    const nAv = near.filter(
+      (n) =>
+        w.bords.indexOf(relPos(pos, n)) < 0 &&
+        findWall(walls, n).bords.indexOf(relPos(n, pos)) < 0
+    );
+
+    if (nAv.length > 0) {
+      const rand = Math.floor(Math.random() * nAv.length);
+      const next = nAv[rand];
+
+      stack.push(pos);
+      pos = next;
+    } else {
+      stack.pop();
+      pos = stack[stack.length - 1];
     }
+  }
+  if (!pos || it >= maxTry) {
+    return start;
+  } else {
+    return null;
   }
 }
 
-export function generateMaze(map) {
+export function generateMaze(map, gameState) {
   const f = 10;
   let scaledMap = { ...scaleTiles(map, f) };
   const stack = [];
@@ -85,6 +96,7 @@ export function generateMaze(map) {
       });
 
       walls.push({ pos, bords, step });
+      gameState.setState("walls", walls);
 
       stack.push(pos);
       pos = next;
@@ -138,7 +150,7 @@ function generateSteps(center, num) {
   return steps;
 }
 // Note: entities should be placed near to each other (guardians???)
-export function generateEntities(map) {
+export function generateEntities(gameState, map) {
   const config = {
     404: 5,
     403: 3,
@@ -162,6 +174,15 @@ export function generateEntities(map) {
       return dstBtw2Pnts(p1, { x: c, y: r }) > minDist;
     });
   let centers = [...originCenters];
+
+  const blocked = centers.filter(([i, j]) => {
+    return !calcRoute([i, j], [map.cols / 2, map.rows / 2], map);
+  });
+
+  gameState.updateState((stateData) => ({
+    ...stateData,
+    map: { ...stateData.map, centers, blocked },
+  }));
 
   // TODO CHECK there are enough
   let entities = [];

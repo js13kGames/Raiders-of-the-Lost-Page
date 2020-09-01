@@ -11,6 +11,28 @@ export function getTilesInView(map) {
   };
 }
 
+export function borders(pos, f, map, val, pad = 0, bord = [0, 1, 2, 3]) {
+  if (!bord.length) return;
+  const st = -pad;
+  const end = f + pad;
+  for (let i = st; i < end; i++) {
+    for (let j = st; j < end; j++) {
+      let ok = false;
+
+      if (bord.indexOf(0) >= 0 && j <= 0) ok = true;
+      else if (bord.indexOf(1) >= 0 && i >= f - 1) ok = true;
+      else if (bord.indexOf(2) >= 0 && j >= f - 1) ok = true;
+      else if (bord.indexOf(3) >= 0 && i <= 0) ok = true;
+
+      const c = pos[0] * f + i;
+      const r = pos[1] * f + j;
+      if (!isBorder(c, r, map.cols, map.rows) && ok && map.getTile(c, r) >= 0) {
+        map.setTile(c, r, val);
+      }
+    }
+  }
+}
+
 export function exportMap(map, entities) {
   const tiles = {};
   for (let r = 0; r < map.rows; r++) {
@@ -144,7 +166,7 @@ export function isCenterBlock(c, r, map) {
   return c % (map.scaleFactor / 2) === 0 && r % (map.scaleFactor / 2) === 0;
 }
 export function getBlockCenters(map) {
-  return [...map.tiles.filter(([c, r]) => isCenterBlock())];
+  return [...map.tiles.filter(([c, r]) => isCenterBlock(c, r, map))];
 }
 
 export function surrounding(map, center, range) {
@@ -157,4 +179,78 @@ export function surrounding(map, center, range) {
     }
   }
   return pos;
+}
+
+export function nearTiles(pos, visited, maxCol, maxRow) {
+  const tiles = [
+    [pos[0], pos[1] - 1],
+    [pos[0] + 1, pos[1]],
+    [pos[0], pos[1] + 1],
+    [pos[0] - 1, pos[1]],
+  ];
+
+  return tiles.filter((t) => {
+    return (
+      t[0] >= 0 &&
+      t[0] < maxCol &&
+      t[1] >= 0 &&
+      t[1] < maxRow &&
+      !visited[`${t[0]}-${t[1]}`]
+    );
+  });
+}
+export function relPos(p1, p2) {
+  if (p1[1] - 1 === p2[1]) return 0;
+  else if (p1[0] + 1 === p2[0]) return 1;
+  else if (p1[1] + 1 === p2[1]) return 2;
+  else if (p1[0] - 1 === p2[0]) return 3;
+  else return false;
+}
+
+export function calcRoute(start, end, map) {
+  const stack = [];
+  const visited = {};
+  let step = 0;
+  const maxStep = 10000;
+  let pos = start;
+
+  while (`${pos[0]}-${pos[1]}` !== `${end[0]}-${end[1]}` && step < maxStep) {
+    visited[`${pos[0]}-${pos[1]}`] = true;
+    const near = nearTiles(pos, visited, map.cols, map.rows)
+      .filter(([c, r]) => {
+        return !map.getTile(c, r);
+      })
+      .sort((a, b) => {
+        return dstBtw2Pnts({ x: end[0], y: end[1] }, { x: a[0], y: a[1] }) <
+          dstBtw2Pnts({ x: end[0], y: end[1] }, { x: b[0], y: b[1] })
+          ? 1
+          : -1;
+      });
+
+    if (near.length > 0) {
+      const rand = Math.floor(Math.random() * near.length);
+      const next = near[rand];
+
+      // const bords = [0, 1, 2, 3].filter((i) => {
+      //   const isNext = i !== relPos(pos, next);
+      //   const isPrev =
+      //     stack.length > 0 ? i === relPos(pos, stack[stack.length - 1]) : false;
+      //   return !isNext && !isPrev;
+      // });
+
+      stack.push(pos);
+      pos = next;
+
+      step++;
+    } else {
+      stack.pop();
+      pos = stack[stack.length - 1];
+    }
+
+    if (typeof pos === "undefined") {
+      return false;
+    }
+  }
+
+  return true;
 }

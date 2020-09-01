@@ -87,13 +87,15 @@ function loadLevel(baseMap = null, levelIdx = 0) {
     );
     gameState.setState("map", {
       ...map,
-      ...generateMaze(map),
+      ...generateMaze(map, gameState),
     });
     const player = initPlayer(gameState);
 
     console.log(gameState.getState("map"));
 
-    const entities = loadEntities(generateEntities(gameState.getState("map")));
+    const entities = loadEntities(
+      generateEntities(gameState, gameState.getState("map"))
+    );
 
     gameState.updateGameStatus("play").updateState((gameData) => ({
       ...gameData,
