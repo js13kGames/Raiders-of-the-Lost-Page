@@ -10,6 +10,7 @@ export function getTilesInView(map) {
     endRow: Math.min(map.rows, Math.round(map.centerTile.r + map.viewRows / 2)),
   };
 }
+
 export function exportMap(map, entities) {
   const tiles = {};
   for (let r = 0; r < map.rows; r++) {
@@ -88,6 +89,7 @@ export function generateMap(width, height, tsize = 4, loadMap = null) {
     getTile: (col, row) => map.tiles[row * map.cols + col],
     setTile: (col, row, val) => (map.tiles[row * map.cols + col] = val),
     renderTile: () => null,
+    tCoords: () => tiles.map((_, i) => [Math.floor(i / cols), i % rows]),
   };
 
   return map;
@@ -110,12 +112,23 @@ export function setVOF(map, width, height) {
 
   return { ...map, ...camera };
 }
-
+/**
+ * Return the distance between two points
+ *
+ * @param {x,y} p1 Point 1
+ * @param {x,y} p2 Point 2
+ */
 export function dstBtw2Pnts(p1, p2) {
   const dx = p1.x - p2.x;
   const dy = p1.y - p2.y;
   return Math.sqrt(dx * dx + dy * dy);
 }
+/**
+ * Returns the point between 2 other points at a given distance
+ *
+ * @param {x,y} p1 Point 1
+ * @param {x,y} p2 Point 2
+ */
 export function pntBtw2Pnts(p1, p2, dist) {
   const ptsDist = dstBtw2Pnts(p1, p2);
   if (ptsDist < dist) {
@@ -126,4 +139,22 @@ export function pntBtw2Pnts(p1, p2, dist) {
     x: p1.x + distRatio * (p2.x - p1.x),
     y: p1.y + distRatio * (p2.y - p1.y),
   };
+}
+export function isCenterBlock(c, r, map) {
+  return c % (map.scaleFactor / 2) === 0 && r % (map.scaleFactor / 2) === 0;
+}
+export function getBlockCenters(map) {
+  return [...map.tiles.filter(([c, r]) => isCenterBlock())];
+}
+
+export function surrounding(map, center, range) {
+  const pos = [];
+  for (let c = -range; c < range; c++) {
+    for (let r = -range; r < range; r++) {
+      const [cc, cr] = center;
+      if (cc >= 0 && cc < map.cols && cr >= 0 && cr < map.rows)
+        pos.push([cc + c, cr + r]);
+    }
+  }
+  return pos;
 }

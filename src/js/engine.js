@@ -8,7 +8,7 @@ import {
 import {
   tileToCanvasPos,
   getTilesInView,
-  canvasPosToTile,
+  isCenterBlock,
   isBorder,
 } from "./map.js";
 import { addClass, removeClass } from "./domUtils.js";
@@ -146,8 +146,10 @@ export default function gameLoop(gameState) {
         .map((element) => {
           if (typeof element.run === "function") {
             element = element.run(gameState, element);
+
             if (element) {
               element.currentTiles = elementTiles(element, map);
+              element.blocked = calcBlocked(element.currentTiles, map, ghost);
             }
           }
           return element;
@@ -281,6 +283,7 @@ export function renderLoop(gameState) {
         const borders = [];
         ctx.beginPath();
         ctx.fillStyle = `rgba(0,0,0,${ghost ? "0.5" : "1"})`;
+
         mapTileInView(map, (c, r, cols) => {
           const tile = map.getTile(c, r);
           const { x, y } = tilePosition(c, r, map.tsize, pov);
@@ -290,6 +293,10 @@ export function renderLoop(gameState) {
           if (tile > 0) {
             ctx.rect(x, y, map.tsize, map.tsize);
           }
+
+          // if (isCenterBlock(c, r, map)) {
+          //   ctx.arc(x, y, 2, 0, 2 * Math.PI);
+          // }
         });
         ctx.fill();
 

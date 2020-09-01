@@ -1,7 +1,7 @@
 import createState from "./state.js";
 
 import { generateMap, setVOF } from "./map.js";
-import { generateMaze } from "./map_generator.js";
+import { generateMaze, generateEntities } from "./map_generator.js";
 // game specific
 import initPlayer from "./game_player.js";
 import { initMainMenu, initPauseMenu, initGameOverMenu } from "./game_menu.js";
@@ -49,10 +49,10 @@ function initGameState() {
 
 function loadEntities(entitiesData) {
   const entitiesFactory = {
-    "404": create404Entity,
+    404: create404Entity,
     auth: createAuthEntity,
-    "403": create403Entity,
-    "401": create401Entity,
+    403: create403Entity,
+    401: create401Entity,
     exit: createExitEntity,
   };
   return entitiesData
@@ -90,7 +90,10 @@ function loadLevel(baseMap = null, levelIdx = 0) {
       ...generateMaze(map),
     });
     const player = initPlayer(gameState);
-    const entities = loadEntities(startingMap.entities);
+
+    console.log(gameState.getState("map"));
+
+    const entities = loadEntities(generateEntities(gameState.getState("map")));
 
     gameState.updateGameStatus("play").updateState((gameData) => ({
       ...gameData,

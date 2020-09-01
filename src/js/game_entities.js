@@ -15,7 +15,7 @@ function incStep(step, direction) {
   return step + incr;
 }
 
-function movingEntitity(start, steps, speed, loop = true) {
+function movingEntitity(start, steps, speed, loop = false) {
   return {
     start: { ...start },
     steps: [start, ...steps],
@@ -27,6 +27,7 @@ function movingEntitity(start, steps, speed, loop = true) {
     lastVisited: 0,
     easingTicks: 0,
     direction: 0,
+    blocked: { t: false, r: false, b: false, l: false },
     loop,
     run: (gameState, element) => {
       const {
@@ -38,10 +39,12 @@ function movingEntitity(start, steps, speed, loop = true) {
         easingSpeed,
         easingMaxMult,
         easingFunc,
+        blocked,
       } = element;
+
+      const { map } = gameState.getByKeys(["map"]);
       const newStp = incStep(step, direction);
       let nextStep = element.steps[newStp] || null;
-      // FIX for last step
       element.easingTicks++;
       if (nextStep) {
         // se in step
@@ -66,9 +69,42 @@ function movingEntitity(start, steps, speed, loop = true) {
           element.steps[newStp],
           element.speed * easingFunc(element.easingTicks / easingSpeed)
         );
-        element.position = nextPos || position;
+
+        const t = {
+          x: Math.floor(element.position.x / map.tsize),
+          y: Math.floor(element.position.y / map.tsize),
+        };
+        const nt = {
+          x: Math.floor(element.steps[newStp].x / map.tsize),
+          y: Math.floor(element.steps[newStp].y / map.tsize),
+        };
+
+        const nextPx = pntBtw2Pnts(t, nt, 1);
+        let canContinue = true;
+        if (blocked.t && nextPx.y < t.y) {
+          canContinue = false;
+        }
+        if (blocked.r && nextPx.x > t.x) {
+          canContinue = false;
+        }
+
+        if (blocked.b && nextPx.y > t.y) {
+          canContinue = false;
+        }
+        if (blocked.l && nextPx.x < t.x) {
+          canContinue = false;
+        }
+
+        if (canContinue) {
+          element.position = nextPos || position;
+        } else {
+          element.direction = direction === 0 ? 1 : 0;
+          element.step++;
+          if (element.step > steps.length) element.step -= 1;
+          element.easingTicks = 0;
+        }
       } else if (loop) {
-        element.step = -1;
+        element.step -= 1;
       } else {
         element.direction = direction === 0 ? 1 : 0;
       }
