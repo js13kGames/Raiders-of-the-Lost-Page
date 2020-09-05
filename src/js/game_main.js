@@ -91,14 +91,12 @@ function loadLevel(baseMap = null, levelIdx = 0) {
     });
     const player = initPlayer(gameState);
 
-    console.log(gameState.getState("map"));
-
     const entities = loadEntities(
       generateEntities(gameState, gameState.getState("map"))
     );
     const levelConfig = {
       resetPct: 90,
-      groupPct: 30,
+      groupPct: 60,
       wPct: 40,
       nextT: 400,
       nextRand: 300,

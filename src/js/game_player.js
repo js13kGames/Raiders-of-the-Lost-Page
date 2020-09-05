@@ -133,7 +133,7 @@ export default function initPlayer(gameState) {
     return;
   }
   const playerConfig = {
-    pxSpeed: 0.8,
+    pxSpeed: 0.5,
     r: 10,
     angle: 0,
     position: { x: (map.cols / 2) * map.tsize, y: (map.rows / 2) * map.tsize },

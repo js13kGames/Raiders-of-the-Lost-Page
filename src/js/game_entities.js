@@ -1,5 +1,5 @@
 import createEntity from "./entities.js";
-import { pntBtw2Pnts } from "./map.js";
+import { dstBtw2Pnts, pntBtw2Pnts, findPath, tilePosition } from "./map.js";
 import { easeInOutCubic, drawFile } from "./rendering.js";
 import { render403, render401 } from "./game_rendering.js";
 
@@ -15,10 +15,136 @@ function incStep(step, direction) {
   return step + incr;
 }
 
+const runSteps = (gameState, element) => {
+  const {
+    steps,
+    step,
+    direction,
+    position,
+    loop,
+    easingSpeed,
+    easingMaxMult,
+    easingFunc,
+    blocked,
+  } = element;
+
+  const { map } = gameState.getByKeys(["map"]);
+  const newStp = incStep(step, direction);
+  let nextStep = element.steps[newStp] || null;
+  element.easingTicks++;
+  if (nextStep) {
+    // se in step
+    if (isInLocation(position, nextStep)) {
+      element.lastVisited = newStp;
+      element.easingTicks = 0;
+      // se primo o ultimo step
+      if (
+        (step === steps.length - 1 && direction === 0) ||
+        (step === 0 && direction === 1)
+      ) {
+        // cambia direzione
+        element.direction = direction === 0 ? 1 : 0;
+        // altrimenti
+      }
+      // aggiorna lo step
+      element.step = incStep(step, direction);
+    }
+
+    const nextPos = pntBtw2Pnts(
+      element.position,
+      element.steps[newStp],
+      element.speed * easingFunc(element.easingTicks / easingSpeed)
+    );
+
+    const t = {
+      x: Math.floor(element.position.x / map.tsize),
+      y: Math.floor(element.position.y / map.tsize),
+    };
+    const nt = {
+      x: Math.floor(element.steps[newStp].x / map.tsize),
+      y: Math.floor(element.steps[newStp].y / map.tsize),
+    };
+
+    const nextPx = pntBtw2Pnts(t, nt, 1);
+    let canContinue = true;
+    if (blocked.t && nextPx.y < t.y) {
+      canContinue = false;
+    }
+    if (blocked.r && nextPx.x > t.x) {
+      canContinue = false;
+    }
+
+    if (blocked.b && nextPx.y > t.y) {
+      canContinue = false;
+    }
+    if (blocked.l && nextPx.x < t.x) {
+      canContinue = false;
+    }
+
+    if (canContinue) {
+      element.position = nextPos || position;
+    } else {
+      element.direction = direction === 0 ? 1 : 0;
+      element.step++;
+      if (element.step > steps.length) element.step -= 1;
+      element.easingTicks = 0;
+    }
+  } else if (loop) {
+    element.step -= 1;
+  } else {
+    element.direction = direction === 0 ? 1 : 0;
+  }
+
+  return element;
+};
+
+const goTo = (gameState, element) => {
+  const { map, player } = gameState.getByKeys(["map", "player"]);
+
+  if (dstBtw2Pnts(player.position, element.position) > 300) return element;
+
+  if (element.updatePath > 10) {
+    element.path = findPath(
+      [
+        Math.floor(element.position.x / map.tsize),
+        Math.floor(element.position.y / map.tsize),
+      ],
+      [Math.floor(player.currentTile.c), Math.floor(player.currentTile.r)],
+      map
+    );
+    element.updatePath = 0;
+  } else {
+    element.updatePath++;
+  }
+
+  const newStp = element.path && element.path[0];
+
+  if (newStp) {
+    const nextPos = pntBtw2Pnts(
+      element.position,
+      tilePosition(newStp.coord[0], newStp.coord[1], map.tsize, { x: 0, y: 0 }),
+      element.speed
+    );
+
+    element.position = nextPos;
+    const nextTile = tilePosition(newStp.coord[0], newStp.coord[1], map.tsize, {
+      x: 0,
+      y: 0,
+    });
+    if (
+      Math.abs(Math.floor(nextPos.x) - nextTile.x) < 5 &&
+      Math.abs(Math.floor(nextPos.y) - nextTile.y) < 5
+    ) {
+      element.path.splice(0, 1);
+    }
+  }
+
+  return element;
+};
 function movingEntitity(start, steps, speed, loop = false) {
   return {
     start: { ...start },
-    steps: [start, ...steps],
+    steps: [...steps],
     step: 0,
     position: { ...start },
     speed,
@@ -29,88 +155,8 @@ function movingEntitity(start, steps, speed, loop = false) {
     direction: 0,
     blocked: { t: false, r: false, b: false, l: false },
     loop,
-    run: (gameState, element) => {
-      const {
-        steps,
-        step,
-        direction,
-        position,
-        loop,
-        easingSpeed,
-        easingMaxMult,
-        easingFunc,
-        blocked,
-      } = element;
-
-      const { map } = gameState.getByKeys(["map"]);
-      const newStp = incStep(step, direction);
-      let nextStep = element.steps[newStp] || null;
-      element.easingTicks++;
-      if (nextStep) {
-        // se in step
-        if (isInLocation(position, nextStep)) {
-          element.lastVisited = newStp;
-          element.easingTicks = 0;
-          // se primo o ultimo step
-          if (
-            (step === steps.length - 1 && direction === 0) ||
-            (step === 0 && direction === 1)
-          ) {
-            // cambia direzione
-            element.direction = direction === 0 ? 1 : 0;
-            // altrimenti
-          }
-          // aggiorna lo step
-          element.step = incStep(step, direction);
-        }
-
-        const nextPos = pntBtw2Pnts(
-          element.position,
-          element.steps[newStp],
-          element.speed * easingFunc(element.easingTicks / easingSpeed)
-        );
-
-        const t = {
-          x: Math.floor(element.position.x / map.tsize),
-          y: Math.floor(element.position.y / map.tsize),
-        };
-        const nt = {
-          x: Math.floor(element.steps[newStp].x / map.tsize),
-          y: Math.floor(element.steps[newStp].y / map.tsize),
-        };
-
-        const nextPx = pntBtw2Pnts(t, nt, 1);
-        let canContinue = true;
-        if (blocked.t && nextPx.y < t.y) {
-          canContinue = false;
-        }
-        if (blocked.r && nextPx.x > t.x) {
-          canContinue = false;
-        }
-
-        if (blocked.b && nextPx.y > t.y) {
-          canContinue = false;
-        }
-        if (blocked.l && nextPx.x < t.x) {
-          canContinue = false;
-        }
-
-        if (canContinue) {
-          element.position = nextPos || position;
-        } else {
-          element.direction = direction === 0 ? 1 : 0;
-          element.step++;
-          if (element.step > steps.length) element.step -= 1;
-          element.easingTicks = 0;
-        }
-      } else if (loop) {
-        element.step -= 1;
-      } else {
-        element.direction = direction === 0 ? 1 : 0;
-      }
-
-      return element;
-    },
+    updatePath: Math.floor(Math.random() * 10),
+    run: goTo,
   };
 }
 

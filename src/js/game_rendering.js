@@ -12,7 +12,7 @@ function circleWithSlashes(ctx, center, r, slashes = []) {
 }
 
 export function render403(gameState, element, relPos) {
-  const { ctx } = gameState.getByKeys(["ctx"]);
+  const { ctx, map } = gameState.getByKeys(["ctx", "map"]);
   const r = element.r;
 
   ctx.beginPath();
@@ -34,6 +34,22 @@ export function render403(gameState, element, relPos) {
   ctx.font = "12px serif";
   ctx.fillStyle = "white";
   ctx.fillText(element.type, relPos.x - r + 1, relPos.y + r + 6);
+
+  ctx.beginPath();
+
+  element.path = element.path || [];
+
+  element.path.forEach((t) => {
+    ctx.rect(
+      t.coord[0] * map.tsize + map.pov.x,
+      t.coord[1] * map.tsize + map.pov.y,
+      map.tsize,
+      map.tsize
+    );
+  });
+
+  ctx.fillStyle = "pink";
+  ctx.fill();
 }
 
 export function render401(gameState, element, relPos) {

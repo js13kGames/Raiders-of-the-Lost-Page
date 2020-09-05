@@ -269,3 +269,76 @@ export function calcRoute(start, end, map) {
 
   return true;
 }
+
+function retracePath(arrive) {
+  let n = arrive;
+  const path = [];
+  while (n.parent) {
+    path.push(n);
+    n = n.parent;
+  }
+
+  return path.reverse();
+}
+
+export function findPath(p1, p2, map, stepMax = 200) {
+  const nodes = map.tCoords().reduce((acc, [a, b]) => {
+    const l = `${a}-${b}`;
+    acc[l] = {
+      label: l,
+      coord: [a, b],
+      parent: null,
+      local: Infinity,
+      global: Infinity,
+    };
+    return acc;
+  }, {});
+
+  const arrive = nodes[`${p2[0]}-${p2[1]}`];
+  if (!arrive) {
+    return;
+  }
+  const visited = {};
+  const eur = (a, b) => dstBtw2Pnts({ x: a[0], y: a[1] }, { x: b[0], y: b[1] });
+  const byGlob = (a, b) => (a.global > b.global ? 1 : -1);
+  let current = nodes[`${p1[0]}-${p1[1]}`];
+  current.global = eur(p1, p2);
+  current.local = 0;
+  let toTest = [current];
+
+  let inc = 0;
+
+  while (current && inc < stepMax) {
+    let near = nearTiles(
+      [current.coord[0], current.coord[1]],
+      visited,
+      map.cols,
+      map.rows
+    ).filter(([a, b]) => map.getTile(a, b) === 0);
+
+    near.forEach(([a, b]) => {
+      const n = nodes[`${a}-${b}`];
+      if (current.local + 1 < n.local) {
+        n.parent = current;
+        n.local = current.local + 1;
+        n.global = n.local + eur(n.coord, p2);
+      }
+      if (!toTest.some((t) => t.label === n.label)) toTest.push(n);
+    });
+
+    visited[`${current.coord[0]}-${current.coord[1]}`] = true;
+    if (current.label === `${p2[0]}-${p2[1]}`) current = null;
+    else {
+      toTest = toTest.filter((n) => n.label !== current.label).sort(byGlob);
+      current = toTest.splice(0, 1)[0];
+
+      inc++;
+    }
+  }
+
+  if (arrive.parent) {
+    return retracePath(arrive);
+  } else {
+    return [];
+  }
+}

@@ -130,6 +130,7 @@ function addEntities(map, centers, num, entityFn) {
     const idx = Math.floor(Math.random() * centers.length);
     const sel = centers.splice(idx, 1)[0];
     entities.push(entityFn(t2p(sel, map.tsize)));
+    //entities.push(entityFn(t2p([50, 60], map.tsize)));
   }
 
   return entities;
@@ -153,9 +154,10 @@ function generateSteps(center, num) {
 export function generateEntities(gameState, map) {
   const config = {
     404: 5,
-    403: 3,
-    401: 3,
+    403: 5,
+    401: 0,
     auth: 0,
+    exit: 1,
   };
   const range = 1;
   const minDist = 20;
@@ -193,7 +195,18 @@ export function generateEntities(gameState, map) {
       return { position, type: "404" };
     }),
   ];
-
+  entities = [
+    ...entities,
+    ...addEntities(map, centers, config["exit"], (position) => {
+      return { position, type: "exit" };
+    }),
+  ];
+  entities = [
+    ...entities,
+    ...addEntities(map, centers, config["auth"], (position) => {
+      return { position, type: "auth" };
+    }),
+  ];
   entities = [
     ...entities,
     ...addEntities(map, centers, config["403"], (position) => {
@@ -201,8 +214,9 @@ export function generateEntities(gameState, map) {
         position,
         type: "403",
         speed: Math.floor(Math.random() * 5) + 2,
+        steps: [],
         // steps: [{ x: position.x + 200, y: position.y }],
-        steps: generateSteps(position, Math.floor(Math.random() * 5) + 1),
+        //steps: generateSteps(position, Math.floor(Math.random() * 5) + 1),
       };
     }),
   ];
