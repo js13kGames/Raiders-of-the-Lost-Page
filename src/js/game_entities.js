@@ -101,9 +101,10 @@ const runSteps = (gameState, element) => {
 const goTo = (gameState, element) => {
   const { map, player } = gameState.getByKeys(["map", "player"]);
 
-  if (dstBtw2Pnts(player.position, element.position) > 300) return element;
+  const { position, updatePathEvery, updatePath, maxPath } = element;
+  if (dstBtw2Pnts(player.position, position) > maxPath) return element;
 
-  if (element.updatePath > 10) {
+  if (updatePath > updatePathEvery) {
     element.path = findPath(
       [
         Math.floor(element.position.x / map.tsize),
@@ -121,7 +122,7 @@ const goTo = (gameState, element) => {
 
   if (newStp) {
     const nextPos = pntBtw2Pnts(
-      element.position,
+      position,
       tilePosition(newStp.coord[0], newStp.coord[1], map.tsize, { x: 0, y: 0 }),
       element.speed
     );
@@ -156,6 +157,8 @@ function movingEntitity(start, steps, speed, loop = false) {
     blocked: { t: false, r: false, b: false, l: false },
     loop,
     updatePath: Math.floor(Math.random() * 10),
+    updatePathEvery: 20,
+    maxPath: 400,
     run: goTo,
   };
 }
