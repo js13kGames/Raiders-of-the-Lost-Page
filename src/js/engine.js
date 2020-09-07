@@ -1,7 +1,7 @@
 import { renderText, renderHUD, genFont, resetBlur } from "./rendering.js"
 import { tileToCanvasPos, getTilesInView, isBorder, borders } from "./map.js"
 import { addClass, removeClass } from "./domUtils.js"
-import { renderTiles } from "./game_rendering.js"
+import { renderTiles, renderArrows } from "./game_rendering.js"
 
 const loopSpeed = Math.round(1000 / 75)
 
@@ -360,6 +360,8 @@ export function renderLoop(gameState) {
                         if (debug) drawBox(gameState, element)
                     }
                 })
+
+                renderArrows(gameState)
             }
         } else if (status === "loading") {
             // setup missing
