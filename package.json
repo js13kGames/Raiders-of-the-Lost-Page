@@ -23,6 +23,7 @@
     "through2": "^4.0.2"
   },
   "dependencies": {
-    "express-compile-sass": "^4.0.0"
+    "express-compile-sass": "^4.0.0",
+    "prettier": "^2.1.1"
   }
 }

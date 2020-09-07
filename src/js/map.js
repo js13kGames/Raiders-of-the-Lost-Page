@@ -100,7 +100,7 @@ export function tileToCanvasPos(c, r, canvas, map) {
 export function pxXSecond(map, tXs) {
   return tXs * map.tsize;
 }
-export function generateMap(width, height, tsize = 4, loadMap = null) {
+export function generateMap(width, height, tsize = 4) {
   let tiles = [];
 
   const cols = width;
@@ -109,8 +109,6 @@ export function generateMap(width, height, tsize = 4, loadMap = null) {
     for (let c = 0; c < cols; c++) {
       if (isBorder(c, r, cols, rows)) {
         tiles.push(1);
-      } else if (loadMap && loadMap["" + c + "-" + r]) {
-        tiles.push(loadMap["" + c + "-" + r]);
       } else {
         tiles.push(0);
       }

@@ -21,6 +21,24 @@ canvas {
   }
 }
 
+.congratulations {
+  border: 1px solid #000;
+  position: relative;
+
+  text-align: center;
+  z-index: 999999;
+  top: 50%;
+  margin:auto;
+  background-color: green;
+  display: none;
+  p {
+    display: block;
+    margin-top: calc(40% - 50px);
+    font-size: 30px;
+    font-weight: bold;
+  }
+}
+
 .you-died-screen {
   border: 1px solid #000;
   position: absolute;

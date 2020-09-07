@@ -30,6 +30,7 @@ export function initMainMenu(gameState, startFn, levelsFn) {
     const startBtn = domElement("#main-manu-start");
     const continueBtn = domElement("#main-manu-continue");
     const playButton = domElement("#main-manu-sound");
+    const congratulation = domElement("#congrats-screen");
 
     const { unlockedLevels } = gameState.getByKeys(["unlockedLevels"]);
 
@@ -76,8 +77,15 @@ export function initMainMenu(gameState, startFn, levelsFn) {
             show(startBtn);
             show(menuContainer);
             break;
+          case "finished":
+            hide(continueBtn);
+            show(congratulation)
+            show(startBtn);
+            show(menuContainer);
+            break;
           case "play":
             hide(menuContainer);
+            hide(congratulation)
             break;
 
           default:

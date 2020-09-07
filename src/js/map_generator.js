@@ -151,14 +151,7 @@ function generateSteps(center, num) {
   return steps;
 }
 // Note: entities should be placed near to each other (guardians???)
-export function generateEntities(gameState, map) {
-  const config = {
-    404: 5,
-    403: 5,
-    401: 0,
-    auth: 0,
-    exit: 1,
-  };
+export function generateEntities(gameState, map, config = {}) {
   const range = 1;
   const minDist = 20;
   const originCenters = map
@@ -191,43 +184,39 @@ export function generateEntities(gameState, map) {
 
   entities = [
     ...entities,
-    ...addEntities(map, centers, config["404"], (position) => {
+    ...addEntities(map, centers, config["404"].n, (position) => {
       return { position, type: "404" };
     }),
   ];
   entities = [
     ...entities,
-    ...addEntities(map, centers, config["exit"], (position) => {
+    ...addEntities(map, centers, config["exit"].n, (position) => {
       return { position, type: "exit" };
     }),
   ];
   entities = [
     ...entities,
-    ...addEntities(map, centers, config["auth"], (position) => {
+    ...addEntities(map, centers, config["auth"].n, (position) => {
       return { position, type: "auth" };
     }),
   ];
   entities = [
     ...entities,
-    ...addEntities(map, centers, config["403"], (position) => {
+    ...addEntities(map, centers, config["403"].n, (position) => {
       return {
         position,
         type: "403",
-        speed: Math.floor(Math.random() * 5) + 2,
-        steps: [],
-        // steps: [{ x: position.x + 200, y: position.y }],
-        //steps: generateSteps(position, Math.floor(Math.random() * 5) + 1),
+        speed:config["403"].speed || 3,       
       };
     }),
   ];
   entities = [
     ...entities,
-    ...addEntities(map, centers, config["401"], (position) => {
+    ...addEntities(map, centers, config["401"].n, (position) => {
       return {
         position,
         type: "401",
-        speed: Math.floor(Math.random() * 5) + 2,
-        steps: generateSteps(position, Math.floor(Math.random() * 5) + 1),
+        speed: config["401"].speed || 3
       };
     }),
   ];
