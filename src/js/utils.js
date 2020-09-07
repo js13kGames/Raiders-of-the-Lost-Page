@@ -9,7 +9,7 @@ export function compose(...restFns) {
     }, ...rest);
 }
 
-function toRadiant(angle) {
+export function toRadiant(angle) {
   return (angle * Math.PI) / 180;
 }
 export function findPoint2Angle(angle, start, dist) {

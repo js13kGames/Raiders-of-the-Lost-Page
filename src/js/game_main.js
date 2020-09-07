@@ -69,6 +69,7 @@ function loadEntities(entitiesData) {
 function loadLevel(levelConfig = {}, levelIdx = 0) {
     return (gameState) => {
         gameState.updateGameStatus("loading")
+
         const { canvas } = gameState.getByKeys(["canvas"])
 
         const cols = levelConfig.cols || 100

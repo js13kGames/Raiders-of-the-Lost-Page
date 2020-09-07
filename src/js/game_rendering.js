@@ -1,4 +1,4 @@
-import { findPoint2Angle } from "./utils.js"
+import { findPoint2Angle, toRadiant } from "./utils.js"
 import { mapTileInView, tilePosition, isBorder, pntBtw2Pnts } from "./map.js"
 
 function circleWithSlashes(ctx, center, r, slashes = []) {
@@ -152,31 +152,48 @@ export function renderArrows(gameState) {
 
         switch (e.type) {
             case "404":
-                ctx.strokeStyle = "blue"
+                ctx.fillStyle = "blue"
                 draw = true
                 break
             case "403":
             case "401":
-                ctx.strokeStyle = "red"
+                ctx.fillStyle = "red"
                 draw = false
 
                 break
             case "exit":
-                if (e.opened) ctx.strokeStyle = "green"
-                else ctx.strokeStyle = "orange"
-                draw = true
+                if (e.opened) {
+                    draw = true
+                    ctx.fillStyle = "green"
+                } else {
+                    ctx.fillStyle = "orange"
+                }
 
                 break
         }
         if (draw) {
-            const p1 = pntBtw2Pnts(player.position, e.position, 30)
-            const p2 = pntBtw2Pnts(player.position, e.position, 40)
+            const p1 = pntBtw2Pnts(player.position, e.position, 20)
+            const p2 = pntBtw2Pnts(player.position, e.position, 50)
             ctx.beginPath()
 
-            ctx.moveTo(p1.x + pov.x, p1.y + pov.y, 10, 10)
-            ctx.lineTo(p2.x + pov.x, p2.y + pov.y, 10, 10)
-            ctx.lineWidth = 3
-            ctx.stroke()
+            const p0 = findPoint2Angle(
+               0,
+                { x: p1.x + pov.x, y: p1.y + pov.y },
+                5
+            )
+            const p3 = findPoint2Angle(
+              108,
+               { x: p1.x + pov.x, y: p1.y + pov.y },
+               5
+           )
+            
+       
+            ctx.moveTo(p0.x, p0.y)
+           
+            ctx.lineTo(p2.x + pov.x, p2.y + pov.y)
+            ctx.lineTo(p3.x, p3.y)
+            ctx.lineTo(p0.x, p0.y)
+            ctx.fill()
         }
     })
 

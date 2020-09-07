@@ -158,9 +158,7 @@ export function generateEntities(gameState, map, config = {}) {
   let centers = [...originCenters];
 
   // TODO check is 
-  const blocked = centers.filter(([i, j]) => {
-    return !findPath([i, j], [map.cols / 2, map.rows / 2], map, 1000).length;
-  });
+  const blocked = centers.filter(([i, j]) => !calcRoute([i, j], [map.cols / 2, map.rows / 2], map));
 
   gameState.updateState((stateData) => ({
     ...stateData,
