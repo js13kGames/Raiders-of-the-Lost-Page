@@ -1,3 +1,26 @@
-// find more efficient way to  store it!!!
-export const map1 =
-  '{"tiles":{},"entities":[{"position":{"x":416,"y":580},"type":"404"},{"position":{"x":516,"y":580},"type":"auth"},{"position":{"x":530,"y":752},"type":"403","speed":5,"steps":[{"x":630,"y":752},{"x":630,"y":852},{"x":530,"y":852},{"x":530,"y":752}]},{"position":{"x":530,"y":650},"type":"401","speed":5,"steps":[{"x":630,"y":752}]},{"position":{"x":444,"y":488},"type":"exit"},{"position":{"x":576,"y":468},"type":"404"},{"position":{"x":580,"y":792},"type":"404"}],"cols":400,"rows":400}';
+const level0 = {
+    cols: 50,
+    rows: 50,
+    entities: {
+        404: { n: 1 },
+        403: { n: 0, speed: 1 },
+        401: { n: 0 },
+        auth: { n: 0 },
+        exit: { n: 1 },
+    },
+}
+const level1 = {
+  cols: 50,
+  rows: 50,
+  entities: {
+      404: { n: 2 },
+      403: { n: 0 },
+      401: { n: 1, speed: 2 },
+      auth: { n: 2 },
+      exit: { n: 1 },
+  },
+}
+
+export const levels = [
+   level0, level1
+]

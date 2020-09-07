@@ -244,13 +244,6 @@ export function calcRoute(start, end, map) {
       const rand = Math.floor(Math.random() * near.length);
       const next = near[rand];
 
-      // const bords = [0, 1, 2, 3].filter((i) => {
-      //   const isNext = i !== relPos(pos, next);
-      //   const isPrev =
-      //     stack.length > 0 ? i === relPos(pos, stack[stack.length - 1]) : false;
-      //   return !isNext && !isPrev;
-      // });
-
       stack.push(pos);
       pos = next;
 

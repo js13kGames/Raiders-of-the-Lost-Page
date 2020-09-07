@@ -19,12 +19,6 @@ export default function gameControllers(gameState) {
       case "ArrowRight":
         gameState.setState("moveH", "right");
         break;
-      case " ":
-        gameState.setState("ghost", true);
-        break;
-      case "Control":
-        gameState.setState("ghost", true);
-        break;
       default:
         gameState.setState("key", keyName);
         break;
@@ -42,10 +36,6 @@ export default function gameControllers(gameState) {
       case "ArrowLeft":
       case "ArrowRight":
         gameState.setState("moveH", null);
-        break;
-
-      case " ":
-        gameState.setState("ghost", false);
         break;
       default:
         gameState.setState("key", null);

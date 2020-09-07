@@ -7,6 +7,7 @@ import {
   nearTiles,
   relPos,
   borders,
+  findPath
 } from "./map.js";
 
 function scaleTiles(map, fact = 10) {
@@ -136,20 +137,6 @@ function addEntities(map, centers, num, entityFn) {
   return entities;
 }
 
-function generateSteps(center, num) {
-  const mDist = 100;
-  const steps = [];
-  for (let i = 0; i < num; i++) {
-    // choosen Random
-    const { x, y } = {
-      x: center.x + Math.floor(Math.random() * mDist),
-      y: center.y + Math.floor(Math.random() * mDist),
-    };
-    steps.push({ x, y });
-  }
-
-  return steps;
-}
 // Note: entities should be placed near to each other (guardians???)
 export function generateEntities(gameState, map, config = {}) {
   const range = 1;
@@ -170,8 +157,9 @@ export function generateEntities(gameState, map, config = {}) {
     });
   let centers = [...originCenters];
 
+  // TODO check is 
   const blocked = centers.filter(([i, j]) => {
-    return !calcRoute([i, j], [map.cols / 2, map.rows / 2], map);
+    return !findPath([i, j], [map.cols / 2, map.rows / 2], map, 1000).length;
   });
 
   gameState.updateState((stateData) => ({

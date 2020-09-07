@@ -5,7 +5,7 @@ import { generateMaze, generateEntities } from "./map_generator.js"
 // game specific
 import initPlayer from "./game_player.js"
 import { initMainMenu, initPauseMenu, initGameOverMenu } from "./game_menu.js"
-import { map1 } from "./game_maps.js"
+import { levels } from "./game_maps.js"
 import gameControllers from "./game_ctrls.js"
 import {
     create404Entity,
@@ -24,21 +24,8 @@ import { setStageDim } from "./domUtils.js"
 
 // Load from local storage
 
-const unlockedLevels = 1
+const unlockedLevels = 0
 
-const levels = [
-    {
-        cols: 50,
-        rows: 50,
-        entities: {
-            404: { n: 1 },
-            403: { n: 0, speed: 1 },
-            401: { n: 0 },
-            auth: { n: 0 },
-            exit: { n: 1 },
-        },
-    },
-]
 const startingLives = 3
 
 // Starting the game
@@ -52,6 +39,7 @@ function initGameState() {
         levels,
         tileSize,
         player: { lives: startingLives },
+        loadingLetters: [],
     })
     const canvas = document.getElementById("stage")
     setStageDim(canvas)
@@ -80,6 +68,7 @@ function loadEntities(entitiesData) {
 // TODO refactor
 function loadLevel(levelConfig = {}, levelIdx = 0) {
     return (gameState) => {
+        gameState.updateGameStatus("loading")
         const { canvas } = gameState.getByKeys(["canvas"])
 
         const cols = levelConfig.cols || 100
@@ -111,13 +100,16 @@ function loadLevel(levelConfig = {}, levelIdx = 0) {
             nextRand: 300,
             nextMin: 200,
         }
-        gameState.updateGameStatus("play").updateState((gameData) => ({
-            ...gameData,
-            currentLevel: levelIdx,
-            player: { ...player, equip: {} },
-            entities: [...entities],
-            levelConfig: mazeConfig,
-        }))
+        setTimeout(() => {
+            gameState.updateGameStatus("play").updateState((gameData) => ({
+                ...gameData,
+                currentLevel: levelIdx,
+                unlockedLevels: Math.min(levelIdx, gameData.levels.length),
+                player: { ...player, equip: {} },
+                entities: [...entities],
+                levelConfig: mazeConfig,
+            }))
+        }, 200)
 
         return gameState
     }
@@ -149,12 +141,13 @@ function initGame() {
             "currentLevel",
             "levels",
         ])
+
         if (currentLevel < levels.length - 1) {
             // TODO create function for transition between states
             const nextLevel = currentLevel + 1
             //gameState.updateGameStatus("play");
 
-            loadLevel(levels[nextLevel])(gameState)
+            loadLevel(levels[nextLevel], nextLevel)(gameState)
         } else {
             gameState.updateGameStatus("finished")
         }
