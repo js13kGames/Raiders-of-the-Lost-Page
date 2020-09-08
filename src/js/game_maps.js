@@ -2,7 +2,7 @@ const level0 = {
     cols: 50,
     rows: 50,
     entities: {
-        404: { n: 5 },
+        404: { n: 3 },
         403: { n: 0, speed: 1 },
         401: { n: 0 },
         auth: { n: 0 },
