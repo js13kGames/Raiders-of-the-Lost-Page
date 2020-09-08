@@ -3,6 +3,7 @@ import { pxXSecond } from "./map.js";
 import { easeInOutCubic, resetBlur } from "./rendering.js";
 import { domElement, addClass, removeClass, hide, show } from "./domUtils.js";
 import { partial, compose } from "./utils.js";
+import { pick404,lifeLost } from "./game_audio.js";
 
 function renderFF(canvas, ctx, element) {
   const { auth = false } = element.equip || {};
@@ -100,6 +101,7 @@ function playerCollideEnemy(gameState, player) {
   if (player.lives > 0) {
     //TODO refactor move this to a function
     gameState.updateGameStatus("died");
+    lifeLost(gameState)
     show(youDiedEl);
     addClass(youDiedEl, "fade-in-out");
     addClass(canvas, "fade-in");
@@ -152,6 +154,7 @@ export default function initPlayer(gameState) {
     onCollide: (gameState, player, obstacle) => {
       // refactor the if
       if (obstacle.type === "404") {
+        pick404(gameState)
         gameState.updateState(
           compose(
             partial(playerPickup404, 1),

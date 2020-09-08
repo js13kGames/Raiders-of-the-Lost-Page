@@ -2,6 +2,7 @@ import createEntity from "./entities.js";
 import { dstBtw2Pnts, pntBtw2Pnts, findPath, tilePosition } from "./map.js";
 import { easeInOutCubic, drawFile } from "./rendering.js";
 import { render403, render401 } from "./game_rendering.js";
+import {pickExit} from "./game_audio.js"
 
 function isInLocation(position, location) {
   return (
@@ -175,7 +176,7 @@ export function createExitEntity(baseData) {
     onCollide: (gameState, entity, oth) => {
       if (oth.player && entity.opened) {
         const { newLevel } = gameState.getByKeys(["newLevel"]);
-
+        pickExit(gameState);
         newLevel(gameState);
       }
     },

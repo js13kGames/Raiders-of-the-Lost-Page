@@ -107,6 +107,10 @@ export function generateMaze(map, gameState) {
       stack.pop();
       pos = stack[stack.length - 1];
     }
+
+    if (!pos) {
+      return;
+    }
   }
   const c = [map.cols / 2, map.rows / 2];
 

@@ -94,6 +94,8 @@ const chance = (ch) => Math.floor(Math.random() * 100) <= ch
 const updateWalls = (map, walls, config = {}) => {
     const baseConfig = { resetPct: 90, groupPct: 30, wPct: 40 }
     const c = { ...baseConfig, ...config }
+
+    /// TODO // check user can excape
     return walls.map((w, i) => {
         const { pos, bords, step, oBords } = w
 
@@ -117,6 +119,8 @@ const updateWalls = (map, walls, config = {}) => {
         return { ...w }
     })
 }
+
+
 export default function gameLoop(gameState) {
     const tick = gameState.getState("tick", 0)
     const now = +new Date()

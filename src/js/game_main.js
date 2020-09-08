@@ -24,7 +24,7 @@ import { setStageDim } from "./domUtils.js"
 
 // Load from local storage
 
-const unlockedLevels = 0
+const unlockedLevels = 10
 
 const startingLives = 3
 
@@ -34,6 +34,7 @@ const tileSize = 10
 function initGameState() {
     const state = createState({
         debug: false,
+        audio: true,
         showFps: true,
         unlockedLevels,
         levels,

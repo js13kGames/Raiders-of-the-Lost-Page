@@ -149,7 +149,7 @@ function noteToFrequency(note) {
 
 export function playSound(gameState, soundConf = {}) {
   // "sine", "square", "sawtooth", "triangle"
-  const sound = { ...{ note: "A4", duration: 0.05, volume: 0.5, oscillator: "square" }, ...soundConf };
+  const sound = { ...{ note: "A4", duration: 0.05, volume: 0.3, oscillator: "square" }, ...soundConf };
 
   if (sound.note) {
     const audioCtrl = gameState.getState("audioCtrl");

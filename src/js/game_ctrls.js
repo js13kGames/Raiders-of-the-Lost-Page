@@ -19,6 +19,13 @@ export default function gameControllers(gameState) {
       case "ArrowRight":
         gameState.setState("moveH", "right");
         break;
+      case "Escape":
+      if (gameState.gameStatus() === "play"){
+        gameState.updateGameStatus("paused")
+      } else if (gameState.gameStatus() === "paused"){
+        gameState.updateGameStatus("play")
+      }
+      break;
       default:
         gameState.setState("key", keyName);
         break;
