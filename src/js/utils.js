@@ -16,3 +16,7 @@ export function findPoint2Angle(angle, start, dist) {
   const rad = toRadiant(angle);
   return { x: start.x + dist * Math.sin(rad), y: start.y + dist * Math.cos(rad) };
 }
+
+export function reverseDirs (dirs) {
+  return [0, 1, 2, 3].filter((b) => dirs.indexOf(b) < 0)
+}

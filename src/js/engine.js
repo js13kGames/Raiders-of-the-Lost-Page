@@ -1,7 +1,8 @@
 import { renderText, renderHUD, genFont, resetBlur } from "./rendering.js"
-import { tileToCanvasPos, getTilesInView, isBorder, borders } from "./map.js"
+import { tileToCanvasPos, getTilesInView, isBorder, borders, mazeBorders, clearCenterMap } from "./map.js"
 import { addClass, removeClass } from "./domUtils.js"
 import { renderTiles, renderArrows } from "./game_rendering.js"
+import {reverseDirs, partial } from "./utils.js"
 
 const loopSpeed = Math.round(1000 / 75)
 
@@ -91,33 +92,21 @@ function elementTiles(element, map) {
 }
 const chance = (ch) => Math.floor(Math.random() * 100) <= ch
 
-const updateWalls = (map, walls, config = {}) => {
-    const baseConfig = { resetPct: 90, groupPct: 30, wPct: 40 }
-    const c = { ...baseConfig, ...config }
-
-    /// TODO // check user can excape
-    return walls.map((w, i) => {
-        const { pos, bords, step, oBords } = w
-
-        if (oBords && chance(c.resetPct)) {
-            w.bords = w.oBords
-            w.oBords = null
-        } else if (chance(c.groupPct)) {
-            w.oBords = w.bords
-            w.bords = w.bords.filter(() => chance(c.wPct))
+const updateWalls = (gameState, map) => {
+    const percRem = 10
+    const {mazepath }= gameState.getByKeys(["mazepath"])
+    for (const k in mazepath) {
+        if (mazepath.hasOwnProperty(k)) {
+            const missing = reverseDirs(mazepath[k])
+            mazepath[k] = [...mazepath[k],...missing.filter(() => chance(percRem))]
         }
-        borders(
-            pos,
-            map.scaleFactor,
-            map,
-            0,
-            0,
-            [0, 1, 2, 3].filter((b) => w.bords.indexOf(b) < 0)
-        )
-        borders(pos, map.scaleFactor, map, step, 0, w.bords)
+    }
 
-        return { ...w }
-    })
+
+    mazeBorders(map, mazepath, map.scaleFactor)
+    clearCenterMap(map, [Math.floor(map.cols/2), Math.floor(map.rows/2), 10])
+
+    gameState.setState("mazepath", mazepath)
 }
 
 
@@ -135,11 +124,10 @@ export default function gameLoop(gameState) {
     // https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
 
     if (gameState.gameStatus() === "play") {
-        let { player, map, ghost, walls, levelConfig } = gameState.getByKeys([
+        let { player, map, ghost, levelConfig } = gameState.getByKeys([
             "player",
             "map",
             "ghost",
-            "walls",
             "levelConfig",
         ])
 
@@ -163,10 +151,10 @@ export default function gameLoop(gameState) {
                         Math.floor(Math.random() * levelConfig.nextRand) +
                         levelConfig.nextMin
                     gameState.setState("levelConfig", { ...levelConfig, nextT })
-                    // gameState.setState(
-                    //     "walls",
-                    //     updateWalls(map, walls, levelConfig)
-                    // )
+                    gameState.setState(
+                        "walls",
+                        updateWalls(gameState, map, levelConfig)
+                    )
                     gameState.setState("tick", 0)
                 }
             }

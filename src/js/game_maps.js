@@ -10,8 +10,8 @@ const level0 = {
     },
 }
 const level1 = {
-  cols: 80,
-  rows: 80,
+  cols: 90,
+  rows: 90,
   entities: {
       404: { n: 1 },
       403: { n: 0 },

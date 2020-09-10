@@ -1,13 +1,13 @@
 import {
-    isBorder,
+    
     dstBtw2Pnts,
     isCenterBlock,
     surrounding,
     calcRoute,
     nearTiles,
     relPos,
-    borders,
-    findPath,
+    mazeBorders,
+    clearCenterMap,
 } from "./map.js"
 
 function scaleTiles(map, fact = 10) {
@@ -16,55 +16,6 @@ function scaleTiles(map, fact = 10) {
         cols: map.cols / fact,
         rows: map.rows / fact,
         tsize: map.tsize * fact,
-    }
-}
-
-const findWall = (walls, pos) =>
-    walls.filter(
-        (w) => `${pos[0]}-${pos[1]}` === `${w.pos[0]}-${w.pos[1]}`
-    )[0] || {
-        bords: [],
-    }
-
-function openToCenter(start, arrive, walls, cols, rows) {
-    let stack = []
-    let visited = {}
-    let pos = start
-    let it = 0
-
-    const maxTry = 100
-    while (
-        !!pos &&
-        `${pos[0]}-${pos[1]}` !== `${arrive[0]}-${arrive[1]}` &&
-        it < maxTry
-    ) {
-        it++
-        visited[`${pos[0]}-${pos[1]}`] = true
-        // BUG -> walls filter not consider border of near tiles!!!
-
-        const w = findWall(walls, pos)
-        const near = nearTiles(pos, visited, cols, rows)
-        const nAv = near.filter(
-            (n) =>
-                w.bords.indexOf(relPos(pos, n)) < 0 &&
-                findWall(walls, n).bords.indexOf(relPos(n, pos)) < 0
-        )
-
-        if (nAv.length > 0) {
-            const rand = Math.floor(Math.random() * nAv.length)
-            const next = nAv[rand]
-
-            stack.push(pos)
-            pos = next
-        } else {
-            stack.pop()
-            pos = stack[stack.length - 1]
-        }
-    }
-    if (!pos || it >= maxTry) {
-        return start
-    } else {
-        return null
     }
 }
 
@@ -119,84 +70,14 @@ export function generateMaze(map, gameState) {
         }
     }
     const c = [map.cols / 2, map.rows / 2]
-
-    for (const key in visited) {
-        if (visited.hasOwnProperty(key)) {
-            const [x, y] = key.split("-").map(e => parseFloat(e, 10));
-            const bs = visited[key]
-            
-            const bords = [0, 1, 2, 3].filter((b) => bs.indexOf(b) < 0)
-            borders([x,y], f, map, 1, 0, bords)
-        }
-    }
-
+ 
+    mazeBorders(map, visited, f)
+    clearCenterMap(map, c, 10)
+    gameState.setState("mazepath", visited)
     gameState.setState("mazestack", mazestack)
+    gameState.setState("originalMaze", true);
+
     
-    for (let i = -10; i < 10; i++) {
-        for (let j = -10; j < 10; j++) {
-            map.setTile(c[0] + i, c[1] + j, 0)
-        }
-    }
-    return { ...map, scaleFactor: f }
-}
-
-export function generateMaze_old(map, gameState) {
-    const f = 10
-    let scaledMap = { ...scaleTiles(map, f) }
-    const stack = []
-    const visited = {}
-    const tilesNum = scaledMap.cols * scaledMap.rows
-
-    let pos = [scaledMap.cols / 2, scaledMap.rows / 2]
-    let step = 0
-
-    let walls = []
-
-    while (Object.keys(visited).length < tilesNum) {
-        visited[`${pos[0]}-${pos[1]}`] = true
-        const near = nearTiles(pos, visited, scaledMap.cols, scaledMap.rows)
-
-        if (near.length > 0) {
-            const rand = Math.floor(Math.random() * near.length)
-            const next = near[rand]
-            const bords = [0, 1, 2, 3].filter((i) => {
-                const isNext = i === relPos(pos, next)
-                const isPrev =
-                    stack.length > 0
-                        ? i === relPos(pos, stack[stack.length - 1])
-                        : false
-                return !isNext && !isPrev
-            })
-
-            walls.push({ pos, bords, step })
-
-            stack.push(pos)
-            pos = next
-
-            step++
-        } else {
-            stack.pop()
-            pos = stack[stack.length - 1]
-        }
-
-        if (!pos) {
-            return
-        }
-    }
-    const c = [map.cols / 2, map.rows / 2]
-
-    gameState.setState("walls", walls)
-    gameState.setState("mazestack", stack)
-
-    walls.forEach(({ pos, bords, step }) => {
-        borders(pos, f, map, step, 0, bords)
-    })
-
-    for (let i = -10; i < 10; i++) {
-        for (let j = -10; j < 10; j++) {
-            map.setTile(c[0] + i, c[1] + j, 0)
-        }
-    }
     return { ...map, scaleFactor: f }
 }
 

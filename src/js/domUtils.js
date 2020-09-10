@@ -34,8 +34,8 @@ export const viewportDims = () => ({
   h: document.documentElement.clientHeight || 800,
 });
 
-export const setStageDim = (stage, dims = { w: 800, h: 600 }) => {
-  stage.width = dims.w;
-  stage.height = dims.h;
+export const setStageDim = (stage,  w= 800, h= 600 ) => {
+  stage.width = w;
+  stage.height = h;
   return stage;
 };

@@ -43,7 +43,7 @@ function initGameState() {
         loadingLetters: [],
     })
     const canvas = document.getElementById("stage")
-    setStageDim(canvas)
+    setStageDim(canvas, 800, 600)
     state.setState("canvas", canvas)
     state.setState("ctx", canvas.getContext("2d"))
     return state
