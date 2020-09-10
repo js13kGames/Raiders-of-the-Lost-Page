@@ -1,5 +1,4 @@
 import {
-    
     dstBtw2Pnts,
     isCenterBlock,
     surrounding,

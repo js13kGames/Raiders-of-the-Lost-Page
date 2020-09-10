@@ -66,7 +66,6 @@ export function mazeBorders(map, path, f) {
             const bords = reverseDirs(bs)
             borders([x, y], f, map, 0, bs)
             borders([x, y], f, map, 1, bords)
-            
         }
     }
 }

@@ -1,31 +1,11 @@
 import { renderText, renderHUD, genFont, resetBlur } from "./rendering.js"
-import { tileToCanvasPos, getTilesInView, isBorder, borders, mazeBorders, clearCenterMap } from "./map.js"
+import { tileToCanvasPos, getTilesInView, isBorder, mazeBorders, clearCenterMap } from "./map.js"
 import { addClass, removeClass } from "./domUtils.js"
 import { renderTiles, renderArrows } from "./game_rendering.js"
-import {reverseDirs, partial } from "./utils.js"
+import {reverseDirs } from "./utils.js"
 
 const loopSpeed = Math.round(1000 / 75)
 
-function rowIndexToLetter(num, rows, height) {
-    return String.fromCharCode(Math.floor(num / (height / rows)) + 97)
-}
-
-function generateSpacialHash(gameState) {
-    const cols = 10
-    const row = 10
-    const { map, entities, player } = gameState.getByKeys([
-        "map",
-        "entities",
-        "player",
-    ])
-
-    const cW = canvas.width / cols
-    const rW = canvas.height / row
-
-    const hash = {}
-
-    return hash
-}
 function calcBlocked(elementTiles, map, ghost) {
     const blocked = { t: false, r: false, b: false, l: false }
     const vtx = elementTiles.reduce((acc, v) => {
@@ -189,9 +169,6 @@ export default function gameLoop(gameState) {
 
         const startDebug = +new Date()
 
-        // GENERATE SPACIAL HASH
-        // const spacialHash = generateSpacialHash(gameState, cols, row);
-
         const elems = [
             ...(gameState.getState("entities") || []),
             gameState.getState("player"),
@@ -220,9 +197,7 @@ export default function gameLoop(gameState) {
     gameState.setState("lastTime", now)
     setTimeout(() => gameLoop(gameState), loopSpeed)
 }
-function calcAngleDegrees(x, y) {
-    return (Math.atan2(y, x) * 180) / Math.PI
-}
+
 function drawBox(gameState, entity) {
     const { ctx, canvas, map } = gameState.getByKeys(["ctx", "canvas", "map"])
     if (!entity.currentTiles) return
