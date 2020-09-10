@@ -75,6 +75,78 @@ export function generateMaze(map, gameState) {
     const visited = {}
     const tilesNum = scaledMap.cols * scaledMap.rows
 
+    let pos = [
+        scaledMap.cols / 2 - map.tsize / f / 2,
+        scaledMap.rows / 2 - map.tsize / f / 2,
+    ]
+    let step = 0
+
+    let walls = []
+    const mazestack = []
+    let exit = false
+    while (Object.keys(visited).length < tilesNum && !exit) {
+        let cell = []
+        if (stack.length > 0 ) {
+            const last = stack[stack.length-1]
+            const rPos = relPos(pos, last)
+            const invPos =  (rPos + 2) %4
+            if (rPos !== false) {
+                visited[`${last[0]}-${last[1]}`].push(invPos)
+                cell.push(rPos)
+            }
+
+        }
+        if (!visited[`${pos[0]}-${pos[1]}`]) visited[`${pos[0]}-${pos[1]}`] = cell;
+        const near = nearTiles(pos, visited, scaledMap.cols, scaledMap.rows)
+
+        if (near.length > 0) {
+            const rand = Math.floor(Math.random() * near.length)
+            const next = near[rand]
+            walls.push(pos)
+
+            stack.push(pos)
+            mazestack.push(pos)
+            pos = next
+
+            step++
+        } else {
+            stack.pop()
+            pos = stack[stack.length - 1]
+        }
+
+        if (!pos) {
+            exit = true
+        }
+    }
+    const c = [map.cols / 2, map.rows / 2]
+
+    for (const key in visited) {
+        if (visited.hasOwnProperty(key)) {
+            const [x, y] = key.split("-").map(e => parseFloat(e, 10));
+            const bs = visited[key]
+            
+            const bords = [0, 1, 2, 3].filter((b) => bs.indexOf(b) < 0)
+            borders([x,y], f, map, 1, 0, bords)
+        }
+    }
+
+    gameState.setState("mazestack", mazestack)
+    
+    for (let i = -10; i < 10; i++) {
+        for (let j = -10; j < 10; j++) {
+            map.setTile(c[0] + i, c[1] + j, 0)
+        }
+    }
+    return { ...map, scaleFactor: f }
+}
+
+export function generateMaze_old(map, gameState) {
+    const f = 10
+    let scaledMap = { ...scaleTiles(map, f) }
+    const stack = []
+    const visited = {}
+    const tilesNum = scaledMap.cols * scaledMap.rows
+
     let pos = [scaledMap.cols / 2, scaledMap.rows / 2]
     let step = 0
 
@@ -97,7 +169,6 @@ export function generateMaze(map, gameState) {
             })
 
             walls.push({ pos, bords, step })
-            gameState.setState("walls", walls)
 
             stack.push(pos)
             pos = next
@@ -113,6 +184,9 @@ export function generateMaze(map, gameState) {
         }
     }
     const c = [map.cols / 2, map.rows / 2]
+
+    gameState.setState("walls", walls)
+    gameState.setState("mazestack", stack)
 
     walls.forEach(({ pos, bords, step }) => {
         borders(pos, f, map, step, 0, bords)
@@ -167,8 +241,6 @@ export function generateEntities(gameState, map, config = {}) {
         config["auth"].n +
         config["403"].n +
         config["401"].n
-
-    console.log(originCenters.length, bestCenters.length, eNum)
 
     const takeRandom = (list, num) => {
         const out = []

@@ -98,7 +98,7 @@ function loadLevel(levelConfig = {}, levelIdx = 0) {
             resetPct: 90,
             groupPct: 60,
             wPct: 40,
-            nextT: 400,
+            nextT: 600,
             nextRand: 300,
             nextMin: 200,
         }

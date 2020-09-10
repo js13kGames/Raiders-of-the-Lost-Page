@@ -119,9 +119,10 @@ export function renderTiles(gameState) {
         const tile = map.getTile(c, r)
         const { x, y } = tilePosition(c, r, map.tsize, pov)
         if (isBorder(c, r, map.cols, map.rows)) {
-            borders.push([c, r])
+            borders.push([c, r])// check that
         }
         if (tile > 0) {
+            //ctx.fillText(1, x, y)
             ctx.rect(x, y, map.tsize, map.tsize)
         }
 
