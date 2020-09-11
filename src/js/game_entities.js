@@ -10,8 +10,10 @@ const goTo = (gameState, element) => {
         { auth = false } = player.equip || {};
 
   if (auth || player.ghost || dstBtw2Pnts(player.position, position) > maxDist) {
+    element.path = [];
+    element.updatePath = updatePathEvery+1;
+    
     return element;
-
   }
   if (updatePath > updatePathEvery) {
     element.path = findPath(
