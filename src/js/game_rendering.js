@@ -1,5 +1,6 @@
-import { findPoint2Angle, toRadiant } from "./utils.js"
+import { findPoint2Angle, partial } from "./utils.js"
 import { mapTileInView, tilePosition, isBorder, pntBtw2Pnts } from "./map.js"
+import { drawFile } from "./rendering.js"
 
 function circleWithSlashes(ctx, center, r, slashes = []) {
     ctx.arc(center.x, center.y, r, 0, 2 * Math.PI)
@@ -11,15 +12,9 @@ function circleWithSlashes(ctx, center, r, slashes = []) {
     })
 }
 
-export function render401(gameState, element, relPos) {
-    const { ctx, player, map } = gameState.getByKeys(["ctx", "player", "map"]),
-        r = element.r,
-        isFollowing = element.path && element.path.length
-
-    ctx.beginPath()
-
-    circleWithSlashes(ctx, relPos, r, [[225, 45]])
-    if (!element.disabled) {
+function drawEnemy(ctx, pos, r, disabled, text = "") {
+    circleWithSlashes(ctx, pos, r, [[225, 45]])
+    if (!disabled) {
         ctx.strokeStyle = "red"
     } else {
         ctx.strokeStyle = "rgba(100,100,200,0.6)"
@@ -29,22 +24,50 @@ export function render401(gameState, element, relPos) {
     ctx.stroke()
     ctx.beginPath()
 
-    ctx.rect(relPos.x - r - 2, relPos.y + r / 2, 25, 13)
+    ctx.rect(pos.x - r - 2, pos.y + r / 2, 25, 13)
     ctx.fillStyle = "rgba(255,0,0,0.8)"
     ctx.fill()
     ctx.beginPath()
 
     ctx.font = "12px serif"
     ctx.fillStyle = "white"
-    ctx.fillText(element.type, relPos.x - r + 1, relPos.y + r + 6)
+    ctx.fillText(text, pos.x - r + 1, pos.y + r + 6)
+}
+function draw404(ctx, pos, r) {
+    const fold = 5
+    const w = r - 2
+    const h = r
+    ctx.beginPath()
+    drawFile(ctx, { x: pos.x - w, y: pos.y - h }, w, h, fold)
+    ctx.strokeStyle = "blue"
+    ctx.lineWidth = 1.5
+    ctx.stroke()
     ctx.beginPath()
 
+    ctx.rect(pos.x - w - 5, pos.y + h / 2 - 11, 25, 13)
+    ctx.fillStyle = "rgba(0,0,0,0.8)"
+    ctx.fill()
+    ctx.font = "12px serif"
+    ctx.fillStyle = "white"
+    ctx.fillText("404", pos.x - w - 2, pos.y + h / 2)
+}
+export function render401(gameState, element, relPos) {
+    const { ctx, player, map } = gameState.getByKeys(["ctx", "player", "map"]),
+        r = element.r,
+        isFollowing = element.path && element.path.length
+
+    ctx.beginPath()
+
+    drawEnemy(ctx, relPos, r, element.disabled, element.type)
 
     // RENDER the path
     element.path = element.path || []
     ctx.moveTo(relPos.x, relPos.y)
     element.path.forEach((t) => {
-        ctx.lineTo(t.coord[0] * map.tsize + map.pov.x,t.coord[1] * map.tsize + map.pov.y,)
+        ctx.lineTo(
+            t.coord[0] * map.tsize + map.pov.x,
+            t.coord[1] * map.tsize + map.pov.y
+        )
     })
 
     ctx.strokeStyle = "pink"
@@ -90,7 +113,7 @@ export function renderTiles(gameState) {
         const tile = map.getTile(c, r)
         const { x, y } = tilePosition(c, r, map.tsize, pov)
         if (isBorder(c, r, map.cols, map.rows)) {
-            borders.push([c, r])// check that
+            borders.push([c, r]) // check that
         }
         if (tile > 0) {
             //ctx.fillText(1, x, y)
@@ -148,19 +171,18 @@ export function renderArrows(gameState) {
             ctx.beginPath()
 
             const p0 = findPoint2Angle(
-               0,
+                0,
                 { x: p1.x + pov.x, y: p1.y + pov.y },
                 5
             )
             const p3 = findPoint2Angle(
-              108,
-               { x: p1.x + pov.x, y: p1.y + pov.y },
-               5
-           )
-            
-       
+                108,
+                { x: p1.x + pov.x, y: p1.y + pov.y },
+                5
+            )
+
             ctx.moveTo(p0.x, p0.y)
-           
+
             ctx.lineTo(p2.x + pov.x, p2.y + pov.y)
             ctx.lineTo(p3.x, p3.y)
             ctx.lineTo(p0.x, p0.y)
@@ -169,4 +191,72 @@ export function renderArrows(gameState) {
     })
 
     ctx.fillStyle = "tomato"
+}
+
+export function render404(gameState, element, relPos) {
+    const { ctx, map, canvas } = gameState.getByKeys(["ctx", "map", "canvas"])
+    draw404(ctx, relPos, element.r)
+}
+
+function drawExit(ctx, pos, r, open) {
+    ctx.beginPath()
+    ctx.fillStyle = open ? "green" : "red"
+
+    ctx.arc(pos.x, pos.y, r, 0, 2 * Math.PI)
+    ctx.fill()
+}
+
+export function renderExit(gameState, element, relPos) {
+    const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"])
+
+    drawExit(ctx, relPos, element.r, element.opened)
+}
+
+function drawAuth(ctx, pos, r) {
+    ctx.beginPath();
+    ctx.fillStyle = "pink";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 0.5;
+
+    ctx.arc(pos.x, pos.y, r, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+}
+
+export function renderAuth(gameState, element, relPos) {
+    const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"]);
+    drawAuth(ctx,relPos,  element.r)
+}
+export function renderTutorialEnemy(canvas) {
+    const ctx = canvas.getContext("2d")
+
+    drawEnemy(
+        ctx,
+        { x: canvas.width / 2, y: canvas.height / 2 },
+        10,
+        false,
+        "401"
+    )
+}
+
+export function renderTutorial404(canvas) {
+    const ctx = canvas.getContext("2d")
+    draw404(ctx, { x: canvas.width / 2, y: canvas.height / 2 }, 10)
+}
+
+function renderTutorialExit(open, canvas) {
+    const ctx = canvas.getContext("2d")
+    drawExit(ctx, { x: canvas.width / 2, y: canvas.height / 2 }, 10, open)
+}
+
+export function renderTutorialExitOpen(canvas) {
+    renderTutorialExit(true, canvas)
+}
+export function renderTutorialExitClose(canvas) {
+    renderTutorialExit(false, canvas)
+}
+
+export function renderTutorialAuth(canvas) {
+    const ctx = canvas.getContext("2d")
+    drawAuth(ctx, { x: canvas.width / 2, y: canvas.height / 2 }, 4)
 }

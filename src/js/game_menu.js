@@ -1,15 +1,18 @@
 import createMenu from "./menus.js"
 import { domElement, hide, show } from "./domUtils.js"
+import {renderTutorialEnemy, renderTutorial404, renderTutorialExitOpen, renderTutorialExitClose, renderTutorialAuth} from "./game_rendering.js"
 
 export function initMainMenu(gameState, startFn, levelsFn) {
     const mainMenu = createMenu(gameState, (menu, gameState) => {
-        const menuContainer = domElement("#main-menu-container")
-        const startBtn = domElement("#main-manu-start")
-        const continueBtn = domElement("#main-manu-continue")
-        const audioButton = domElement("#main-manu-sound")
-        const congratulation = domElement("#congrats-screen")
-
-        const { unlockedLevels } = gameState.getByKeys(["unlockedLevels"])
+        const menuContainer = domElement("#main-menu-container"),
+            startBtn = domElement("#main-manu-start"),
+            continueBtn = domElement("#main-manu-continue"),
+            audioButton = domElement("#main-manu-sound"),
+            congratulation = domElement("#congrats-screen"),
+            howToBtn = domElement("#main-manu-how-to"),
+            howToScreen = domElement("#tutorial"),
+            escTutorialBtn = domElement("#esc-tutorial"),
+            { unlockedLevels } = gameState.getByKeys(["unlockedLevels"])
 
         for (let i = 0; i <= unlockedLevels; i++) {
             const levelName = i + 1
@@ -37,9 +40,26 @@ export function initMainMenu(gameState, startFn, levelsFn) {
 
         audioButton.addEventListener("click", (evt) => {
             evt.preventDefault()
-
             gameState.setState("audio", !gameState.getState("audio"))
         })
+
+        howToBtn.addEventListener("click",(evt) => {
+            evt.preventDefault()
+            gameState.setState("prevState", gameState.gameStatus())
+
+            gameState.updateGameStatus("tutorial")
+        } )
+        escTutorialBtn.addEventListener("click", (evt) =>{
+            evt.preventDefault()
+            gameState.updateGameStatus(gameState.getState("prevState"))
+        })
+
+
+        renderTutorialEnemy(domElement("#tutorial-enemy-canvas"))
+        renderTutorial404(domElement("#tutorial-404-canvas"))
+        renderTutorialExitOpen(domElement("#tutorial-exit-open"))
+        renderTutorialExitClose(domElement("#tutorial-exit-close"))
+        renderTutorialAuth(domElement("#tutorial-auth"))
 
         const m = {
             render: (gameState) => {
@@ -52,28 +72,41 @@ export function initMainMenu(gameState, startFn, levelsFn) {
                 }
 
                 switch (gameState.gameStatus()) {
+                    case "tutorial":
+                        hide(continueBtn)
+                        hide(menuContainer)
+                        hide(startBtn)
+                        show(howToScreen)
+                    break;
                     case "paused":
                         show(continueBtn)
                         show(menuContainer)
                         hide(startBtn)
+                        hide(howToScreen)
                         break
                     case "init":
                         hide(continueBtn)
                         show(startBtn)
                         show(menuContainer)
+                        hide(howToScreen)
+
                         break
                     case "finished":
                         hide(continueBtn)
                         show(congratulation)
                         show(startBtn)
                         show(menuContainer)
+                        hide(howToScreen)
+
                         break
                     case "play":
                         hide(menuContainer)
                         hide(congratulation)
+                        hide(howToScreen)
                         break
 
                     default:
+                        hide(howToScreen)
                         hide(menuContainer)
                 }
             },

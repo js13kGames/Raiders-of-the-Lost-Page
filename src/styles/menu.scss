@@ -17,7 +17,7 @@ ul.menu{
     margin: auto;
     width: 200px;
     position: absolute;
-    top: 20%;
+    top: 30%;
     left: calc(50% - 100px);
     li {
         width: 100%;
@@ -46,3 +46,32 @@ ul.menu{
     }
 }
 
+#tutorial {
+    display: none;
+    position: absolute;
+    margin: auto;
+    left: 3%;
+    height: 90%;
+    top: 3%;
+    width: 90%;
+    background-color: rgba(255,255,255,0.8);
+    padding: 2%;
+
+    ul {
+        li {
+            list-style: none;
+        }
+    }
+}
+
+#esc-tutorial {
+    border: none;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 10px;
+    border-radius: 10px;
+    color: white;
+    margin: auto;
+    width: 80px;
+    display: block;
+    margin-top: 120px;
+}

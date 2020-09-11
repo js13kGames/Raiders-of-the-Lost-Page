@@ -2,17 +2,16 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Js13k</title>
+    <title>Raiders of the lost page</title>
     <link rel="stylesheet" type="text/css" href="styles/main.scss" />
   </head>
   <body>
-    
-
+  
     <div class="stage-container">
 
       <div id="pause-menu-container" class="ctrl-container">
       <button role="button" id="play-pause-btn" class="btn pause-btn">
-        Pause
+        | |
       </button>
     </div>
 
@@ -23,19 +22,61 @@
       </button>
     </div>
 
+    <div id="tutorial" class="ctrl-container">
+      <p>
+        Welcome young browser, are you ready to start this incredible quest?
+      </p> 
+      <p>
+        You will search the whole kingdom of the Internet for the mythical Lost Pages; but be aware, because enemies lurk in the shadows....
+      </p>
+      <ul>
+        <li>
+          <canvas id="tutorial-404-canvas" width="40" height="40"></canvas> Collect all the mythical Lost Pages around the maze
+        </li>
+        <li>
+          <canvas id="tutorial-exit-close" width="40" height="40"></canvas> Each maze has at least one closed door
+        </li>
+        <li>
+          <canvas id="tutorial-exit-open" width="40" height="40"></canvas> Once you have collected all the pages, the door will open
+        </li>
+        <li>
+          <canvas id="tutorial-enemy-canvas" width="40" height="40" ></canvas> Run away from the enemies, if you come too close they will start to chase you
+        </li>
+        <li>
+          <canvas id="tutorial-auth" width="40" height="40"></canvas> If you pick up a Gem of Authentication, enemies will not bother you for few seconds
+        </li>
+      </ul>
+
+  <p>
+
+
+Do not waste time, every second is important, as the Mighty Indexer will consume all the wall of the maze
+  </p> 
+       <button role="button" id="esc-tutorial" class="btn">
+        I'm ready
+      </button>
+
+    </div>
+
     <div id="main-menu-container" class="ctrl-container">
+      <h1>Raiders of the Lost Page</h1>
       <ul class="menu">
         <li>
           <button role="button" id="main-manu-start" class="btn">
             Start New Game
           </button>
         </li>
-
         <li>
           <button role="button" id="main-manu-continue" class="btn">
             Continue
           </button>
         </li>
+        <li>
+          <button role="button" id="main-manu-how-to" class="btn">
+            How to play
+          </button>
+        </li>
+
         <li>
           <button role="button" id="main-manu-sound" class="btn">
           </button>

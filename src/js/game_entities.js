@@ -1,7 +1,7 @@
 import createEntity from "./entities.js";
 import { dstBtw2Pnts, pntBtw2Pnts, findPath, tilePosition } from "./map.js";
-import { easeInOutCubic, drawFile } from "./rendering.js";
-import { render401 } from "./game_rendering.js";
+import { easeInOutCubic } from "./rendering.js";
+import { render401, render404,renderExit, renderAuth } from "./game_rendering.js";
 import {pickExit} from "./game_audio.js"
 
 const goTo = (gameState, element) => {
@@ -117,31 +117,7 @@ export function create404Entity(baseData) {
     type: "404",
     r: 10,
     collide: true,
-    render: (gameState, element, relPos) => {
-      const { ctx, map, canvas } = gameState.getByKeys([
-        "ctx",
-        "map",
-        "canvas",
-      ]);
-
-      const w = element.r - 2;
-      const h = element.r;
-      const fold = 5;
-
-      ctx.beginPath();
-      drawFile(ctx, { x: relPos.x - w, y: relPos.y - h }, w, h, fold);
-      ctx.strokeStyle = "blue";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      ctx.beginPath();
-
-      ctx.rect(relPos.x - w - 5, relPos.y + h / 2 - 11, 25, 13);
-      ctx.fillStyle = "rgba(0,0,0,0.8)";
-      ctx.fill();
-      ctx.font = "12px serif";
-      ctx.fillStyle = "white";
-      ctx.fillText("404", relPos.x - w - 2, relPos.y + h / 2);
-    },
+    render: render404,
   });
 
   return entity;
@@ -154,15 +130,7 @@ export function createExitEntity(baseData) {
     opened: false,
     collide: false,
     r: 10,
-    render: (gameState, element, relPos) => {
-      const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"]);
-
-      ctx.beginPath();
-      ctx.fillStyle = element.opened ? "green" : "red";
-
-      ctx.arc(relPos.x, relPos.y, element.r, 0, 2 * Math.PI);
-      ctx.fill();
-    },
+    render: renderExit,
     onCollide: (gameState, entity, oth) => {
       if (oth.player && entity.opened) {
         const { newLevel } = gameState.getByKeys(["newLevel"]);
@@ -208,18 +176,7 @@ export function createAuthEntity(baseData) {
         },
       },
     }),
-    render: (gameState, element, relPos) => {
-      const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"]);
-
-      ctx.beginPath();
-      ctx.fillStyle = "pink";
-      ctx.strokeStyle = "black";
-      ctx.lineWidth = 0.5;
-
-      ctx.arc(relPos.x, relPos.y, element.r, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.stroke();
-    },
+    render: renderAuth,
     run: (gameState, entity) => {
       const f0f = gameState
         .getState("entities", [])

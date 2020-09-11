@@ -1,6 +1,14 @@
 body {
   background-color: #000;
 }
+h1 {
+  top: 40px;
+    color: red;
+    text-align: center;
+    font-family: arial;
+    display: block;
+    position: relative;
+}
 .stage-container {
   width: 800px;
   position: relative;
@@ -8,7 +16,7 @@ body {
   margin: auto;
   margin-top: 10px;
 }
-canvas {
+#stage {
   border: 1px solid #000;
   position: absolute;
   top: 0;
