@@ -7,7 +7,7 @@ import { pick404, lifeLost } from "./game_audio.js"
 
 function renderFF(canvas, ctx, element) {
     const { auth = false } = element.equip || {}
-    const ghost = element.ghost ? "0.5": "1"
+    const ghost = element.ghost ? "0.5" : "1"
     const px = canvas.width / 2
     const py = canvas.height / 2
     const playerAngle = element.angle || 0
@@ -69,8 +69,8 @@ function changePlayerps(newps, gameData) {
         ...gameData,
         player: {
             ...gameData.player,
-            ps: { ...newps },
-        },
+            ps: { ...newps }
+        }
     }
 }
 
@@ -79,8 +79,8 @@ function changePlayerLive(updateFn, gameData) {
         ...gameData,
         player: {
             ...gameData.player,
-            lives: updateFn(gameData.player.lives),
-        },
+            lives: updateFn(gameData.player.lives)
+        }
     }
 }
 function playerPickup404(pointAdded, gameData) {
@@ -89,8 +89,8 @@ function playerPickup404(pointAdded, gameData) {
         player: {
             ...gameData.player,
             lastps: { ...gameData.player.ps },
-            pts: gameData.player.pts + pointAdded,
-        },
+            pts: gameData.player.pts + pointAdded
+        }
     }
 }
 
@@ -99,18 +99,18 @@ function setPlayerGhost(val, gameData) {
         ...gameData,
         player: {
             ...gameData.player,
-            ghost: val,
-        },
+            ghost: val
+        }
     }
 }
 
 //
 function playerCollideEnemy(gameState, player) {
-  const dieDuration = 3000;
-  const ghostDuration = 2000;
-  const playerResume = 2500
+    const dieDuration = 3000
+    const ghostDuration = 2000
+    const playerResume = 2500
 
-  if (player.ghost) return;
+    if (player.ghost) return
     const youDiedEl = domElement(".you-died-screen")
     const canvas = gameState.getState("canvas")
     if (player.lives > 0) {
@@ -162,11 +162,11 @@ export default function initPlayer(gameState) {
         angle: 0,
         ps: {
             x: (map.cols / 2) * map.tsize,
-            y: (map.rows / 2) * map.tsize,
+            y: (map.rows / 2) * map.tsize
         },
         lastps: {
             x: (map.cols / 2) * map.tsize,
-            y: (map.rows / 2) * map.tsize,
+            y: (map.rows / 2) * map.tsize
         },
         player: true,
         movingTicks: 0,
@@ -176,12 +176,12 @@ export default function initPlayer(gameState) {
             const { ctx, canvas } = gameState.getByKeys([
                 "ctx",
                 "map",
-                "canvas",
+                "canvas"
             ])
             renderFF(canvas, ctx, player)
         },
         onCollide: (gameState, player, obstacle) => {
-          if (player.ghost) return;
+            if (player.ghost) return
             // refactor the if
             if (obstacle.type === "404") {
                 pick404(gameState)
@@ -202,9 +202,9 @@ export default function initPlayer(gameState) {
                                 ...gameData.player,
                                 equip: {
                                     ...gameData.player.equip,
-                                    ...obstacle.onCollect(obstacle),
-                                },
-                            },
+                                    ...obstacle.onCollect(obstacle)
+                                }
+                            }
                         }
                     }, partial(removeEntityById, obstacle.id))
                 )
@@ -214,7 +214,7 @@ export default function initPlayer(gameState) {
             const { moveV, moveH, map } = gameState.getByKeys([
                 "moveV",
                 "moveH",
-                "map",
+                "map"
             ])
             const speed = pxXSecond(map, element.pxSpeed)
             const equip = element.equip
@@ -232,7 +232,7 @@ export default function initPlayer(gameState) {
                     let cameraPos = gameData.map.cameraPos
                     const newData = {
                         ...gameData,
-                        map: { ...gameData.map, cameraPos },
+                        map: { ...gameData.map, cameraPos }
                     }
                     return newData
                 })
@@ -295,7 +295,7 @@ export default function initPlayer(gameState) {
                 element.movingTicks++
             }
             return element
-        },
+        }
     }
 
     const player = createEntity({ ...playerData, ...playerConfig })

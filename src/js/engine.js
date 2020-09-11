@@ -4,7 +4,7 @@ import {
     getTilesInView,
     isBorder,
     mazeBorders,
-    clearCenterMap,
+    clearCenterMap
 } from "./map.js"
 import { addClass, removeClass } from "./domUtils.js"
 import { renderTiles, renderArrows, renderHUD } from "./game_rendering.js"
@@ -60,7 +60,7 @@ function calcBlocked(elementTiles, map) {
 function elementTiles(element, map) {
     const centerTile = {
         c: element.ps.x / map.tsize,
-        r: element.ps.y / map.tsize,
+        r: element.ps.y / map.tsize
     }
 
     const tiles = []
@@ -69,7 +69,7 @@ function elementTiles(element, map) {
         for (let r = -dimension; r < dimension; r++) {
             tiles.push({
                 c: Math.round(centerTile.c + c),
-                r: Math.round(centerTile.r + r),
+                r: Math.round(centerTile.r + r)
             })
         }
     }
@@ -86,7 +86,7 @@ const updateWalls = (gameState, map) => {
             const missing = reverseDirs(mazepath[k])
             mazepath[k] = [
                 ...mazepath[k],
-                ...missing.filter(() => chance(percRem)),
+                ...missing.filter(() => chance(percRem))
             ]
         }
     }
@@ -95,7 +95,7 @@ const updateWalls = (gameState, map) => {
     clearCenterMap(map, [
         Math.floor(map.cols / 2),
         Math.floor(map.rows / 2),
-        10,
+        10
     ])
 
     gameState.setState("mazepath", mazepath)
@@ -103,11 +103,11 @@ const updateWalls = (gameState, map) => {
 
 export default function gameLoop(gameState) {
     const tick = gameState.getState("tick", 0),
-     now = +new Date(),
-     lastTime = gameState.getState("lastTime", +new Date()),
-     deltaTime = now - lastTime,
-     actualFps = Math.round(1000 / deltaTime)
-     
+        now = +new Date(),
+        lastTime = gameState.getState("lastTime", +new Date()),
+        deltaTime = now - lastTime,
+        actualFps = Math.round(1000 / deltaTime)
+
     gameState.setState("actualFps", actualFps)
     gameState.setState("tick", tick + 1)
 
@@ -115,21 +115,21 @@ export default function gameLoop(gameState) {
         let { player, map, levelConfig } = gameState.getByKeys([
             "player",
             "map",
-            "levelConfig",
+            "levelConfig"
         ])
 
         if (player && map) {
             const playerTile = {
                 c: player.ps.x / map.tsize,
-                r: player.ps.y / map.tsize,
+                r: player.ps.y / map.tsize
             }
             player.currentTile = playerTile
             gameState.updateState((gameData) => ({
                 ...gameData,
                 map: {
                     ...gameData.map,
-                    centerTile: playerTile,
-                },
+                    centerTile: playerTile
+                }
             }))
 
             if (levelConfig) {
@@ -167,12 +167,12 @@ export default function gameLoop(gameState) {
 
                     return element
                 })
-                .filter((element) => !!element),
+                .filter((element) => !!element)
         }))
 
         const elems = [
             ...(gameState.getState("entities") || []),
-            gameState.getState("player"),
+            gameState.getState("player")
         ]
             .filter((e) => !!e && e.currentTiles)
             .map((e) => {
@@ -224,7 +224,7 @@ export function renderLoop(gameState) {
         player,
         debug,
         levelConfig,
-        tick,
+        tick
     } = gameState.getByKeys([
         "ctx",
         "canvas",
@@ -232,7 +232,7 @@ export function renderLoop(gameState) {
         "player",
         "debug",
         "levelConfig",
-        "tick",
+        "tick"
     ])
     const status = gameState.gameStatus()
     // TODO refactor
@@ -264,20 +264,20 @@ export function renderLoop(gameState) {
 
                 const canvasCenter = {
                     x: canvas.width / 2,
-                    y: canvas.height / 2,
+                    y: canvas.height / 2
                 }
                 const mapCenter = {
                     x: ((map.cols * playerTile.c) / map.cols) * map.tsize,
-                    y: ((map.rows * playerTile.r) / map.rows) * map.tsize,
+                    y: ((map.rows * playerTile.r) / map.rows) * map.tsize
                 }
 
                 const pov = {
                     x: canvasCenter.x - mapCenter.x,
-                    y: canvasCenter.y - mapCenter.y,
+                    y: canvasCenter.y - mapCenter.y
                 }
                 gameState.updateState((gameData) => ({
                     ...gameData,
-                    map: { ...gameData.map, pov },
+                    map: { ...gameData.map, pov }
                 }))
 
                 if (levelConfig) {
@@ -306,7 +306,7 @@ export function renderLoop(gameState) {
                 maze.forEach((m) => {
                     const [x, y] = [
                         m[0] * map.scaleFactor * map.tsize + pov.x,
-                        m[1] * map.scaleFactor * map.tsize + pov.y,
+                        m[1] * map.scaleFactor * map.tsize + pov.y
                     ]
 
                     ctx.rect(
@@ -338,7 +338,7 @@ export function renderLoop(gameState) {
                         ) {
                             element.render(gameState, element, {
                                 x: element.ps.x + pov.x,
-                                y: element.ps.y + pov.y,
+                                y: element.ps.y + pov.y
                             })
                         }
 
@@ -376,11 +376,11 @@ export function renderLoop(gameState) {
 
             renderFps(`${gameState.getState("actualFps")} FPS`, {
                 x: canvas.width - 80,
-                y: 85,
+                y: 85
             })
             renderFps(`${gameState.getState("actualFpsRender")} FPSR`, {
                 x: canvas.width - 80,
-                y: 100,
+                y: 100
             })
 
             if (player.currentTile) {
@@ -388,7 +388,7 @@ export function renderLoop(gameState) {
                     `c: ${player.currentTile.c}, r: ${player.currentTile.r}`,
                     {
                         x: canvas.width - 80,
-                        y: 115,
+                        y: 115
                     }
                 )
             }

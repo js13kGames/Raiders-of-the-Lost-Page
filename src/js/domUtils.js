@@ -37,7 +37,7 @@ export function show(el, display = "block") {
 export function viewportDims() {
     return [
         document.documentElement.clientWidth - 50,
-        document.documentElement.clientHeight - 50,
+        document.documentElement.clientHeight - 50
     ]
 }
 

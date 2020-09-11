@@ -11,7 +11,7 @@ import {
     create404Entity,
     create401Entity,
     createExitEntity,
-    createAuthEntity,
+    createAuthEntity
 } from "./game_entities.js"
 import {
     setStageDim,
@@ -44,7 +44,7 @@ function initGameState() {
         levels,
         tileSize,
         player: { lives: startingLives },
-        loadingLetters: [],
+        loadingLetters: []
     })
     const canvas = document.getElementById("stage")
     setStageDim(
@@ -64,7 +64,7 @@ function loadEntities(entitiesData) {
         404: create404Entity,
         auth: createAuthEntity,
         401: create401Entity,
-        exit: createExitEntity,
+        exit: createExitEntity
     }
     return entitiesData
         .map((e) =>
@@ -81,7 +81,6 @@ function loadLevel(levelConfig = {}, levelIdx = 0) {
         const { canvas } = gameState.getByKeys(["canvas"])
         const loading = domElement("#loading")
 
-
         gameState.updateGameStatus("loading")
         show(loading, "flex")
         setTimeout(() => {
@@ -95,7 +94,7 @@ function loadLevel(levelConfig = {}, levelIdx = 0) {
             )
             gameState.setState("map", {
                 ...map,
-                ...generateMaze(map, gameState),
+                ...generateMaze(map, gameState)
             })
             const player = initPlayer(gameState)
 
@@ -112,7 +111,7 @@ function loadLevel(levelConfig = {}, levelIdx = 0) {
                 wPct: 40,
                 nextT: 600,
                 nextRand: 300,
-                nextMin: 200,
+                nextMin: 200
             }
             hide(loading)
             gameState.updateGameStatus("play").updateState((gameData) => ({
@@ -121,7 +120,7 @@ function loadLevel(levelConfig = {}, levelIdx = 0) {
                 unlockedLevels: Math.min(levelIdx, gameData.levels.length),
                 player: { ...player, equip: {} },
                 entities: [...entities],
-                levelConfig: mazeConfig,
+                levelConfig: mazeConfig
             }))
         }, 100)
 
@@ -145,7 +144,7 @@ function initGame() {
     const newLevel = (gameState) => {
         const { currentLevel, levels } = gameState.getByKeys([
             "currentLevel",
-            "levels",
+            "levels"
         ])
 
         if (currentLevel < levels.length - 1) {
@@ -163,7 +162,7 @@ function initGame() {
         gameState.updateState((gameData) => ({
             ...gameData,
             player: { lives: startingLives },
-            entities: [],
+            entities: []
         }))
         gameState.updateGameStatus("init")
     }
@@ -175,11 +174,11 @@ function initGame() {
         restartFn
     )
     const gameOverMenu = initGameOverMenu(gameState, restartFn)
-        hide(loading)
+    hide(loading)
     gameState.updateState((state) => {
         return {
             ...state,
-            menus: { pause: pauseMenu, main: mainMenu, gameover: gameOverMenu },
+            menus: { pause: pauseMenu, main: mainMenu, gameover: gameOverMenu }
         }
     })
 

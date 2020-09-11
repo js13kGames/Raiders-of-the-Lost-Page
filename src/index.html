@@ -1,117 +1,168 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Raiders of the Lost Page</title>
-    <link rel="stylesheet" type="text/css" href="styles/main.scss" />
-  </head>
-  <body>
-  
-    <div id="s-c" class="sc">
-      <div id="pmc" class="cc">
-      <button role="button" id="play-pause-btn" class="btn pause-btn">
-        | |
-      </button>
-    </div>
+    <head>
+        <meta charset="utf-8" />
+        <title>Raiders of the Lost Page</title>
+        <link rel="stylesheet" type="text/css" href="styles/main.scss" />
+    </head>
+    <body>
+        <div id="s-c" class="sc">
+            <div id="pmc" class="cc">
+                <button role="button" id="play-pause-btn" class="btn pause-btn">
+                    | |
+                </button>
+            </div>
 
-    <div id="game-over-menu" class="cc gameover-menu fls"> 
-      <p>Game Over</p>
-      <p>It's not the years, honey, it's the mileage.</p>
-      <button role="button" id="restart-btn-died" class="btn restart-btn">
-        Back to main menu
-      </button>
-    </div>
+            <div id="game-over-menu" class="cc gameover-menu fls">
+                <p>Game Over</p>
+                <p>It's not the years, honey, it's the mileage.</p>
+                <button
+                    role="button"
+                    id="restart-btn-died"
+                    class="btn restart-btn"
+                >
+                    Back to main menu
+                </button>
+            </div>
 
-    <div id="tutorial" class="cc">
-      <p class="tutorial-intro">
-        Welcome young <em>Browser</em>, are you ready to start this incredible quest?
-      </p> 
-      <p  class="tutorial-intro">
-        You will search the whole <em>Empire of the Internet</em> for the lost <em>Lost Pages</em>; but be aware, because enemies lurk in the shadows....
-      </p>
-      <ul>
-        <li>
-          <canvas id="tutorial-404-canvas" width="40" height="40"></canvas><div>Collect all the <em>404 Pages</em> around the maze.</div>
-        </li>
-        <li>
-          <canvas id="tutorial-exit-close" width="40" height="40"></canvas> <div>Each maze has at least one <em>204 Gate.</em></div>
-        </li>
-        <li>
-          <canvas id="tutorial-exit-open" width="40" height="40"></canvas><div> Once you have collected all the pages, the gate will open becoming a <em>200 Gate</em> that will bring you ouside the maze.</div>
-        </li>
-        <li>
-          <canvas id="tutorial-enemy-canvas" width="40" height="40" ></canvas><div>Stay away from the <em>401 Guardians</em>, if you come too close they will start chasing you.</div>
-        </li>
-        <li>
-          <canvas id="tutorial-auth" width="40" height="40"></canvas><div> If you pick up a magic <em>Authentication Flower</em>, enemies will not bother you for few seconds.</div>
-        </li>
-      </ul>
+            <div id="tutorial" class="cc">
+                <p class="tutorial-intro">
+                    Welcome young <em>Browser</em>, are you ready to start this
+                    incredible quest?
+                </p>
+                <p class="tutorial-intro">
+                    You will search the whole
+                    <em>Empire of the Internet</em> for the lost
+                    <em>Lost Pages</em>; but be aware, because enemies lurk in
+                    the shadows....
+                </p>
+                <ul>
+                    <li>
+                        <canvas
+                            id="tutorial-404-canvas"
+                            width="40"
+                            height="40"
+                        ></canvas>
+                        <div>
+                            Collect all the <em>404 Pages</em> around the maze.
+                        </div>
+                    </li>
+                    <li>
+                        <canvas
+                            id="tutorial-exit-close"
+                            width="40"
+                            height="40"
+                        ></canvas>
+                        <div>Each maze has at least one <em>204 Gate.</em></div>
+                    </li>
+                    <li>
+                        <canvas
+                            id="tutorial-exit-open"
+                            width="40"
+                            height="40"
+                        ></canvas>
+                        <div>
+                            Once you have collected all the pages, the gate will
+                            open becoming a <em>200 Gate</em> that will bring
+                            you ouside the maze.
+                        </div>
+                    </li>
+                    <li>
+                        <canvas
+                            id="tutorial-enemy-canvas"
+                            width="40"
+                            height="40"
+                        ></canvas>
+                        <div>
+                            Stay away from the <em>401 Guardians</em>, if you
+                            come too close they will start chasing you.
+                        </div>
+                    </li>
+                    <li>
+                        <canvas
+                            id="tutorial-auth"
+                            width="40"
+                            height="40"
+                        ></canvas>
+                        <div>
+                            If you pick up a magic
+                            <em>Authentication Flower</em>, enemies will not
+                            bother you for few seconds.
+                        </div>
+                    </li>
+                </ul>
 
-  <p class="tutorial-intro">
-Do not waste time, every second is important, as the <em>Mighty Indexer</em> will consume all the wall of the maze wall by wall
-  </p> 
-       <button role="button" id="esc-tutorial" class="btn">
-        I'm ready
-      </button>
+                <p class="tutorial-intro">
+                    Do not waste time, every second is important, as the
+                    <em>Mighty Indexer</em> will consume all the wall of the
+                    maze wall by wall
+                </p>
+                <button role="button" id="esc-tutorial" class="btn">
+                    I'm ready
+                </button>
+            </div>
 
-    </div>
+            <div id="mm-container" class="cc">
+                <h1>R<em>4</em>iders of the L<em>0</em>st P<em>4</em>ge</h1>
+                <ul class="menu">
+                    <li>
+                        <button role="button" id="mm-start" class="btn">
+                            Start New Game
+                        </button>
+                    </li>
+                    <li>
+                        <button role="button" id="mm-continue" class="btn">
+                            Continue
+                        </button>
+                    </li>
+                    <li>
+                        <button role="button" id="mm-how-to" class="btn">
+                            How to play
+                        </button>
+                    </li>
+                    <li>
+                        <button role="button" id="main-screen-size" class="btn">
+                            Change screen size
+                        </button>
+                    </li>
 
-    <div id="mm-container" class="cc">
-      <h1>R<em>4</em>iders of the L<em>0</em>st P<em>4</em>ge</h1>
-      <ul class="menu">
-        <li>
-          <button role="button" id="mm-start" class="btn">
-            Start New Game
-          </button>
-        </li>
-        <li>
-          <button role="button" id="mm-continue" class="btn">
-            Continue
-          </button>
-        </li>
-        <li>
-          <button role="button" id="mm-how-to" class="btn">
-            How to play
-          </button>
-        </li>
-        <li>
-          <button role="button" id="main-screen-size" class="btn">
-            Change screen size
-          </button>
-        </li>
+                    <li>
+                        <button
+                            role="button"
+                            id="mm-sound"
+                            class="btn"
+                        ></button>
+                    </li>
+                </ul>
+            </div>
 
-        <li>
-          <button role="button" id="mm-sound" class="btn">
-          </button>
-        </li>
-      </ul>
-    </div>
+            <div id="congrats-screen" class="congratulations fls">
+                <p>Congratulations!</p>
+                <p>It belongs in a museum!</p>
+                <button
+                    role="button"
+                    id="restart-btn-finished"
+                    class="btn restart-btn"
+                >
+                    Back to main menu
+                </button>
+            </div>
 
-    <div id="congrats-screen" class="congratulations  fls">
-      <p>Congratulations!</p>
-      <p>
-        It belongs in a museum!
-      </p>
-      <button role="button" id="restart-btn-finished" class="btn restart-btn">
-        Back to main menu
-      </button>
-    </div>
+            <div class="you-died-screen fls">
+                <p>Snakes. Why'd it have to be snakes?</p>
+            </div>
+            <div id="loading" class="loading fls">
+                <p>
+                    loading<span class="fade-in-out-ff">.</span
+                    ><span class="fade-in-out-ff delay-1">.</span
+                    ><span class="fade-in-out-ff delay-2">.</span>
+                </p>
+            </div>
+            <canvas id="stage"></canvas>
+        </div>
 
-    <div class="you-died-screen fls">
-      <p>
-        Snakes. Why'd it have to be snakes? 
-      </p>
-    </div>
-    <div id="loading" class="loading fls">
-      <p>
-        loading<span class="fade-in-out-ff">.</span><span class="fade-in-out-ff delay-1">.</span><span class="fade-in-out-ff delay-2">.</span>
-      </p>
-    </div>
-    <canvas id="stage"></canvas>
-    </div>
-
-    <!-- init js -->
-    <script src="js/index.js" type="module"></script>
-    <!-- end js -->
-  </body>
+        <!-- init js -->
+        <script src="js/index.js" type="module"></script>
+        <!-- end js -->
+    </body>
 </html>

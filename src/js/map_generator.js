@@ -6,7 +6,7 @@ import {
     nearTiles,
     relPos,
     mazeBorders,
-    clearCenterMap,
+    clearCenterMap
 } from "./map.js"
 
 function scaleTiles(map, fact = 10) {
@@ -14,7 +14,7 @@ function scaleTiles(map, fact = 10) {
         ...map,
         cols: map.cols / fact,
         rows: map.rows / fact,
-        tsize: map.tsize * fact,
+        tsize: map.tsize * fact
     }
 }
 
@@ -27,7 +27,7 @@ export function generateMaze(map, gameState) {
 
     let pos = [
         Math.floor(scaledMap.cols / 2 - map.tsize / f / 2),
-        Math.floor(scaledMap.rows / 2 - map.tsize / f / 2),
+        Math.floor(scaledMap.rows / 2 - map.tsize / f / 2)
     ]
 
     let walls = []
@@ -56,7 +56,6 @@ export function generateMaze(map, gameState) {
             stack.push(pos)
             mazestack.push(pos)
             pos = next
-
         } else {
             stack.pop()
             pos = stack[stack.length - 1]
@@ -144,7 +143,7 @@ export function generateEntities(gameState, map, config = {}) {
 
     gameState.updateState((stateData) => ({
         ...stateData,
-        map: { ...stateData.map, centers, blocked },
+        map: { ...stateData.map, centers, blocked }
     }))
 
     // TODO CHECK there are enough
@@ -154,19 +153,19 @@ export function generateEntities(gameState, map, config = {}) {
         ...entities,
         ...addEntities(map, centers, config["404"].n, (ps) => {
             return { ps, type: "404" }
-        }),
+        })
     ]
     entities = [
         ...entities,
         ...addEntities(map, centers, config["exit"].n, (ps) => {
             return { ps, type: "exit" }
-        }),
+        })
     ]
     entities = [
         ...entities,
         ...addEntities(map, centers, config["auth"].n, (ps) => {
             return { ps, type: "auth" }
-        }),
+        })
     ]
 
     entities = [
@@ -181,11 +180,11 @@ export function generateEntities(gameState, map, config = {}) {
                         speed: speed || 3,
                         updatePathEvery,
                         maxDist,
-                        maxPath,
+                        maxPath
                     }
                 })
             )
-            .flat(),
+            .flat()
     ]
 
     return entities

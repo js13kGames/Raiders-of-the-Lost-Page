@@ -11,7 +11,7 @@ function pltToRgba(idx, a = 1) {
         [19, 232, 128], // 4 light green
         [16, 128, 115], // 5 dark green
         [242, 52, 101], // 6 red
-        [218, 32, 0], // 7 dark red
+        [218, 32, 0] // 7 dark red
     ]
 
     return `rgba(${plt[idx].join(",")}, ${a})`
@@ -89,12 +89,11 @@ export function render401(gameState, element, relPos) {
         const last = element.path[0]
         direction = [
             last.coord[0] * map.tsize + map.pov.x,
-            last.coord[1] * map.tsize + map.pov.y,
+            last.coord[1] * map.tsize + map.pov.y
         ]
     }
 
     drawEnemy(ctx, relPos, r, element.disabled, direction)
-
 }
 
 export function renderTiles(gameState) {
@@ -141,12 +140,12 @@ export function renderArrows(gameState) {
             "entities",
             "player",
             "ctx",
-            "map",
+            "map"
         ]),
         pov = map.pov,
         shCol = ctx.shadowColor,
         shBlur = ctx.shadowBlur
-        entities.forEach((e) => {
+    entities.forEach((e) => {
         let draw = false
         ctx.beginPath()
 
@@ -164,17 +163,14 @@ export function renderArrows(gameState) {
                     draw = true
                     ctx.strokeStyle = pltToRgba(4, 0.2)
                     ctx.fillStyle = pltToRgba(4, 0.2)
-                    ctx.shadowColor = pltToRgba(4,1)
+                    ctx.shadowColor = pltToRgba(4, 1)
                     ctx.shadowBlur = 10
                 }
 
                 break
         }
         if (draw) {
-            const rad = rad2pts(
-                [e.ps.x, e.ps.y],
-                [player.ps.x, player.ps.y]
-            )
+            const rad = rad2pts([e.ps.x, e.ps.y], [player.ps.x, player.ps.y])
             ctx.arc(
                 player.ps.x + pov.x,
                 player.ps.y + pov.y,
@@ -301,7 +297,7 @@ function renderLivesHUD(gameState) {
     const { canvas, ctx, player } = gameState.getByKeys([
         "canvas",
         "ctx",
-        "player",
+        "player"
     ])
     const lives = player.lives
     const fontSize = 20
@@ -328,10 +324,7 @@ function renderLivesHUD(gameState) {
 }
 
 function renderCurrentLevelHUD(gameState) {
-    const { currentLevel, ctx } = gameState.getByKeys([
-        "currentLevel",
-        "ctx",
-    ])
+    const { currentLevel, ctx } = gameState.getByKeys(["currentLevel", "ctx"])
     const fontSize = 20
     const font = `${fontSize}px sans-serif`
     const levelstr = `Level: ${currentLevel + 1}`
@@ -347,7 +340,7 @@ export function renderHUD(gameState) {
     const { canvas, ctx } = gameState.getByKeys([
         "currentLevel",
         "canvas",
-        "ctx",
+        "ctx"
     ])
     ctx.beginPath()
     ctx.rect(0, 0, canvas.width, 50)

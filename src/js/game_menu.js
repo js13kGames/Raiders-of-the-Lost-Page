@@ -4,10 +4,10 @@ import {
     renderTutorial404,
     renderTutorialExitOpen,
     renderTutorialExitClose,
-    renderTutorialAuth,
+    renderTutorialAuth
 } from "./game_rendering.js"
 import { setStageDim } from "./domUtils.js"
-import {setVOF} from "./map.js"
+import { setVOF } from "./map.js"
 
 function createMenu(gameState, initFunc) {
     return initFunc({}, gameState)
@@ -69,23 +69,26 @@ export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
         const rstButton = domElement("#restart-btn-finished")
 
         rstButton.addEventListener("click", (evt) => {
-                evt.preventDefault()
-                
-                if (gameState.gameStatus() === "gameover" || gameState.gameStatus() === "finished") {
-                    restartFn(gameState)
-                }
-            })
+            evt.preventDefault()
+
+            if (
+                gameState.gameStatus() === "gameover" ||
+                gameState.gameStatus() === "finished"
+            ) {
+                restartFn(gameState)
+            }
+        })
 
         changeSizeBtn.addEventListener("click", (evt) => {
             evt.preventDefault()
             const {
                 canvas,
                 screenSizeAv,
-                currentScreenSize,
+                currentScreenSize
             } = gameState.getByKeys([
                 "canvas",
                 "screenSizeAv",
-                "currentScreenSize",
+                "currentScreenSize"
             ])
             screenSizeAv[0] = viewportDims()
             const n = (currentScreenSize + 1) % screenSizeAv.length
@@ -100,7 +103,7 @@ export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
                 canvas,
                 currentScreenSize: n,
                 screenSizeAv,
-                map: setVOF(gameData.map, canvas.width, canvas.height),
+                map: setVOF(gameData.map, canvas.width, canvas.height)
             }))
         })
 
@@ -120,9 +123,9 @@ export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
                     audioButton.innerText = "Enable Sound"
                 }
 
-               switch (gameState.gameStatus()) {
-                //switch ("finished") { 
-               case "tutorial":
+                switch (gameState.gameStatus()) {
+                    //switch ("finished") {
+                    case "tutorial":
                         hide(continueBtn)
                         hide(menuContainer)
                         hide(startBtn)
@@ -158,7 +161,7 @@ export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
                         hide(howToScreen)
                         hide(menuContainer)
                 }
-            },
+            }
         }
         return { ...menu, ...m }
     })
@@ -187,7 +190,7 @@ export function initPauseMenu(gameState) {
                 } else {
                     hide(element)
                 }
-            },
+            }
         }
 
         button.addEventListener("click", (evt) => {
@@ -220,12 +223,15 @@ export function initGameOverMenu(gameState, startFn) {
                     addClass(element, "fade-out")
                     hide(element)
                 }
-            },
+            }
         }
 
         button.addEventListener("click", (evt) => {
             evt.preventDefault()
-            if (gameState.gameStatus() === "gameover" || gameState.gameStatus() === "finished") {
+            if (
+                gameState.gameStatus() === "gameover" ||
+                gameState.gameStatus() === "finished"
+            ) {
                 startFn(gameState)
             }
         })

@@ -1,4 +1,4 @@
-import {reverseDirs} from "./utils.js"
+import { reverseDirs } from "./utils.js"
 
 export function isBorder(c, r, cols, rows) {
     return c === 0 || r === 0 || r === rows - 1 || c === cols - 1
@@ -15,7 +15,7 @@ export function getTilesInView(map) {
         endRow: Math.min(
             map.rows,
             Math.round(map.centerTile.r + map.viewRows / 2)
-        ),
+        )
     }
 }
 export function mapTileInView(map, mapFn) {
@@ -31,7 +31,7 @@ export function mapTileInView(map, mapFn) {
 export function tileps(c, r, tsize, pov) {
     return {
         x: c * tsize + pov.x,
-        y: r * tsize + pov.y,
+        y: r * tsize + pov.y
     }
 }
 export function borders(pos, f, map, val, bord = [0, 1, 2, 3]) {
@@ -81,7 +81,7 @@ export function clearCenterMap(map, c, w = 10) {
 export function tileToCanvasPos(c, r, canvas, map) {
     return {
         x: Math.round(c * map.tsize + map.pov.x),
-        y: Math.round(r * map.tsize + map.pov.y),
+        y: Math.round(r * map.tsize + map.pov.y)
     }
 }
 
@@ -112,7 +112,7 @@ export function generateMap(width, height, tsize = 4) {
         getTile: (col, row) => map.tiles[row * map.cols + col],
         setTile: (col, row, val) => (map.tiles[row * map.cols + col] = val),
         renderTile: () => null,
-        tCoords: () => tiles.map((_, i) => [Math.floor(i / cols), i % rows]),
+        tCoords: () => tiles.map((_, i) => [Math.floor(i / cols), i % rows])
     }
 
     return map
@@ -130,7 +130,7 @@ export function setVOF(map, width, height) {
 
     const camera = {
         viewCols: viewCols,
-        viewRows: viewRows,
+        viewRows: viewRows
     }
 
     return { ...map, ...camera }
@@ -160,7 +160,7 @@ export function pntBtw2Pnts(p1, p2, dist) {
     const distRatio = ptsDist ? dist / ptsDist : 0
     return {
         x: p1.x + distRatio * (p2.x - p1.x),
-        y: p1.y + distRatio * (p2.y - p1.y),
+        y: p1.y + distRatio * (p2.y - p1.y)
     }
 }
 export function isCenterBlock(c, r, map) {
@@ -184,7 +184,7 @@ export function nearTiles(pos, visited, maxCol, maxRow) {
         [pos[0], pos[1] - 1],
         [pos[0] + 1, pos[1]],
         [pos[0], pos[1] + 1],
-        [pos[0] - 1, pos[1]],
+        [pos[0] - 1, pos[1]]
     ]
 
     return tiles.filter((t) => {
@@ -267,7 +267,7 @@ export function findPath(p1, p2, map, stepMax = 200) {
             coord: [a, b],
             parent: null,
             local: Infinity,
-            global: Infinity,
+            global: Infinity
         }
         return acc
     }, {})
@@ -323,4 +323,3 @@ export function findPath(p1, p2, map, stepMax = 200) {
         return []
     }
 }
-

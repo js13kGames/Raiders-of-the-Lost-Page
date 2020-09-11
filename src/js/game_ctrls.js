@@ -1,64 +1,63 @@
-import createController, { addEventListener } from "./controller.js";
+import createController, { addEventListener } from "./controller.js"
 
 export default function gameControllers(gameState) {
-  // MAP GENERATION CONTROLLER
+    // MAP GENERATION CONTROLLER
 
-  const onKeyDown = (event, ctrl, gameState) => {
-    const keyName = event.key;
+    const onKeyDown = (event, ctrl, gameState) => {
+        const keyName = event.key
 
-    switch (keyName) {
-      case "ArrowUp":
-        gameState.setState("moveV", "up");
-        break;
-      case "ArrowDown":
-        gameState.setState("moveV", "down");
-        break;
-      case "ArrowLeft":
-        gameState.setState("moveH", "left");
-        break;
-      case "ArrowRight":
-        gameState.setState("moveH", "right");
-        break;
-      case "Escape":
-      if (gameState.gameStatus() === "play"){
-        gameState.updateGameStatus("paused")
-      } else if (gameState.gameStatus() === "paused"){
-        gameState.updateGameStatus("play")
-      }
-      break;
-      default:
-        gameState.setState("key", keyName);
-        break;
+        switch (keyName) {
+            case "ArrowUp":
+                gameState.setState("moveV", "up")
+                break
+            case "ArrowDown":
+                gameState.setState("moveV", "down")
+                break
+            case "ArrowLeft":
+                gameState.setState("moveH", "left")
+                break
+            case "ArrowRight":
+                gameState.setState("moveH", "right")
+                break
+            case "Escape":
+                if (gameState.gameStatus() === "play") {
+                    gameState.updateGameStatus("paused")
+                } else if (gameState.gameStatus() === "paused") {
+                    gameState.updateGameStatus("play")
+                }
+                break
+            default:
+                gameState.setState("key", keyName)
+                break
+        }
     }
-  };
-  const onKeyUp = (event, ctrl, gameState) => {
-    const keyName = event.key;
+    const onKeyUp = (event, ctrl, gameState) => {
+        const keyName = event.key
 
-    switch (keyName) {
-      case "ArrowUp":
-      case "ArrowDown":
-        gameState.setState("moveV", null);
-        break;
-      case "ArrowLeft":
-      case "ArrowRight":
-        gameState.setState("moveH", null);
-        break;
-      default:
-        gameState.setState("key", null);
-        break;
+        switch (keyName) {
+            case "ArrowUp":
+            case "ArrowDown":
+                gameState.setState("moveV", null)
+                break
+            case "ArrowLeft":
+            case "ArrowRight":
+                gameState.setState("moveH", null)
+                break
+            default:
+                gameState.setState("key", null)
+                break
+        }
     }
-  };
 
-  const initCtrl = {};
+    const initCtrl = {}
 
-  const keyboardCtrl = createController(initCtrl);
+    const keyboardCtrl = createController(initCtrl)
 
+    const addKeyboardListener = (eventName, evtFunction) =>
+        addEventListener(gameState, keyboardCtrl, eventName, evtFunction)
 
-  const addKeyboardListener = (eventName, evtFunction) =>
-    addEventListener(gameState, keyboardCtrl, eventName, evtFunction);
+    addKeyboardListener("keydown", onKeyDown)
+    addKeyboardListener("keyup", onKeyUp)
 
-  addKeyboardListener("keydown", onKeyDown);
-  addKeyboardListener("keyup", onKeyUp);
-
-  gameState.addCtrl("main", keyboardCtrl);
+    gameState.addCtrl("main", keyboardCtrl)
 }
