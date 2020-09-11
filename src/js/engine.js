@@ -401,15 +401,15 @@ export function renderLoop(gameState) {
 
         if (gameState.gameStatus() === "play") renderHUD(gameState)
 
-        renderFps(`${gameState.getState("actualFps")} FPS`, { x: 755, y: 90 })
+        renderFps(`${gameState.getState("actualFps")} FPS`, { x: canvas.width - 80, y: 85 })
         renderFps(`${gameState.getState("actualFpsRender")} FPSR`, {
-            x: 755,
+            x: canvas.width - 80,
             y: 100,
         })
 
         if (player.currentTile) {
             renderFps(`c: ${player.currentTile.c},r: ${player.currentTile.r}`, {
-                x: 750,
+                x: canvas.width - 100,
                 y: 110,
             })
         }

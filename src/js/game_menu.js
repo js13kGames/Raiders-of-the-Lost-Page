@@ -1,6 +1,17 @@
-import createMenu from "./menus.js"
-import { domElement, hide, show } from "./domUtils.js"
-import {renderTutorialEnemy, renderTutorial404, renderTutorialExitOpen, renderTutorialExitClose, renderTutorialAuth} from "./game_rendering.js"
+import { domElement, hide, show, viewportDims } from "./domUtils.js"
+import {
+    renderTutorialEnemy,
+    renderTutorial404,
+    renderTutorialExitOpen,
+    renderTutorialExitClose,
+    renderTutorialAuth,
+} from "./game_rendering.js"
+import { setStageDim } from "./domUtils.js"
+import {setVOF} from "./map.js"
+
+function createMenu(gameState, initFunc) {
+    return initFunc({}, gameState)
+}
 
 export function initMainMenu(gameState, startFn, levelsFn) {
     const mainMenu = createMenu(gameState, (menu, gameState) => {
@@ -10,6 +21,7 @@ export function initMainMenu(gameState, startFn, levelsFn) {
             audioButton = domElement("#main-manu-sound"),
             congratulation = domElement("#congrats-screen"),
             howToBtn = domElement("#main-manu-how-to"),
+            changeSizeBtn = domElement("#main-screen-size"),
             howToScreen = domElement("#tutorial"),
             escTutorialBtn = domElement("#esc-tutorial"),
             { unlockedLevels } = gameState.getByKeys(["unlockedLevels"])
@@ -43,17 +55,44 @@ export function initMainMenu(gameState, startFn, levelsFn) {
             gameState.setState("audio", !gameState.getState("audio"))
         })
 
-        howToBtn.addEventListener("click",(evt) => {
+        howToBtn.addEventListener("click", (evt) => {
             evt.preventDefault()
             gameState.setState("prevState", gameState.gameStatus())
 
             gameState.updateGameStatus("tutorial")
-        } )
-        escTutorialBtn.addEventListener("click", (evt) =>{
+        })
+        escTutorialBtn.addEventListener("click", (evt) => {
             evt.preventDefault()
             gameState.updateGameStatus(gameState.getState("prevState"))
         })
 
+        changeSizeBtn.addEventListener("click", (evt) => {
+            evt.preventDefault()
+            const {
+                canvas,
+                screenSizeAv,
+                currentScreenSize,
+            } = gameState.getByKeys([
+                "canvas",
+                "screenSizeAv",
+                "currentScreenSize",
+            ])
+            screenSizeAv[0] = viewportDims()
+            const n = (currentScreenSize + 1) % screenSizeAv.length
+            setStageDim(
+                canvas,
+                document.getElementById("stage-container"),
+                screenSizeAv[n][0],
+                screenSizeAv[n][1]
+            )
+            gameState.updateState((gameData) => ({
+                ...gameData,
+                canvas,
+                currentScreenSize: n,
+                screenSizeAv,
+                map: setVOF(gameData.map, canvas.width, canvas.height),
+            }))
+        })
 
         renderTutorialEnemy(domElement("#tutorial-enemy-canvas"))
         renderTutorial404(domElement("#tutorial-404-canvas"))
@@ -77,7 +116,7 @@ export function initMainMenu(gameState, startFn, levelsFn) {
                         hide(menuContainer)
                         hide(startBtn)
                         show(howToScreen)
-                    break;
+                        break
                     case "paused":
                         show(continueBtn)
                         show(menuContainer)

@@ -10,17 +10,16 @@ h1 {
     position: relative;
 }
 .stage-container {
-  width: 800px;
+ 
   position: relative;
-  height: 600px;
-  margin: auto;
+  margin:auto;
   margin-top: 10px;
 }
 #stage {
   border: 1px solid #000;
   position: absolute;
   top: 0;
-  left: calc(50% - 400px);
+
   background-color: rgba($color: #ccc, $alpha: 0.2);
   border: 1px solid lime;
   &.status-paused,

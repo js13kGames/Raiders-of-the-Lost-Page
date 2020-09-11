@@ -38,13 +38,12 @@ export function appendElement(element, parent = document.body) {
 }
 
 export function viewportDims() {
-    return {
-        w: document.documentElement.clientWidth || 600,
-        h: document.documentElement.clientHeight || 800,
-    }
+    return [document.documentElement.clientWidth-50, document.documentElement.clientHeight- 50]
 }
 
-export function setStageDim(stage, w = 800, h = 600) {
+export function setStageDim(stage, container, w = 800, h = 600) {
+    container.style.width = `${w}px`
+    container.style.height = `${h}px`
     stage.width = w
     stage.height = h
     return stage

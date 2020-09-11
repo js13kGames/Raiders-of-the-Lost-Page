@@ -8,7 +8,7 @@ import { initMainMenu, initPauseMenu, initGameOverMenu } from "./game_menu.js"
 import { levels } from "./game_maps.js"
 import gameControllers from "./game_ctrls.js"
 import {create404Entity,create401Entity,createExitEntity,createAuthEntity,} from "./game_entities.js"
-import { setStageDim } from "./domUtils.js"
+import { setStageDim, viewportDims } from "./domUtils.js"
 
 /**
  *  This file contains all the demo game logic
@@ -21,23 +21,26 @@ import { setStageDim } from "./domUtils.js"
 const unlockedLevels = 10
 
 const startingLives = 3
-
 // Starting the game
 
 const tileSize = 10
 function initGameState() {
+    const screenSizeAv = [viewportDims(),[1200, 700], [800, 600], ]
     const state = createState({
         debug: false,
         audio: true,
         showFps: true,
         unlockedLevels,
+        screenSizeAv,
+        screenSize: screenSizeAv[0],
+        currentScreenSize: 0,
         levels,
         tileSize,
         player: { lives: startingLives },
         loadingLetters: [],
     })
     const canvas = document.getElementById("stage")
-    setStageDim(canvas, 800, 600)
+    setStageDim(canvas,  document.getElementById("stage-container"), screenSizeAv[0][0], screenSizeAv[0][1])
     state.setState("canvas", canvas)
     state.setState("ctx", canvas.getContext("2d"))
     return state
