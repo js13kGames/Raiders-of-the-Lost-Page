@@ -1,4 +1,4 @@
-import { domElement, hide, show, viewportDims } from "./domUtils.js"
+import { domElement, hide, show, viewportDims, addClass } from "./domUtils.js"
 import {
     renderTutorialEnemy,
     renderTutorial404,
@@ -13,7 +13,7 @@ function createMenu(gameState, initFunc) {
     return initFunc({}, gameState)
 }
 
-export function initMainMenu(gameState, startFn, levelsFn) {
+export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
     const mainMenu = createMenu(gameState, (menu, gameState) => {
         const menuContainer = domElement("#main-menu-container"),
             startBtn = domElement("#main-manu-start"),
@@ -66,6 +66,16 @@ export function initMainMenu(gameState, startFn, levelsFn) {
             gameState.updateGameStatus(gameState.getState("prevState"))
         })
 
+        const rstButton = domElement("#restart-btn-finished")
+
+        rstButton.addEventListener("click", (evt) => {
+                evt.preventDefault()
+                
+                if (gameState.gameStatus() === "gameover" || gameState.gameStatus() === "finished") {
+                    restartFn(gameState)
+                }
+            })
+
         changeSizeBtn.addEventListener("click", (evt) => {
             evt.preventDefault()
             const {
@@ -110,8 +120,9 @@ export function initMainMenu(gameState, startFn, levelsFn) {
                     audioButton.innerText = "Enable Sound"
                 }
 
-                switch (gameState.gameStatus()) {
-                    case "tutorial":
+               switch (gameState.gameStatus()) {
+                //switch ("finished") { 
+               case "tutorial":
                         hide(continueBtn)
                         hide(menuContainer)
                         hide(startBtn)
@@ -128,15 +139,14 @@ export function initMainMenu(gameState, startFn, levelsFn) {
                         show(startBtn)
                         show(menuContainer)
                         hide(howToScreen)
-
+                        hide(congratulation)
                         break
                     case "finished":
                         hide(continueBtn)
-                        show(congratulation)
-                        show(startBtn)
-                        show(menuContainer)
+                        show(congratulation, "flex")
+                        hide(startBtn)
+                        hide(menuContainer)
                         hide(howToScreen)
-
                         break
                     case "play":
                         hide(menuContainer)
@@ -193,29 +203,30 @@ export function initPauseMenu(gameState) {
     return pauseMenu
 }
 
-export function initGameOverMenu(gameState, continueFn) {
+export function initGameOverMenu(gameState, startFn) {
     const gameoverMenu = createMenu(gameState, (menu, gameState) => {
-        const button = domElement("#restart-btn")
+        const button = domElement("#restart-btn-died")
         const element = domElement("#game-over-menu")
         const menuInit = {
             element: element,
             button: button,
             render: (gameState) => {
                 // Dynamic menu position
-
                 if (gameState.gameStatus() === "gameover") {
-                    show(element)
+                    show(element, "flex")
+
+                    addClass(element, "fade-in")
                 } else {
+                    addClass(element, "fade-out")
                     hide(element)
                 }
             },
         }
 
         button.addEventListener("click", (evt) => {
-            console.log("POIOIOIOIoi")
             evt.preventDefault()
-            if (gameState.gameStatus() === "gameover") {
-                continueFn(gameState)
+            if (gameState.gameStatus() === "gameover" || gameState.gameStatus() === "finished") {
+                startFn(gameState)
             }
         })
         return { ...menu, ...menuInit }

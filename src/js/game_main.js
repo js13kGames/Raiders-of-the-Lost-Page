@@ -7,14 +7,20 @@ import initPlayer from "./game_player.js"
 import { initMainMenu, initPauseMenu, initGameOverMenu } from "./game_menu.js"
 import { levels } from "./game_maps.js"
 import gameControllers from "./game_ctrls.js"
-import {create404Entity,create401Entity,createExitEntity,createAuthEntity,} from "./game_entities.js"
-import { setStageDim, viewportDims } from "./domUtils.js"
-
-/**
- *  This file contains all the demo game logic
- *
- * Everithing interacts with the gameState that is than exported
- */
+import {
+    create404Entity,
+    create401Entity,
+    createExitEntity,
+    createAuthEntity,
+} from "./game_entities.js"
+import {
+    setStageDim,
+    viewportDims,
+    domElement,
+    show,
+    hide,
+    addClass,
+} from "./domUtils.js"
 
 // Load from local storage
 
@@ -25,7 +31,9 @@ const startingLives = 3
 
 const tileSize = 10
 function initGameState() {
-    const screenSizeAv = [viewportDims(),[1200, 700], [800, 600], ]
+    const loading = domElement("#loading")
+
+    const screenSizeAv = [viewportDims(), [1200, 700], [800, 600]]
     const state = createState({
         debug: false,
         audio: true,
@@ -40,9 +48,15 @@ function initGameState() {
         loadingLetters: [],
     })
     const canvas = document.getElementById("stage")
-    setStageDim(canvas,  document.getElementById("stage-container"), screenSizeAv[0][0], screenSizeAv[0][1])
+    setStageDim(
+        canvas,
+        document.getElementById("stage-container"),
+        screenSizeAv[0][0],
+        screenSizeAv[0][1]
+    )
     state.setState("canvas", canvas)
     state.setState("ctx", canvas.getContext("2d"))
+    hide(loading)
     return state
 }
 
@@ -65,40 +79,43 @@ function loadEntities(entitiesData) {
 // TODO refactor
 function loadLevel(levelConfig = {}, levelIdx = 0) {
     return (gameState) => {
-        gameState.updateGameStatus("loading")
-
         const { canvas } = gameState.getByKeys(["canvas"])
+        const loading = domElement("#loading")
 
-        const cols = levelConfig.cols || 100
-        const rows = levelConfig.rows || 100
 
-        const map = setVOF(
-            generateMap(cols, rows, tileSize),
-            canvas.width,
-            canvas.height
-        )
-        gameState.setState("map", {
-            ...map,
-            ...generateMaze(map, gameState),
-        })
-        const player = initPlayer(gameState)
-
-        const entities = loadEntities(
-            generateEntities(
-                gameState,
-                gameState.getState("map"),
-                levelConfig.entities
-            )
-        )
-        const mazeConfig = {
-            resetPct: 90,
-            groupPct: 60,
-            wPct: 40,
-            nextT: 600,
-            nextRand: 300,
-            nextMin: 200,
-        }
+        gameState.updateGameStatus("loading")
+        show(loading, "flex")
         setTimeout(() => {
+            const cols = levelConfig.cols || 100
+            const rows = levelConfig.rows || 100
+
+            const map = setVOF(
+                generateMap(cols, rows, tileSize),
+                canvas.width,
+                canvas.height
+            )
+            gameState.setState("map", {
+                ...map,
+                ...generateMaze(map, gameState),
+            })
+            const player = initPlayer(gameState)
+
+            const entities = loadEntities(
+                generateEntities(
+                    gameState,
+                    gameState.getState("map"),
+                    levelConfig.entities
+                )
+            )
+            const mazeConfig = {
+                resetPct: 90,
+                groupPct: 60,
+                wPct: 40,
+                nextT: 600,
+                nextRand: 300,
+                nextMin: 200,
+            }
+            hide(loading)
             gameState.updateGameStatus("play").updateState((gameData) => ({
                 ...gameData,
                 currentLevel: levelIdx,
@@ -107,7 +124,7 @@ function loadLevel(levelConfig = {}, levelIdx = 0) {
                 entities: [...entities],
                 levelConfig: mazeConfig,
             }))
-        }, 200)
+        }, 100)
 
         return gameState
     }
@@ -117,6 +134,7 @@ function loadLevel(levelConfig = {}, levelIdx = 0) {
 
 function initGame() {
     const gameState = initGameState()
+    const loading = domElement("#loading")
 
     gameState.updateGameStatus("init")
 
@@ -125,13 +143,6 @@ function initGame() {
     gameControllers(gameState)
     // load from localStorage
     const currentLevel = 0
-
-    const pauseMenu = initPauseMenu(gameState)
-    const mainMenu = initMainMenu(
-        gameState,
-        loadLevel(levels[0]),
-        levels.map(loadLevel)
-    )
 
     const newLevel = (gameState) => {
         const { player, currentLevel, levels } = gameState.getByKeys([
@@ -151,16 +162,23 @@ function initGame() {
         }
     }
     gameState.updateState((gameData) => ({ ...gameData, newLevel }))
-
-    const gameOverMenu = initGameOverMenu(gameState, (gameState) => {
+    const restartFn = (gameState) => {
         gameState.updateState((gameData) => ({
             ...gameData,
             player: { lives: startingLives },
             entities: [],
         }))
         gameState.updateGameStatus("init")
-    })
-
+    }
+    const pauseMenu = initPauseMenu(gameState)
+    const mainMenu = initMainMenu(
+        gameState,
+        loadLevel(levels[0]),
+        levels.map(loadLevel),
+        restartFn
+    )
+    const gameOverMenu = initGameOverMenu(gameState, restartFn)
+        hide(loading)
     gameState.updateState((state) => {
         return {
             ...state,

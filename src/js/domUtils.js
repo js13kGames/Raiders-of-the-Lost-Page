@@ -29,9 +29,9 @@ export function removeClass(el, className) {
         )
 }
 
-export function show(el) {
+export function show(el, display = "block") {
     if (!el) return false
-    el.style.display = "block"
+    el.style.display = display
 }
 export function appendElement(element, parent = document.body) {
     return parent.appendChild(element)

@@ -295,19 +295,20 @@ export function renderLoop(gameState) {
                 }
 
                 renderTiles(gameState)
-// RENDER maze stack for debug
+            // RENDER maze stack for debug
 
-                // const maze = gameState.getState("mazestack")
+                const maze = gameState.getState("mazestack")
 
-                // ctx.beginPath()
+                ctx.beginPath() 
+                ctx.strokeStyle = "lime";
 
-                // maze.forEach((m, i) => {
-                //     const [x, y] = [ m[0] * map.scaleFactor * map.tsize+pov.x,  m[1] * map.scaleFactor* map.tsize + pov.y]
+                maze.forEach((m, i) => {
+                    const [x, y] = [ m[0] * map.scaleFactor * map.tsize+pov.x,  m[1] * map.scaleFactor* map.tsize + pov.y]
                    
-                //     ctx.rect(x, y,map.scaleFactor * map.tsize, map.scaleFactor * map.tsize)
-                // })
+                    ctx.rect(x, y,map.scaleFactor * map.tsize, map.scaleFactor * map.tsize)
+                })
 
-                // ctx.stroke()
+                ctx.stroke()
 
                 if (player && typeof player.render === "function") {
                     player.render(gameState, player)
@@ -341,45 +342,11 @@ export function renderLoop(gameState) {
 
                 renderArrows(gameState)
             }
-        } else if (status === "loading") {
-            // setup missing
-            for (let i = 0; i < 1000 - loadingLetters.length; i++) {
-                loadingLetters.push({
-                    letter: Math.floor(Math.random() * 65535),
-                    ttl: Math.floor(Math.random() * 100),
-                    cTtl: Infinity,
-                    size: Math.floor(Math.random() * 20) + 2,
-                    pos: [
-                        Math.floor(Math.random() * canvas.width),
-                        [Math.floor(Math.random() * canvas.height)],
-                    ],
-                })
-            }
-
-            const updatedLetters = loadingLetters
-                .filter((l) => l.cTtl > 0)
-                .map((l) => ({ ...l, cTtl: Math.min(l.cTtl, l.ttl) - 1 }))
-            ctx.beginPath()
-            const animSpd = 10
-            updatedLetters.forEach((l) => {
-                ctx.font = `${l.size}px Arial`
-                if (l.cTtl < animSpd || l.ttl - l.cTtl < animSpd) {
-                    ctx.fillStyle = `rgba(0,255,0, ${
-                        Math.min(l.cTtl, l.ttl - l.cTtl) / animSpd
-                    })`
-                } else {
-                    ctx.fillStyle = `rgba(0,255,0, 0.8)`
-                }
-
-                ctx.fillText(String.fromCharCode(l.letter), l.pos[0], l.pos[1])
-            })
-
-            gameState.setState("loadingLetters", updatedLetters)
-            //ctx.fill()
         }
 
-        const menus = gameState.getState("menus")
-        const ctrls = gameState.getState("ctrls")
+        if (status !== "loading") {
+            const menus = gameState.getState("menus")
+            const ctrls = gameState.getState("ctrls")
 
         // Render menus
         for (const menuName in menus) {
@@ -414,6 +381,9 @@ export function renderLoop(gameState) {
             })
         }
     }
+        }
+
+        
 
     gameState.setState("lastTimeRender", now)
 

@@ -97,19 +97,6 @@ export function render401(gameState, element, relPos) {
 
     drawEnemy(ctx, relPos, r, element.disabled, direction)
 
-    // RENDER the path
-
-    // ctx.moveTo(relPos.x, relPos.y)
-    // element.path.forEach((t) => {
-    //     ctx.lineTo(
-    //         t.coord[0] * map.tsize + map.pov.x,
-    //         t.coord[1] * map.tsize + map.pov.y
-    //     )
-    // })
-
-    // ctx.strokeStyle = "pink"
-    // ctx.lineWidth = 0.5
-    // ctx.stroke()
 }
 
 export function renderTiles(gameState) {

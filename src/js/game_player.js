@@ -117,7 +117,7 @@ function playerCollideEnemy(gameState, player) {
         //TODO refactor move this to a function
         gameState.updateGameStatus("died")
         lifeLost(gameState)
-        show(youDiedEl)
+        show(youDiedEl, "flex")
         addClass(youDiedEl, "fade-in-out")
         addClass(canvas, "fade-in")
         canvas.style.opacity = 0

@@ -1,11 +1,11 @@
 .btn {
     border: none;
     background-color:transparent;
-    border: 1px solid #d733d7;
+    border: 1px solid #de02a7;
     padding: 10px;
     border-radius: 10px;
-    color: #d733d7;
-    font-weight: 600;
+    color: #fd36ca;
+    font-weight: 500;
     font-size: 1.01rem;
 }
 .ctrl-container {
@@ -34,21 +34,6 @@ ul.menu{
     }
 }
 
-.gameover-menu {
-    width: 200px;
-    position: absolute;
-    left: calc(50% - 100px);
-    top: 40%;
-    text-align: center;
-
-    btn {
-        display: block;
-        margin: auto;
-        width: 100px;
-        margin-top: 10px;
-    }
-}
-
 #tutorial {
     display: none;
     position: absolute;
@@ -58,12 +43,16 @@ ul.menu{
     top: 3%;
     width: 90%;
     background-color: transparent;
-
     color: rgba(255,255,255,0.8);
     padding: 2%;
 .tutorial-intro {
     text-align: center;
     margin: 2rem 0;
+
+    &:first-child{
+        font-size: 1.1em;
+        font-style: italic;
+    }
 }
     ul {
         li {
