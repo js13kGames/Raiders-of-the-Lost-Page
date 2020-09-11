@@ -21,5 +21,8 @@ export function reverseDirs (dirs) {
   return [0, 1, 2, 3].filter((b) => dirs.indexOf(b) < 0)
 }
 export function angle2pts(p1, p2) {
-  return Math.atan2(p1[1] - p2[1], p1[0]  - p2[0])* 180 / Math.PI
+  return rad2pts(p1,p2)* 180 / Math.PI
+}
+export function rad2pts(p1, p2) {
+  return Math.atan2(p1[1] - p2[1], p1[0]  - p2[0])
 }

@@ -1,4 +1,4 @@
-import { findPoint2Angle, angle2pts} from "./utils.js"
+import { findPoint2Angle, angle2pts, rad2pts } from "./utils.js"
 import { mapTileInView, tilePosition, isBorder, pntBtw2Pnts } from "./map.js"
 import { drawFile } from "./rendering.js"
 
@@ -11,35 +11,33 @@ function pltToRgba(idx, a = 1) {
         [19, 232, 128], // 4 light green
         [16, 128, 115], // 5 dark green
         [242, 52, 101], // 6 red
-        [218, 32, 0] // 7 dark red
-
+        [218, 32, 0], // 7 dark red
     ]
 
     return `rgba(${plt[idx].join(",")}, ${a})`
 }
 
-
 function drawEnemy(ctx, pos, r, disabled, pt = null) {
     const shCol = ctx.shadowColor,
-    shBlur = ctx.shadowBlur
+        shBlur = ctx.shadowBlur
 
     ctx.shadowColor = pltToRgba(6, 0.5)
     ctx.shadowBlur = 0
-    let angle = 0;
+    let angle = 0
     if (pt) {
         ctx.shadowColor = "rgb(255,0,0)"
         ctx.shadowBlur = 20
-       angle = angle2pts([pos.x, pos.y], pt)
+        angle = angle2pts([pos.x, pos.y], pt)
     }
 
     ctx.beginPath()
-    ctx.arc(pos.x, pos.y, r/2, 0, 2*Math.PI)
-    
-    for (let a = angle, i = 0; a <= 360+ angle; a += 30, i++) {
-        const start = findPoint2Angle(a, pos, r/2)
+    ctx.arc(pos.x, pos.y, r / 2, 0, 2 * Math.PI)
+
+    for (let a = angle, i = 0; a <= 360 + angle; a += 30, i++) {
+        const start = findPoint2Angle(a, pos, r / 2)
         ctx.moveTo(start.x, start.y)
-        
-        const end = findPoint2Angle(a, pos, (i%3=== 0) ? r-2 : r+3)
+
+        const end = findPoint2Angle(a, pos, i % 3 === 0 ? r - 2 : r + 3)
         ctx.lineTo(end.x, end.y)
     }
 
@@ -54,7 +52,7 @@ function drawEnemy(ctx, pos, r, disabled, pt = null) {
 
     ctx.stroke()
     ctx.fill()
-    
+
     ctx.shadowColor = shCol
     ctx.shadowBlur = shBlur
 }
@@ -86,18 +84,21 @@ export function render401(gameState, element, relPos) {
         r = element.r,
         isFollowing = element.path && element.path.length
 
-        element.path = element.path || []
+    element.path = element.path || []
     let direction = null
 
     if (element.path.length) {
         const last = element.path[0]
-        direction = [last.coord[0] * map.tsize + map.pov.x, last.coord[1] * map.tsize + map.pov.y]
-    }   
+        direction = [
+            last.coord[0] * map.tsize + map.pov.x,
+            last.coord[1] * map.tsize + map.pov.y,
+        ]
+    }
 
     drawEnemy(ctx, relPos, r, element.disabled, direction)
 
     // RENDER the path
-    
+
     // ctx.moveTo(relPos.x, relPos.y)
     // element.path.forEach((t) => {
     //     ctx.lineTo(
@@ -113,16 +114,16 @@ export function render401(gameState, element, relPos) {
 
 export function renderTiles(gameState) {
     const { ctx, map } = gameState.getByKeys(["ctx", "map", "levelConfig"]),
-    { pov } = map, 
-    borders = [],
-    shCol = ctx.shadowColor,
-    shBlur = ctx.shadowBlur
+        { pov } = map,
+        borders = [],
+        shCol = ctx.shadowColor,
+        shBlur = ctx.shadowBlur
 
     ctx.beginPath()
     ctx.fillStyle = pltToRgba(0, 0.3)
     ctx.strokeStyle = pltToRgba(1, 1)
     ctx.lineWidth = 0.4
-    
+
     mapTileInView(map, (c, r, cols) => {
         const tile = map.getTile(c, r)
         const { x, y } = tilePosition(c, r, map.tsize, pov)
@@ -152,61 +153,64 @@ export function renderTiles(gameState) {
 
 export function renderArrows(gameState) {
     const { entities, player, ctx, map } = gameState.getByKeys([
-        "entities",
-        "player",
-        "ctx",
-        "map",
-    ])
-    const pov = map.pov
+            "entities",
+            "player",
+            "ctx",
+            "map",
+        ]),
+        pov = map.pov,
+        shCol = ctx.shadowColor,
+        shBlur = ctx.shadowBlur
     entities.forEach((e) => {
         let draw = false
+        ctx.beginPath()
 
         switch (e.type) {
             case "404":
-                ctx.fillStyle = "blue"
+                ctx.strokeStyle = pltToRgba(2, 0.2)
+                ctx.fillStyle = pltToRgba(2, 0.2)
                 draw = true
+                ctx.shadowColor = pltToRgba(2, 1)
+                ctx.shadowBlur = 10
                 break
-            case "401":
-                ctx.fillStyle = "red"
-                draw = false
 
-                break
             case "exit":
                 if (e.opened) {
                     draw = true
-                    ctx.fillStyle = "green"
-                } else {
-                    ctx.fillStyle = "orange"
+                    ctx.strokeStyle = pltToRgba(4, 0.2)
+                    ctx.fillStyle = pltToRgba(4, 0.2)
+                    ctx.shadowColor = pltToRgba(4,1)
+                    ctx.shadowBlur = 10
                 }
 
                 break
         }
         if (draw) {
-            const p1 = pntBtw2Pnts(player.position, e.position, 20)
-            const p2 = pntBtw2Pnts(player.position, e.position, 50)
-            ctx.beginPath()
-
-            const p0 = findPoint2Angle(
-                0,
-                { x: p1.x + pov.x, y: p1.y + pov.y },
-                5
+            const rad = rad2pts(
+                [e.position.x, e.position.y],
+                [player.position.x, player.position.y]
             )
-            const p3 = findPoint2Angle(
-                108,
-                { x: p1.x + pov.x, y: p1.y + pov.y },
-                5
+            ctx.arc(
+                player.position.x + pov.x,
+                player.position.y + pov.y,
+                21,
+                rad - 0.4,
+                rad + 0.4
             )
+            const p0 = pntBtw2Pnts(player.position, e.position, 23)
+            ctx.moveTo(p0.x + pov.x, p0.y + pov.y)
 
-            ctx.moveTo(p0.x, p0.y)
-
+            const p2 = pntBtw2Pnts(player.position, e.position, 25)
             ctx.lineTo(p2.x + pov.x, p2.y + pov.y)
-            ctx.lineTo(p3.x, p3.y)
-            ctx.lineTo(p0.x, p0.y)
+
+            ctx.lineWidth = 1
+            ctx.stroke()
             ctx.fill()
         }
     })
 
-    ctx.fillStyle = "tomato"
+    ctx.shadowColor = shCol
+    ctx.shadowBlur = shBlur
 }
 
 export function render404(gameState, element, relPos) {
@@ -245,18 +249,18 @@ export function renderExit(gameState, element, relPos) {
 
 function drawAuth(ctx, pos, r) {
     const shCol = ctx.shadowColor,
-    shBlur = ctx.shadowBlur
-    ctx.shadowColor = pltToRgba(4 ,0.6)
+        shBlur = ctx.shadowBlur
+    ctx.shadowColor = pltToRgba(4, 0.6)
     ctx.shadowBlur = 10
     ctx.beginPath()
-    ctx.fillStyle = pltToRgba(4,1)
-    ctx.strokeStyle =  pltToRgba(5,1)
+    ctx.fillStyle = pltToRgba(4, 1)
+    ctx.strokeStyle = pltToRgba(5, 1)
     ctx.lineWidth = 1
 
-    ctx.arc(pos.x-r/2, pos.y, r, 0, 1 * Math.PI)
-    ctx.arc(pos.x+r/2, pos.y, r, 0, 1 * Math.PI)
-    ctx.arc(pos.x, pos.y, r-r/2, 0, 1 * Math.PI)
-    ctx.arc(pos.x, pos.y-r/2, r, 0, 1 * Math.PI)
+    ctx.arc(pos.x - r / 2, pos.y, r, 0, 1 * Math.PI)
+    ctx.arc(pos.x + r / 2, pos.y, r, 0, 1 * Math.PI)
+    ctx.arc(pos.x, pos.y, r - r / 2, 0, 1 * Math.PI)
+    ctx.arc(pos.x, pos.y - r / 2, r, 0, 1 * Math.PI)
 
     ctx.fill()
     ctx.stroke()
@@ -271,12 +275,7 @@ export function renderAuth(gameState, element, relPos) {
 export function renderTutorialEnemy(canvas) {
     const ctx = canvas.getContext("2d")
 
-    drawEnemy(
-        ctx,
-        { x: canvas.width / 2, y: canvas.height / 2 },
-        10,
-        false,
-    )
+    drawEnemy(ctx, { x: canvas.width / 2, y: canvas.height / 2 }, 10, false)
 }
 
 export function renderTutorial404(canvas) {
