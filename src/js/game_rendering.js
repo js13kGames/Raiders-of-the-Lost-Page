@@ -161,7 +161,7 @@ export function renderArrows(gameState) {
         pov = map.pov,
         shCol = ctx.shadowColor,
         shBlur = ctx.shadowBlur
-    entities.forEach((e) => {
+        entities.forEach((e) => {
         let draw = false
         ctx.beginPath()
 
