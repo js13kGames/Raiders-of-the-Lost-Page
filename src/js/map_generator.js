@@ -26,8 +26,8 @@ export function generateMaze(map, gameState) {
     const tilesNum = scaledMap.cols * scaledMap.rows
 
     let pos = [
-        scaledMap.cols / 2 - map.tsize / f / 2,
-        scaledMap.rows / 2 - map.tsize / f / 2,
+        Math.floor(scaledMap.cols / 2 - map.tsize / f / 2),
+        Math.floor(scaledMap.rows / 2 - map.tsize / f / 2),
     ]
     let step = 0
 
