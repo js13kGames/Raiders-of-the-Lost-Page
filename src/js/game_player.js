@@ -64,12 +64,12 @@ function renderFF(canvas, ctx, element) {
     }
 }
 // Utility functions
-function changePlayerPosition(newPosition, gameData) {
+function changePlayerps(newps, gameData) {
     return {
         ...gameData,
         player: {
             ...gameData.player,
-            position: { ...newPosition },
+            ps: { ...newps },
         },
     }
 }
@@ -88,7 +88,7 @@ function playerPickup404(pointAdded, gameData) {
         ...gameData,
         player: {
             ...gameData.player,
-            lastPosition: { ...gameData.player.position },
+            lastps: { ...gameData.player.ps },
             pts: gameData.player.pts + pointAdded,
         },
     }
@@ -136,7 +136,7 @@ function playerCollideEnemy(gameState, player) {
                 removeClass(youDiedEl, "fade-in-out")
                 return compose(
                     partial(changePlayerLive, (l) => l - 1),
-                    partial(changePlayerPosition, gameData.player.lastPosition),
+                    partial(changePlayerps, gameData.player.lastps),
                     partial(setPlayerGhost, true)
                 )(gameData)
             })
@@ -160,11 +160,11 @@ export default function initPlayer(gameState) {
         pxSpeed: 0.5,
         r: 10,
         angle: 0,
-        position: {
+        ps: {
             x: (map.cols / 2) * map.tsize,
             y: (map.rows / 2) * map.tsize,
         },
-        lastPosition: {
+        lastps: {
             x: (map.cols / 2) * map.tsize,
             y: (map.rows / 2) * map.tsize,
         },
@@ -267,26 +267,26 @@ export default function initPlayer(gameState) {
                 element.borderCollide !== "top" &&
                 !blocked.t
             ) {
-                element.position.y -= speed * speedMult
+                element.ps.y -= speed * speedMult
             } else if (
                 moveV === "down" &&
                 element.borderCollide !== "bottom" &&
                 !blocked.b
             ) {
-                element.position.y += speed * speedMult
+                element.ps.y += speed * speedMult
             }
             if (
                 moveH === "left" &&
                 element.borderCollide !== "left" &&
                 !blocked.l
             ) {
-                element.position.x -= speed * speedMult
+                element.ps.x -= speed * speedMult
             } else if (
                 moveH === "right" &&
                 element.borderCollide !== "right" &&
                 !blocked.r
             ) {
-                element.position.x += speed * speedMult
+                element.ps.x += speed * speedMult
             }
 
             if (!moveH && !moveV) {

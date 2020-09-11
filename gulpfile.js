@@ -6,13 +6,11 @@ const htmlmin = require("gulp-htmlmin")
 const cleanCSS = require("gulp-clean-css")
 const through = require("through2")
 const concat = require("gulp-concat")
-
-const { StringDecoder } = require("string_decoder")
+const concatCss = require('gulp-concat-css');
 
 const sass = require("gulp-sass")
 sass.compiler = require("node-sass")
 
-const fs = require("fs")
 const paths = {
     build: "./dist",
     src: "./src",
@@ -27,7 +25,9 @@ function cleanDist() {
 function compileSass() {
     return src([`${paths.styles.dev}/*.scss`])
         .pipe(sass({ outputStyle: "compressed" }).on("error", sass.logError))
+        .pipe(concatCss("main.css"))
         .pipe(cleanCSS())
+
         .pipe(dest(paths.styles.build))
 }
 

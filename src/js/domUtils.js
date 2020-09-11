@@ -33,12 +33,12 @@ export function show(el, display = "block") {
     if (!el) return false
     el.style.display = display
 }
-export function appendElement(element, parent = document.body) {
-    return parent.appendChild(element)
-}
 
 export function viewportDims() {
-    return [document.documentElement.clientWidth-50, document.documentElement.clientHeight- 50]
+    return [
+        document.documentElement.clientWidth - 50,
+        document.documentElement.clientHeight - 50,
+    ]
 }
 
 export function setStageDim(stage, container, w = 800, h = 600) {

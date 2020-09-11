@@ -1,8 +1,14 @@
 import { renderText, genFont, resetBlur } from "./rendering.js"
-import { tileToCanvasPos, getTilesInView, isBorder, mazeBorders, clearCenterMap } from "./map.js"
+import {
+    tileToCanvasPos,
+    getTilesInView,
+    isBorder,
+    mazeBorders,
+    clearCenterMap,
+} from "./map.js"
 import { addClass, removeClass } from "./domUtils.js"
 import { renderTiles, renderArrows, renderHUD } from "./game_rendering.js"
-import {reverseDirs } from "./utils.js"
+import { reverseDirs } from "./utils.js"
 
 const loopSpeed = Math.round(1000 / 75)
 
@@ -53,12 +59,12 @@ function calcBlocked(elementTiles, map) {
 }
 function elementTiles(element, map) {
     const centerTile = {
-        c: element.position.x / map.tsize,
-        r: element.position.y / map.tsize,
+        c: element.ps.x / map.tsize,
+        r: element.ps.y / map.tsize,
     }
 
     const tiles = []
-    const dimension = Math.max(Math.round(element.r / map.tsize),1)
+    const dimension = Math.max(Math.round(element.r / map.tsize), 1)
     for (let c = -dimension; c < dimension; c++) {
         for (let r = -dimension; r < dimension; r++) {
             tiles.push({
@@ -74,34 +80,36 @@ const chance = (ch) => Math.floor(Math.random() * 100) <= ch
 
 const updateWalls = (gameState, map) => {
     const percRem = 10
-    const {mazepath }= gameState.getByKeys(["mazepath"])
+    const { mazepath } = gameState.getByKeys(["mazepath"])
     for (const k in mazepath) {
         if (mazepath.hasOwnProperty(k)) {
             const missing = reverseDirs(mazepath[k])
-            mazepath[k] = [...mazepath[k],...missing.filter(() => chance(percRem))]
+            mazepath[k] = [
+                ...mazepath[k],
+                ...missing.filter(() => chance(percRem)),
+            ]
         }
     }
 
-
     mazeBorders(map, mazepath, map.scaleFactor)
-    clearCenterMap(map, [Math.floor(map.cols/2), Math.floor(map.rows/2), 10])
+    clearCenterMap(map, [
+        Math.floor(map.cols / 2),
+        Math.floor(map.rows / 2),
+        10,
+    ])
 
     gameState.setState("mazepath", mazepath)
 }
 
-
 export default function gameLoop(gameState) {
-    const tick = gameState.getState("tick", 0)
-    const now = +new Date()
-    const lastTime = gameState.getState("lastTime", +new Date())
-    const deltaTime = now - lastTime
-    const actualFps = Math.round(1000 / deltaTime)
-
+    const tick = gameState.getState("tick", 0),
+     now = +new Date(),
+     lastTime = gameState.getState("lastTime", +new Date()),
+     deltaTime = now - lastTime,
+     actualFps = Math.round(1000 / deltaTime)
+     
     gameState.setState("actualFps", actualFps)
     gameState.setState("tick", tick + 1)
-
-    // Improve collision detection
-    // https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
 
     if (gameState.gameStatus() === "play") {
         let { player, map, levelConfig } = gameState.getByKeys([
@@ -112,8 +120,8 @@ export default function gameLoop(gameState) {
 
         if (player && map) {
             const playerTile = {
-                c: player.position.x / map.tsize,
-                r: player.position.y / map.tsize,
+                c: player.ps.x / map.tsize,
+                r: player.ps.y / map.tsize,
             }
             player.currentTile = playerTile
             gameState.updateState((gameData) => ({
@@ -154,18 +162,13 @@ export default function gameLoop(gameState) {
                     }
                     if (element) {
                         element.currentTiles = elementTiles(element, map)
-                        element.blocked = calcBlocked(
-                            element.currentTiles,
-                            map
-                        )
+                        element.blocked = calcBlocked(element.currentTiles, map)
                     }
 
                     return element
                 })
                 .filter((element) => !!element),
         }))
-
-        const startDebug = +new Date()
 
         const elems = [
             ...(gameState.getState("entities") || []),
@@ -222,7 +225,6 @@ export function renderLoop(gameState) {
         debug,
         levelConfig,
         tick,
-        loadingLetters,
     } = gameState.getByKeys([
         "ctx",
         "canvas",
@@ -231,7 +233,6 @@ export function renderLoop(gameState) {
         "debug",
         "levelConfig",
         "tick",
-        "loadingLetters",
     ])
     const status = gameState.gameStatus()
     // TODO refactor
@@ -295,17 +296,25 @@ export function renderLoop(gameState) {
                 }
 
                 renderTiles(gameState)
-            // RENDER maze stack for debug
+                // RENDER maze stack for debug
 
                 const maze = gameState.getState("mazestack")
 
-                ctx.beginPath() 
-                ctx.strokeStyle = "lime";
+                ctx.beginPath()
+                ctx.strokeStyle = "lime"
 
-                maze.forEach((m, i) => {
-                    const [x, y] = [ m[0] * map.scaleFactor * map.tsize+pov.x,  m[1] * map.scaleFactor* map.tsize + pov.y]
-                   
-                    ctx.rect(x, y,map.scaleFactor * map.tsize, map.scaleFactor * map.tsize)
+                maze.forEach((m) => {
+                    const [x, y] = [
+                        m[0] * map.scaleFactor * map.tsize + pov.x,
+                        m[1] * map.scaleFactor * map.tsize + pov.y,
+                    ]
+
+                    ctx.rect(
+                        x,
+                        y,
+                        map.scaleFactor * map.tsize,
+                        map.scaleFactor * map.tsize
+                    )
                 })
 
                 ctx.stroke()
@@ -320,19 +329,16 @@ export function renderLoop(gameState) {
                 const entities = gameState.getState("entities", [])
 
                 entities.forEach((element) => {
-                    if (
-                        typeof element.render === "function" &&
-                        element.position
-                    ) {
-                        const col = Math.round(element.position.x / map.tsize)
-                        const row = Math.round(element.position.y / map.tsize)
+                    if (typeof element.render === "function" && element.ps) {
+                        const col = Math.round(element.ps.x / map.tsize)
+                        const row = Math.round(element.ps.y / map.tsize)
                         if (
                             (col >= startCol && col <= endCol) ||
                             (row >= startRow && row <= endRow)
                         ) {
                             element.render(gameState, element, {
-                                x: element.position.x + pov.x,
-                                y: element.position.y + pov.y,
+                                x: element.ps.x + pov.x,
+                                y: element.ps.y + pov.y,
                             })
                         }
 
@@ -348,64 +354,47 @@ export function renderLoop(gameState) {
             const menus = gameState.getState("menus")
             const ctrls = gameState.getState("ctrls")
 
-        // Render menus
-        for (const menuName in menus) {
-            if (menus.hasOwnProperty(menuName)) {
-                const menu = menus[menuName]
-                if (typeof menu.render === "function") {
-                    menu.render(gameState)
+            // Render menus
+            for (const menuName in menus) {
+                if (menus.hasOwnProperty(menuName)) {
+                    const menu = menus[menuName]
+                    if (typeof menu.render === "function") {
+                        menu.render(gameState)
+                    }
                 }
             }
-        }
-        for (const ctrlName in ctrls) {
-            if (ctrls.hasOwnProperty(ctrlName)) {
-                const ctrl = ctrls[ctrlName]
-                if (typeof ctrl.render === "function") {
-                    ctrl.render(gameState)
+            for (const ctrlName in ctrls) {
+                if (ctrls.hasOwnProperty(ctrlName)) {
+                    const ctrl = ctrls[ctrlName]
+                    if (typeof ctrl.render === "function") {
+                        ctrl.render(gameState)
+                    }
                 }
             }
-        }
 
-        if (gameState.gameStatus() === "play") renderHUD(gameState)
+            if (gameState.gameStatus() === "play") renderHUD(gameState)
 
-        renderFps(`${gameState.getState("actualFps")} FPS`, { x: canvas.width - 80, y: 85 })
-        renderFps(`${gameState.getState("actualFpsRender")} FPSR`, {
-            x: canvas.width - 80,
-            y: 100,
-        })
-
-        if (player.currentTile) {
-            renderFps(`c: ${player.currentTile.c}, r: ${player.currentTile.r}`, {
+            renderFps(`${gameState.getState("actualFps")} FPS`, {
                 x: canvas.width - 80,
-                y: 115,
+                y: 85,
             })
+            renderFps(`${gameState.getState("actualFpsRender")} FPSR`, {
+                x: canvas.width - 80,
+                y: 100,
+            })
+
+            if (player.currentTile) {
+                renderFps(
+                    `c: ${player.currentTile.c}, r: ${player.currentTile.r}`,
+                    {
+                        x: canvas.width - 80,
+                        y: 115,
+                    }
+                )
+            }
         }
     }
-        }
-
-        
-
     gameState.setState("lastTimeRender", now)
 
     window.requestAnimationFrame(() => renderLoop(gameState))
-}
-export function pxXSec2PxXFrame(px, gameState) {
-    const fps = gameState.getState("actualFps")
-    return px / fps
-}
-
-export function collide(el1, el2) {
-    const rect1 = { ...el1.position, ...el1.box }
-    const rect2 = { ...el2.position, ...el2.box }
-
-    if (
-        typeof el1.collideBox === "function" &&
-        typeof el2.collideBox === "function"
-    ) {
-        const cb1 = el1.collideBox(el1)
-        const cb2 = el2.collideBox(el2)
-        return cb1.a < cb2.b && cb1.b > cb2.a && cb1.c < cb2.d && cb1.d > cb2.c
-    } else {
-        return false
-    }
 }

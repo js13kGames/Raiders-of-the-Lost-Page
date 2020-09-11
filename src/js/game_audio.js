@@ -12,45 +12,45 @@ export function pick404(gameState) {
     soundEnabled(gameState, () => {
         playSound(
             gameState,
-            squareNote({ note: sectOctave("A", 3), duration: 0.1 })
+            squareNote({ note: sectOctave("A", 0), duration: 0.1 })
         )
             .then(() =>
                 playSound(
                     gameState,
-                    squareNote({ note: sectOctave("B", 3), duration: 0.1 })
+                    squareNote({ note: sectOctave("B", 0), duration: 0.1 })
                 )
             )
             .then(() =>
                 playSound(
                     gameState,
-                    squareNote({ note: sectOctave("G", 4), duration: 0.1 })
+                    squareNote({ note: sectOctave("G", 1), duration: 0.1 })
                 )
             )
     })
 }
 
 export function pickExit(gameState) {
-    soundEnabled(gameState,() => {
+    soundEnabled(gameState, () => {
         playSound(
             gameState,
-            squareNote({ note: sectOctave("A", 3), duration: 0.1 })
+            squareNote({ note: sectOctave("A", 0), duration: 0.1 })
         )
             .then(() =>
                 playSound(
                     gameState,
-                    squareNote({ note: sectOctave("B", 3), duration: 0.1 })
+                    squareNote({ note: sectOctave("B", 0), duration: 0.1 })
                 )
             )
             .then(() =>
                 playSound(
                     gameState,
-                    squareNote({ note: sectOctave("C#", 4), duration: 0.1 })
+                    squareNote({ note: sectOctave("C#", 1), duration: 0.1 })
                 )
             )
             .then(() =>
                 playSound(
                     gameState,
-                    squareNote({ note: sectOctave("F#", 4), duration: 0.1 })
+                    squareNote({ note: sectOctave("F#", 1), duration: 0.1 })
                 )
             )
     })
@@ -60,24 +60,24 @@ export function lifeLost(gameState) {
     soundEnabled(gameState, () => {
         playSound(
             gameState,
-            squareNote({ note: sectOctave("F#", 4), duration: 0.1 })
+            squareNote({ note: sectOctave("F#", 1), duration: 0.1 })
         )
             .then(() =>
                 playSound(
                     gameState,
-                    squareNote({ note: sectOctave("C#", 4), duration: 0.1 })
+                    squareNote({ note: sectOctave("C#", 1), duration: 0.1 })
                 )
             )
             .then(() =>
                 playSound(
                     gameState,
-                    squareNote({ note: sectOctave("B", 3), duration: 0.1 })
+                    squareNote({ note: sectOctave("B", 0), duration: 0.1 })
                 )
             )
             .then(() =>
                 playSound(
                     gameState,
-                    squareNote({ note: sectOctave("A", 3), duration: 0.2 })
+                    squareNote({ note: sectOctave("A", 0), duration: 0.2 })
                 )
             )
     })

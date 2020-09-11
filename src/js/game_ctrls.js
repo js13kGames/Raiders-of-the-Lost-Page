@@ -31,7 +31,6 @@ export default function gameControllers(gameState) {
         break;
     }
   };
-
   const onKeyUp = (event, ctrl, gameState) => {
     const keyName = event.key;
 

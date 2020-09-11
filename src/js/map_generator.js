@@ -29,7 +29,6 @@ export function generateMaze(map, gameState) {
         Math.floor(scaledMap.cols / 2 - map.tsize / f / 2),
         Math.floor(scaledMap.rows / 2 - map.tsize / f / 2),
     ]
-    let step = 0
 
     let walls = []
     const mazestack = []
@@ -58,7 +57,6 @@ export function generateMaze(map, gameState) {
             mazestack.push(pos)
             pos = next
 
-            step++
         } else {
             stack.pop()
             pos = stack[stack.length - 1]
@@ -154,20 +152,20 @@ export function generateEntities(gameState, map, config = {}) {
 
     entities = [
         ...entities,
-        ...addEntities(map, centers, config["404"].n, (position) => {
-            return { position, type: "404" }
+        ...addEntities(map, centers, config["404"].n, (ps) => {
+            return { ps, type: "404" }
         }),
     ]
     entities = [
         ...entities,
-        ...addEntities(map, centers, config["exit"].n, (position) => {
-            return { position, type: "exit" }
+        ...addEntities(map, centers, config["exit"].n, (ps) => {
+            return { ps, type: "exit" }
         }),
     ]
     entities = [
         ...entities,
-        ...addEntities(map, centers, config["auth"].n, (position) => {
-            return { position, type: "auth" }
+        ...addEntities(map, centers, config["auth"].n, (ps) => {
+            return { ps, type: "auth" }
         }),
     ]
 
@@ -175,10 +173,10 @@ export function generateEntities(gameState, map, config = {}) {
         ...entities,
         ...config["401"]
             .map((c) =>
-                addEntities(map, centers, c.n, (position) => {
+                addEntities(map, centers, c.n, (ps) => {
                     const { speed, updatePathEvery, maxDist, maxPath } = c
                     return {
-                        position,
+                        ps,
                         type: "401",
                         speed: speed || 3,
                         updatePathEvery,

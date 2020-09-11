@@ -1,15 +1,15 @@
 import createEntity from "./entities.js";
-import { dstBtw2Pnts, pntBtw2Pnts, findPath, tilePosition } from "./map.js";
+import { dstBtw2Pnts, pntBtw2Pnts, findPath, tileps } from "./map.js";
 import { easeInOutCubic } from "./rendering.js";
 import { render401, render404,renderExit, renderAuth } from "./game_rendering.js";
 import {pickExit} from "./game_audio.js"
 
 const goTo = (gameState, element) => {
   const { map, player } = gameState.getByKeys(["map", "player"]),
-        { position, updatePathEvery, updatePath, maxPath, maxDist } = element,
+        { ps, updatePathEvery, updatePath, maxPath, maxDist } = element,
         { auth = false } = player.equip || {};
 
-  if (auth || player.ghost || dstBtw2Pnts(player.position, position) > maxDist) {
+  if (auth || player.ghost || dstBtw2Pnts(player.ps, ps) > maxDist) {
     element.path = [];
     element.updatePath = updatePathEvery+1;
     
@@ -18,8 +18,8 @@ const goTo = (gameState, element) => {
   if (updatePath > updatePathEvery) {
     element.path = findPath(
       [
-        Math.floor(element.position.x / map.tsize),
-        Math.floor(element.position.y / map.tsize),
+        Math.floor(element.ps.x / map.tsize),
+        Math.floor(element.ps.y / map.tsize),
       ],
       [Math.floor(player.currentTile.c), Math.floor(player.currentTile.r)],
       map, maxPath
@@ -33,13 +33,13 @@ const goTo = (gameState, element) => {
 
   if (newStp) {
     const nextPos = pntBtw2Pnts(
-      position,
-      tilePosition(newStp.coord[0], newStp.coord[1], map.tsize, { x: 0, y: 0 }),
+      ps,
+      tileps(newStp.coord[0], newStp.coord[1], map.tsize, { x: 0, y: 0 }),
       element.speed
     );
 
-    element.position = nextPos;
-    const nextTile = tilePosition(newStp.coord[0], newStp.coord[1], map.tsize, {
+    element.ps = nextPos;
+    const nextTile = tileps(newStp.coord[0], newStp.coord[1], map.tsize, {
       x: 0,
       y: 0,
     });
@@ -58,7 +58,7 @@ function movingEntitity(start, steps, speed,updatePathEvery = 20, maxDist=400,  
     start: { ...start },
     steps: [...steps],
     step: 0,
-    position: { ...start },
+    ps: { ...start },
     speed,
     easingSpeed: 150,
     easingFunc: easeInOutCubic,
@@ -75,9 +75,9 @@ function movingEntitity(start, steps, speed,updatePathEvery = 20, maxDist=400,  
 }
 
 function createEnemyEntity(baseData) {
-  const { position, speed = 4, steps = [],updatePathEvery = 20, maxDist= 400, maxPath=200 } = baseData;
+  const { ps, speed = 4, steps = [],updatePathEvery = 20, maxDist= 400, maxPath=200 } = baseData;
   return createEntity({
-    ...movingEntitity(position, steps, speed, updatePathEvery, maxDist, maxPath),
+    ...movingEntitity(ps, steps, speed, updatePathEvery, maxDist, maxPath),
     r: 10,
     enemy: true,
     collide: true,
@@ -107,9 +107,9 @@ export function create401Entity(baseData) {
   };
 }
 export function create404Entity(baseData) {
-  const { position } = baseData;
+  const { ps } = baseData;
   const entity = createEntity({
-    position,
+    ps,
     fileType: (() => {
       const types = ["js", "html", "css"];
       return types[Math.round(Math.random() * (types.length - 1))];

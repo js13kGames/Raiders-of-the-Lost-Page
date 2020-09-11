@@ -28,7 +28,7 @@ export function mapTileInView(map, mapFn) {
     }
 }
 
-export function tilePosition(c, r, tsize, pov) {
+export function tileps(c, r, tsize, pov) {
     return {
         x: c * tsize + pov.x,
         y: r * tsize + pov.y,
@@ -75,48 +75,6 @@ export function clearCenterMap(map, c, w = 10) {
         for (let j = -w; j < w; j++) {
             map.setTile(c[0] + i, c[1] + j, 0)
         }
-    }
-}
-
-export function exportMap(map, entities) {
-    const tiles = {}
-    for (let r = 0; r < map.rows; r++) {
-        for (let c = 0; c < map.cols; c++) {
-            if (!isBorder(c, r, map.cols, map.rows)) {
-                const tile = map.getTile(c, r)
-                if (tile) {
-                    tiles["" + c + "-" + r] = tile
-                }
-            }
-        }
-    }
-    const exptEntities = entities.map((e) => {
-        const ret = {
-            position: e.start || e.position,
-            type: e.type,
-        }
-
-        if (e.speed) ret.speed = e.speed
-        if (e.steps) ret.steps = e.steps.slice(1)
-
-        return ret
-    })
-
-    return JSON.stringify({
-        tiles,
-        entities: exptEntities,
-        cols: map.cols,
-        rows: map.rows,
-    })
-}
-export function canvasPosToTile(x, y, canvas, map) {
-    const rel = { x: x / canvas.width, y: y / canvas.height }
-
-    const { startCol, endCol, startRow, endRow } = getTilesInView(map)
-
-    return {
-        c: Math.round((endCol - startCol) * rel.x + startCol),
-        r: Math.round((endRow - startRow) * rel.y + startRow),
     }
 }
 
@@ -207,9 +165,6 @@ export function pntBtw2Pnts(p1, p2, dist) {
 }
 export function isCenterBlock(c, r, map) {
     return c % (map.scaleFactor / 2) === 0 && r % (map.scaleFactor / 2) === 0
-}
-export function getBlockCenters(map) {
-    return [...map.tiles.filter(([c, r]) => isCenterBlock(c, r, map))]
 }
 
 export function surrounding(map, center, range) {

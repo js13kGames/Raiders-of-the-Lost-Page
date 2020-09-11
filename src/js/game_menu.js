@@ -15,12 +15,12 @@ function createMenu(gameState, initFunc) {
 
 export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
     const mainMenu = createMenu(gameState, (menu, gameState) => {
-        const menuContainer = domElement("#main-menu-container"),
-            startBtn = domElement("#main-manu-start"),
-            continueBtn = domElement("#main-manu-continue"),
-            audioButton = domElement("#main-manu-sound"),
+        const menuContainer = domElement("#mm-container"),
+            startBtn = domElement("#mm-start"),
+            continueBtn = domElement("#mm-continue"),
+            audioButton = domElement("#mm-sound"),
             congratulation = domElement("#congrats-screen"),
-            howToBtn = domElement("#main-manu-how-to"),
+            howToBtn = domElement("#mm-how-to"),
             changeSizeBtn = domElement("#main-screen-size"),
             howToScreen = domElement("#tutorial"),
             escTutorialBtn = domElement("#esc-tutorial"),
@@ -31,8 +31,8 @@ export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
             const startLevel = levelsFn[i]
             if (typeof startLevel === "function") {
                 const el = document.createElement("li")
-                el.innerHTML = `<button role="button" id="main-manu-level-${i}" class="btn">Load level ${levelName}</button>`
-                domElement("#main-menu-container ul").appendChild(el)
+                el.innerHTML = `<button role="button" id="mm-level-${i}" class="btn">Load level ${levelName}</button>`
+                domElement("#mm-container ul").appendChild(el)
                 el.addEventListener("click", (evt) => {
                     evt.preventDefault()
                     startLevel(gameState)
@@ -91,7 +91,7 @@ export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
             const n = (currentScreenSize + 1) % screenSizeAv.length
             setStageDim(
                 canvas,
-                document.getElementById("stage-container"),
+                document.getElementById("s-c"),
                 screenSizeAv[n][0],
                 screenSizeAv[n][1]
             )
@@ -169,16 +169,16 @@ export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
 export function initPauseMenu(gameState) {
     const pauseMenu = createMenu(gameState, (menu, gameState) => {
         const button = domElement("#play-pause-btn")
-        const element = domElement("#pause-menu-container")
+        const element = domElement("#pmc")
         const menuInit = {
             show: () => show(element),
             hide: () => hide(element),
             element: element,
             button: button,
             render: (gameState) => {
-                // Dynamic menu position
+                // Dynamic menu ps
                 const canvas = gameState.getState("canvas")
-                element.style.position = "absolute"
+                element.style.ps = "absolute"
 
                 element.style.top = `${canvas.height - 50}px`
                 element.style.left = `${canvas.width - 100}px`
@@ -211,7 +211,7 @@ export function initGameOverMenu(gameState, startFn) {
             element: element,
             button: button,
             render: (gameState) => {
-                // Dynamic menu position
+                // Dynamic menu ps
                 if (gameState.gameStatus() === "gameover") {
                     show(element, "flex")
 

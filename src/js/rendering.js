@@ -49,11 +49,6 @@ export function drawFile(ctx, startingPoint, w, h, fold) {
   ]);
 }
 
-
-
-export function easeInSine(x) {
-  return 1 - Math.cos((x * Math.PI) / 2);
-}
 export function easeInOutCubic(x) {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 }

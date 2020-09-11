@@ -1,5 +1,5 @@
 import { findPoint2Angle, angle2pts, rad2pts } from "./utils.js"
-import { mapTileInView, tilePosition, isBorder, pntBtw2Pnts } from "./map.js"
+import { mapTileInView, tileps, isBorder, pntBtw2Pnts } from "./map.js"
 import { drawFile } from "./rendering.js"
 
 function pltToRgba(idx, a = 1) {
@@ -80,10 +80,8 @@ function draw404(ctx, pos, r) {
 }
 
 export function render401(gameState, element, relPos) {
-    const { ctx, player, map } = gameState.getByKeys(["ctx", "player", "map"]),
-        r = element.r,
-        isFollowing = element.path && element.path.length
-
+    const { ctx, map } = gameState.getByKeys(["ctx", "map"]),
+        r = element.r
     element.path = element.path || []
     let direction = null
 
@@ -111,9 +109,9 @@ export function renderTiles(gameState) {
     ctx.strokeStyle = pltToRgba(1, 1)
     ctx.lineWidth = 0.4
 
-    mapTileInView(map, (c, r, cols) => {
+    mapTileInView(map, (c, r) => {
         const tile = map.getTile(c, r)
-        const { x, y } = tilePosition(c, r, map.tsize, pov)
+        const { x, y } = tileps(c, r, map.tsize, pov)
         if (isBorder(c, r, map.cols, map.rows)) {
             borders.push([c, r]) // check that
         }
@@ -129,7 +127,7 @@ export function renderTiles(gameState) {
     ctx.fillStyle = pltToRgba(0, 0.3)
     ctx.strokeStyle = pltToRgba(1, 1)
     borders.forEach(([c, r]) => {
-        const { x, y } = tilePosition(c, r, map.tsize, pov)
+        const { x, y } = tileps(c, r, map.tsize, pov)
         ctx.rect(x, y, map.tsize, map.tsize)
     })
     ctx.fill()
@@ -174,20 +172,20 @@ export function renderArrows(gameState) {
         }
         if (draw) {
             const rad = rad2pts(
-                [e.position.x, e.position.y],
-                [player.position.x, player.position.y]
+                [e.ps.x, e.ps.y],
+                [player.ps.x, player.ps.y]
             )
             ctx.arc(
-                player.position.x + pov.x,
-                player.position.y + pov.y,
+                player.ps.x + pov.x,
+                player.ps.y + pov.y,
                 21,
                 rad - 0.4,
                 rad + 0.4
             )
-            const p0 = pntBtw2Pnts(player.position, e.position, 23)
+            const p0 = pntBtw2Pnts(player.ps, e.ps, 23)
             ctx.moveTo(p0.x + pov.x, p0.y + pov.y)
 
-            const p2 = pntBtw2Pnts(player.position, e.position, 25)
+            const p2 = pntBtw2Pnts(player.ps, e.ps, 25)
             ctx.lineTo(p2.x + pov.x, p2.y + pov.y)
 
             ctx.lineWidth = 1
@@ -201,7 +199,7 @@ export function renderArrows(gameState) {
 }
 
 export function render404(gameState, element, relPos) {
-    const { ctx, map, canvas } = gameState.getByKeys(["ctx", "map", "canvas"])
+    const { ctx } = gameState.getByKeys(["ctx"])
     draw404(ctx, relPos, element.r)
 }
 
@@ -330,9 +328,8 @@ function renderLivesHUD(gameState) {
 }
 
 function renderCurrentLevelHUD(gameState) {
-    const { currentLevel, canvas, ctx } = gameState.getByKeys([
+    const { currentLevel, ctx } = gameState.getByKeys([
         "currentLevel",
-        "canvas",
         "ctx",
     ])
     const fontSize = 20

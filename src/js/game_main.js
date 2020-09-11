@@ -18,8 +18,7 @@ import {
     viewportDims,
     domElement,
     show,
-    hide,
-    addClass,
+    hide
 } from "./domUtils.js"
 
 // Load from local storage
@@ -50,7 +49,7 @@ function initGameState() {
     const canvas = document.getElementById("stage")
     setStageDim(
         canvas,
-        document.getElementById("stage-container"),
+        document.getElementById("s-c"),
         screenSizeAv[0][0],
         screenSizeAv[0][1]
     )
@@ -142,11 +141,9 @@ function initGame() {
 
     gameControllers(gameState)
     // load from localStorage
-    const currentLevel = 0
 
     const newLevel = (gameState) => {
-        const { player, currentLevel, levels } = gameState.getByKeys([
-            "player",
+        const { currentLevel, levels } = gameState.getByKeys([
             "currentLevel",
             "levels",
         ])

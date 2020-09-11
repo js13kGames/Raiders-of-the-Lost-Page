@@ -30,7 +30,7 @@ h1 {
         filter: drop-shadow(0 0 0.1rem rgb(0, 213, 255));
     }
 }
-.stage-container {
+.sc {
     position: relative;
     margin: auto;
     margin-top: 0;
@@ -65,7 +65,7 @@ h1 {
     }
 }
 
-.fullsize-screen {
+.fls {
     border: 1px solid $pink;
     position: absolute;
     width: 100%;
