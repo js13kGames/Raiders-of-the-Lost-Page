@@ -99,10 +99,9 @@ export function renderBackground(ctx, canvas, map, pov) {
 }
 
 export function renderTiles(gameState) {
-    const { ctx, map, ghost, levelConfig } = gameState.getByKeys([
+    const { ctx, map, levelConfig } = gameState.getByKeys([
         "ctx",
         "map",
-        "ghost",
         "levelConfig",
     ])
     const { pov } = map
@@ -112,7 +111,7 @@ export function renderTiles(gameState) {
     if (levelConfig) {
         ctx.fillStyle = `rgba(0,250,0,1)`
     } else {
-        ctx.fillStyle = `rgba(0,0,0,${ghost ? "0.5" : "1"})`
+        ctx.fillStyle = `rgba(0,0,0,1"})`
     }
 
     mapTileInView(map, (c, r, cols) => {

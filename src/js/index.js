@@ -3,7 +3,7 @@
  */
 
 import gameLoop, { renderLoop } from "./engine.js";
-import gameState from "./game_main.js";
+import initGame from "./game_main.js";
 
 (() => {
 const gameState = initGame()

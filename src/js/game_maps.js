@@ -3,7 +3,7 @@ const level0 = {
     rows: 50,
     entities: {
         404: { n: 3 },
-        403: { n: 0, speed: 1 },
+        403: { n: 5, speed: 1 },
         401: { n: 0 },
         auth: { n: 0 },
         exit: { n: 1 },

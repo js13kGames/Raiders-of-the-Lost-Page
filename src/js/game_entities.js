@@ -4,18 +4,12 @@ import { easeInOutCubic, drawFile } from "./rendering.js";
 import { render403, render401 } from "./game_rendering.js";
 import {pickExit} from "./game_audio.js"
 
-function isInLocation(position, location) {
-  return (
-    Math.floor(position.x - location.x) === 0 &&
-    Math.floor(position.y - location.y) === 0
-  );
-}
-
 const goTo = (gameState, element) => {
   const { map, player } = gameState.getByKeys(["map", "player"]);
 
+
   const { position, updatePathEvery, updatePath, maxPath } = element;
-  if (dstBtw2Pnts(player.position, position) > maxPath) return element;
+  if (player.ghost || dstBtw2Pnts(player.position, position) > maxPath) return element;
 
   if (updatePath > updatePathEvery) {
     element.path = findPath(

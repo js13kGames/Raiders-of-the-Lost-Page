@@ -6,7 +6,7 @@ import {reverseDirs } from "./utils.js"
 
 const loopSpeed = Math.round(1000 / 75)
 
-function calcBlocked(elementTiles, map, ghost) {
+function calcBlocked(elementTiles, map) {
     const blocked = { t: false, r: false, b: false, l: false }
     const vtx = elementTiles.reduce((acc, v) => {
         if (typeof acc.tr === "undefined" || v.r > acc.tr) {
@@ -31,7 +31,7 @@ function calcBlocked(elementTiles, map, ghost) {
             const tile = map.getTile(c, r)
             const border = isBorder(c, r, map.cols, map.rows)
 
-            if (tile > 0 && (border || !ghost)) {
+            if (tile > 0 || border) {
                 if (r === rs[0] && (c === cs[1] || c === cs[3])) {
                     blocked.t = true
                 }
@@ -104,10 +104,9 @@ export default function gameLoop(gameState) {
     // https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
 
     if (gameState.gameStatus() === "play") {
-        let { player, map, ghost, levelConfig } = gameState.getByKeys([
+        let { player, map, levelConfig } = gameState.getByKeys([
             "player",
             "map",
-            "ghost",
             "levelConfig",
         ])
 
@@ -141,7 +140,7 @@ export default function gameLoop(gameState) {
 
             player = player.run(gameState, player)
             player.currentTiles = elementTiles(player, map)
-            player.blocked = calcBlocked(player.currentTiles, map, ghost)
+            player.blocked = calcBlocked(player.currentTiles, map)
 
             gameState.setState("player", player)
         }
@@ -157,8 +156,7 @@ export default function gameLoop(gameState) {
                             element.currentTiles = elementTiles(element, map)
                             element.blocked = calcBlocked(
                                 element.currentTiles,
-                                map,
-                                ghost
+                                map
                             )
                         }
                     }
