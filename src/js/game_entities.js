@@ -158,7 +158,7 @@ export function createAuthEntity(baseData) {
     type: "auth",
     onCollide: () =>true,
     collide: true,
-    r: 4,
+    r: 6,
     ttl: 5,
     onCollect: (element) => ({
       auth: {

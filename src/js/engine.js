@@ -1,7 +1,7 @@
-import { renderText, renderHUD, genFont, resetBlur } from "./rendering.js"
+import { renderText, genFont, resetBlur } from "./rendering.js"
 import { tileToCanvasPos, getTilesInView, isBorder, mazeBorders, clearCenterMap } from "./map.js"
 import { addClass, removeClass } from "./domUtils.js"
-import { renderTiles, renderArrows } from "./game_rendering.js"
+import { renderTiles, renderArrows, renderHUD } from "./game_rendering.js"
 import {reverseDirs } from "./utils.js"
 
 const loopSpeed = Math.round(1000 / 75)
@@ -408,9 +408,9 @@ export function renderLoop(gameState) {
         })
 
         if (player.currentTile) {
-            renderFps(`c: ${player.currentTile.c},r: ${player.currentTile.r}`, {
-                x: canvas.width - 100,
-                y: 110,
+            renderFps(`c: ${player.currentTile.c}, r: ${player.currentTile.r}`, {
+                x: canvas.width - 80,
+                y: 115,
             })
         }
     }

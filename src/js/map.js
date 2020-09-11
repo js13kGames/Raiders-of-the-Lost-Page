@@ -368,3 +368,4 @@ export function findPath(p1, p2, map, stepMax = 200) {
         return []
     }
 }
+

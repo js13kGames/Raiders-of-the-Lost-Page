@@ -1,114 +1,128 @@
-import { findPoint2Angle, partial } from "./utils.js"
+import { findPoint2Angle, angle2pts} from "./utils.js"
 import { mapTileInView, tilePosition, isBorder, pntBtw2Pnts } from "./map.js"
 import { drawFile } from "./rendering.js"
 
-function circleWithSlashes(ctx, center, r, slashes = []) {
-    ctx.arc(center.x, center.y, r, 0, 2 * Math.PI)
-    slashes.forEach((s) => {
-        const start = findPoint2Angle(s[0], center, r)
-        ctx.moveTo(start.x, start.y)
-        const end = findPoint2Angle(s[1], center, r)
-        ctx.lineTo(end.x, end.y)
-    })
+function pltToRgba(idx, a = 1) {
+    const plt = [
+        [253, 54, 202], // 0 pink
+        [215, 51, 215], // 1 darkPink,
+        [0, 213, 255], //2 lightblue
+        [21, 2, 84], // 3 darkBlue
+        [19, 232, 128], // 4 light green
+        [16, 128, 115], // 5 dark green
+        [242, 52, 101], // 6 red
+        [218, 32, 0] // 7 dark red
+
+    ]
+
+    return `rgba(${plt[idx].join(",")}, ${a})`
 }
 
-function drawEnemy(ctx, pos, r, disabled, text = "") {
-    circleWithSlashes(ctx, pos, r, [[225, 45]])
-    if (!disabled) {
-        ctx.strokeStyle = "red"
-    } else {
-        ctx.strokeStyle = "rgba(100,100,200,0.6)"
+
+function drawEnemy(ctx, pos, r, disabled, pt = null) {
+    const shCol = ctx.shadowColor,
+    shBlur = ctx.shadowBlur
+
+    ctx.shadowColor = pltToRgba(6, 0.5)
+    ctx.shadowBlur = 0
+    let angle = 0;
+    if (pt) {
+        ctx.shadowColor = "rgb(255,0,0)"
+        ctx.shadowBlur = 20
+       angle = angle2pts([pos.x, pos.y], pt)
     }
-    ctx.lineWidth = 3.5
+
+    ctx.beginPath()
+    ctx.arc(pos.x, pos.y, r/2, 0, 2*Math.PI)
+    
+    for (let a = angle, i = 0; a <= 360+ angle; a += 30, i++) {
+        const start = findPoint2Angle(a, pos, r/2)
+        ctx.moveTo(start.x, start.y)
+        
+        const end = findPoint2Angle(a, pos, (i%3=== 0) ? r-2 : r+3)
+        ctx.lineTo(end.x, end.y)
+    }
+
+    if (!disabled) {
+        ctx.strokeStyle = pltToRgba(6, 1)
+        ctx.fillStyle = pltToRgba(7, 0.8)
+    } else {
+        ctx.strokeStyle = pltToRgba(7, 0.5)
+        ctx.fillStyle = pltToRgba(6, 0.2)
+    }
+    ctx.lineWidth = 1
 
     ctx.stroke()
-    ctx.beginPath()
-
-    ctx.rect(pos.x - r - 2, pos.y + r / 2, 25, 13)
-    ctx.fillStyle = "rgba(255,0,0,0.8)"
     ctx.fill()
-    ctx.beginPath()
-
-    ctx.font = "12px serif"
-    ctx.fillStyle = "white"
-    ctx.fillText(text, pos.x - r + 1, pos.y + r + 6)
+    
+    ctx.shadowColor = shCol
+    ctx.shadowBlur = shBlur
 }
+
 function draw404(ctx, pos, r) {
-    const fold = 5
-    const w = r - 2
-    const h = r
+    const fold = 5,
+        w = r - 2,
+        h = r,
+        shCol = ctx.shadowColor,
+        shBlur = ctx.shadowBlur
+
+    ctx.shadowColor = pltToRgba(2, 1)
+    ctx.shadowBlur = 20
     ctx.beginPath()
     drawFile(ctx, { x: pos.x - w, y: pos.y - h }, w, h, fold)
-    ctx.strokeStyle = "blue"
-    ctx.lineWidth = 1.5
-    ctx.stroke()
-    ctx.beginPath()
+    ctx.strokeStyle = pltToRgba(3, 1)
+    ctx.fillStyle = pltToRgba(2, 0.5)
 
-    ctx.rect(pos.x - w - 5, pos.y + h / 2 - 11, 25, 13)
-    ctx.fillStyle = "rgba(0,0,0,0.8)"
+    ctx.lineWidth = 1
     ctx.fill()
-    ctx.font = "12px serif"
-    ctx.fillStyle = "white"
-    ctx.fillText("404", pos.x - w - 2, pos.y + h / 2)
+    ctx.stroke()
+
+    ctx.shadowColor = shCol
+    ctx.shadowBlur = shBlur
 }
+
 export function render401(gameState, element, relPos) {
     const { ctx, player, map } = gameState.getByKeys(["ctx", "player", "map"]),
         r = element.r,
         isFollowing = element.path && element.path.length
 
-    ctx.beginPath()
+        element.path = element.path || []
+    let direction = null
 
-    drawEnemy(ctx, relPos, r, element.disabled, element.type)
+    if (element.path.length) {
+        const last = element.path[0]
+        direction = [last.coord[0] * map.tsize + map.pov.x, last.coord[1] * map.tsize + map.pov.y]
+    }   
+
+    drawEnemy(ctx, relPos, r, element.disabled, direction)
 
     // RENDER the path
-    element.path = element.path || []
-    ctx.moveTo(relPos.x, relPos.y)
-    element.path.forEach((t) => {
-        ctx.lineTo(
-            t.coord[0] * map.tsize + map.pov.x,
-            t.coord[1] * map.tsize + map.pov.y
-        )
-    })
+    
+    // ctx.moveTo(relPos.x, relPos.y)
+    // element.path.forEach((t) => {
+    //     ctx.lineTo(
+    //         t.coord[0] * map.tsize + map.pov.x,
+    //         t.coord[1] * map.tsize + map.pov.y
+    //     )
+    // })
 
-    ctx.strokeStyle = "pink"
-    ctx.lineWidth = 0.5
-    ctx.stroke()
-}
-
-export function renderBackground(ctx, canvas, map, pov) {
-    ctx.lineWidth = 0.3
-    ctx.beginPath()
-
-    ctx.rect(0, 0, canvas.width, canvas.height)
-    ctx.fillStyle = "rgba(0,0,0, 0.4)"
-    ctx.fill()
-    ctx.beginPath()
-
-    for (let r = 0; r < map.rows * map.tsize; r += 100) {
-        for (let c = 0; c < map.cols * map.tsize; c += 100) {
-            ctx.arc(c + pov.x, r + pov.y, 100, 0, 2 * Math.PI)
-        }
-    }
-    ctx.strokeStyle = "purple"
-    ctx.stroke()
+    // ctx.strokeStyle = "pink"
+    // ctx.lineWidth = 0.5
+    // ctx.stroke()
 }
 
 export function renderTiles(gameState) {
-    const { ctx, map, levelConfig } = gameState.getByKeys([
-        "ctx",
-        "map",
-        "levelConfig",
-    ])
-    const { pov } = map
-    ctx.font = "10px Verdana"
-    const borders = []
-    ctx.beginPath()
-    if (levelConfig) {
-        ctx.fillStyle = `rgba(0,250,0,1)`
-    } else {
-        ctx.fillStyle = `rgba(0,0,0,1"})`
-    }
+    const { ctx, map } = gameState.getByKeys(["ctx", "map", "levelConfig"]),
+    { pov } = map, 
+    borders = [],
+    shCol = ctx.shadowColor,
+    shBlur = ctx.shadowBlur
 
+    ctx.beginPath()
+    ctx.fillStyle = pltToRgba(0, 0.3)
+    ctx.strokeStyle = pltToRgba(1, 1)
+    ctx.lineWidth = 0.4
+    
     mapTileInView(map, (c, r, cols) => {
         const tile = map.getTile(c, r)
         const { x, y } = tilePosition(c, r, map.tsize, pov)
@@ -116,22 +130,24 @@ export function renderTiles(gameState) {
             borders.push([c, r]) // check that
         }
         if (tile > 0) {
-            //ctx.fillText(1, x, y)
             ctx.rect(x, y, map.tsize, map.tsize)
         }
-
-        // if (isCenterBlock(c, r, map)) {
-        //   ctx.arc(x, y, 2, 0, 2 * Math.PI);
-        // }
     })
     ctx.fill()
+    ctx.stroke()
+
     ctx.beginPath()
-    ctx.fillStyle = `rgba(200,0,0,1)`
+
+    ctx.fillStyle = pltToRgba(0, 0.3)
+    ctx.strokeStyle = pltToRgba(1, 1)
     borders.forEach(([c, r]) => {
         const { x, y } = tilePosition(c, r, map.tsize, pov)
         ctx.rect(x, y, map.tsize, map.tsize)
     })
     ctx.fill()
+    ctx.stroke()
+    ctx.shadowColor = shCol
+    ctx.shadowBlur = shBlur
 }
 
 export function renderArrows(gameState) {
@@ -199,11 +215,26 @@ export function render404(gameState, element, relPos) {
 }
 
 function drawExit(ctx, pos, r, open) {
-    ctx.beginPath()
-    ctx.fillStyle = open ? "green" : "red"
+    const shCol = ctx.shadowColor,
+        shBlur = ctx.shadowBlur
 
-    ctx.arc(pos.x, pos.y, r, 0, 2 * Math.PI)
+    ctx.beginPath()
+    if (open) {
+        ctx.shadowColor = pltToRgba(4, 1)
+        ctx.shadowBlur = 20
+        ctx.strokeStyle = pltToRgba(4, 1)
+        ctx.fillStyle = pltToRgba(5, 1)
+    } else {
+        ctx.strokeStyle = pltToRgba(4, 0.3)
+        ctx.fillStyle = pltToRgba(5, 0.2)
+    }
+    ctx.lineWidth = 1
+
+    ctx.arc(pos.x, pos.y, r, 2 * Math.PI, 0)
+    ctx.stroke()
     ctx.fill()
+    ctx.shadowColor = shCol
+    ctx.shadowBlur = shBlur
 }
 
 export function renderExit(gameState, element, relPos) {
@@ -213,19 +244,29 @@ export function renderExit(gameState, element, relPos) {
 }
 
 function drawAuth(ctx, pos, r) {
-    ctx.beginPath();
-    ctx.fillStyle = "pink";
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 0.5;
+    const shCol = ctx.shadowColor,
+    shBlur = ctx.shadowBlur
+    ctx.shadowColor = pltToRgba(4 ,0.6)
+    ctx.shadowBlur = 10
+    ctx.beginPath()
+    ctx.fillStyle = pltToRgba(4,1)
+    ctx.strokeStyle =  pltToRgba(5,1)
+    ctx.lineWidth = 1
 
-    ctx.arc(pos.x, pos.y, r, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.stroke();
+    ctx.arc(pos.x-r/2, pos.y, r, 0, 1 * Math.PI)
+    ctx.arc(pos.x+r/2, pos.y, r, 0, 1 * Math.PI)
+    ctx.arc(pos.x, pos.y, r-r/2, 0, 1 * Math.PI)
+    ctx.arc(pos.x, pos.y-r/2, r, 0, 1 * Math.PI)
+
+    ctx.fill()
+    ctx.stroke()
+    ctx.shadowColor = shCol
+    ctx.shadowBlur = shBlur
 }
 
 export function renderAuth(gameState, element, relPos) {
-    const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"]);
-    drawAuth(ctx,relPos,  element.r)
+    const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"])
+    drawAuth(ctx, relPos, element.r)
 }
 export function renderTutorialEnemy(canvas) {
     const ctx = canvas.getContext("2d")
@@ -235,7 +276,6 @@ export function renderTutorialEnemy(canvas) {
         { x: canvas.width / 2, y: canvas.height / 2 },
         10,
         false,
-        "401"
     )
 }
 
@@ -259,4 +299,79 @@ export function renderTutorialExitClose(canvas) {
 export function renderTutorialAuth(canvas) {
     const ctx = canvas.getContext("2d")
     drawAuth(ctx, { x: canvas.width / 2, y: canvas.height / 2 }, 4)
+}
+function pinkRadiant(pos, ctx) {
+    const liveColor = ctx.createRadialGradient(
+        pos.x,
+        pos.y,
+        15,
+        pos.x,
+        pos.y,
+        50
+    )
+    liveColor.addColorStop(0, pltToRgba(0, 1))
+    liveColor.addColorStop(1, pltToRgba(1, 1))
+    return liveColor
+}
+function renderLivesHUD(gameState) {
+    const { canvas, ctx, player } = gameState.getByKeys([
+        "canvas",
+        "ctx",
+        "player",
+    ])
+    const lives = player.lives
+    const fontSize = 20
+    const font = `${fontSize}px sans-serif`
+
+    ctx.font = font
+    const metrics = ctx.measureText("\u{2764}")
+
+    let livestr = []
+    const charForLine = Math.floor((fontSize * 3) / metrics.width)
+
+    for (let i = 0; i < lives; i++) {
+        const rowIdx = Math.floor(i / charForLine)
+        if (!livestr[rowIdx]) livestr[rowIdx] = ""
+        livestr[rowIdx] += " \u{2764}"
+    }
+    const pos = { x: canvas.width - 100, y: 30 }
+    ctx.font = font
+    ctx.strokeStyle = pinkRadiant(pos, ctx)
+    ctx.lineWidth = 2.5
+    livestr.forEach((line, idx) => {
+        ctx.strokeText(line, pos.x, pos.y + fontSize * idx)
+    })
+}
+
+function renderCurrentLevelHUD(gameState) {
+    const { currentLevel, canvas, ctx } = gameState.getByKeys([
+        "currentLevel",
+        "canvas",
+        "ctx",
+    ])
+    const fontSize = 20
+    const font = `${fontSize}px sans-serif`
+    const levelstr = `Level: ${currentLevel + 1}`
+    ctx.font = font
+    const pos = { x: 30, y: 30 }
+
+    ctx.fillStyle = pinkRadiant(pos, ctx)
+
+    ctx.fillText(levelstr, pos.x, pos.y)
+}
+
+export function renderHUD(gameState) {
+    const { canvas, ctx } = gameState.getByKeys([
+        "currentLevel",
+        "canvas",
+        "ctx",
+    ])
+    ctx.beginPath()
+    ctx.rect(0, 0, canvas.width, 50)
+
+    ctx.fillStyle = "rgba(0,0,0,0.9)"
+    ctx.fill()
+
+    renderLivesHUD(gameState)
+    renderCurrentLevelHUD(gameState)
 }
