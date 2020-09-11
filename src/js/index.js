@@ -5,6 +5,11 @@
 import gameLoop, { renderLoop } from "./engine.js";
 import gameState from "./game_main.js";
 
-// Starting the game loop
+(() => {
+const gameState = initGame()
 gameLoop(gameState);
 renderLoop(gameState);
+    
+})()
+// Starting the game loop
+

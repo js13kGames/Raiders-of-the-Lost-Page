@@ -1,13 +1,4 @@
-import {
-    dstBtw2Pnts,
-    isCenterBlock,
-    surrounding,
-    calcRoute,
-    nearTiles,
-    relPos,
-    mazeBorders,
-    clearCenterMap,
-} from "./map.js"
+import {dstBtw2Pnts,isCenterBlock,surrounding,calcRoute,nearTiles,relPos,mazeBorders, clearCenterMap,} from "./map.js"
 
 function scaleTiles(map, fact = 10) {
     return {

@@ -1,11 +1,12 @@
 // https://www.color-hex.com/color-palette/74007
 
-const baseFont = { name: "arial", size: "14px", style: "" };
 export function resetBlur(ctx) {
   ctx.shadowBlur = 0;
 }
 
 export function genFont(fontConfig = {}) {
+  const baseFont = { name: "arial", size: "14px", style: "" };
+
   const { name, size, style } = { ...baseFont, ...fontConfig };
   return `${style} ${size} ${name}`;
 }
