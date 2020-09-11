@@ -3,9 +3,8 @@ const level0 = {
     rows: 50,
     entities: {
         404: { n: 3 },
-        403: { n: 5, speed: 1 },
-        401: { n: 0 },
-        auth: { n: 0 },
+        401: [{ n: 1, speed: 2, updatePathEvery: 10, maxDist: 200, maxPath: 500 }],
+        auth: { n: 1 },
         exit: { n: 1 },
     },
 }
@@ -14,8 +13,7 @@ const level1 = {
   rows: 90,
   entities: {
       404: { n: 1 },
-      403: { n: 0 },
-      401: { n: 1, speed: 2 },
+      401: [{ n: 1, speed: 2, updatePathEvery: 20, maxDist: 400, maxPath: 800 }],
       auth: { n: 0 },
       exit: { n: 1 },
   },
@@ -25,8 +23,7 @@ const level2 = {
     rows: 100,
     entities: {
         404: { n: 10 },
-        403: { n: 5, speed: 2 },
-        401: { n: 5, speed: 2 },
+        401: [{ n: 5, speed: 2, updatePathEvery: 20, maxDist: 400, maxPath: 800 }],
         auth: { n: 2 },
         exit: { n: 1 },
     },

@@ -1,4 +1,13 @@
-import {dstBtw2Pnts,isCenterBlock,surrounding,calcRoute,nearTiles,relPos,mazeBorders, clearCenterMap,} from "./map.js"
+import {
+    dstBtw2Pnts,
+    isCenterBlock,
+    surrounding,
+    calcRoute,
+    nearTiles,
+    relPos,
+    mazeBorders,
+    clearCenterMap,
+} from "./map.js"
 
 function scaleTiles(map, fact = 10) {
     return {
@@ -27,17 +36,17 @@ export function generateMaze(map, gameState) {
     let exit = false
     while (Object.keys(visited).length < tilesNum && !exit) {
         let cell = []
-        if (stack.length > 0 ) {
-            const last = stack[stack.length-1]
+        if (stack.length > 0) {
+            const last = stack[stack.length - 1]
             const rPos = relPos(pos, last)
-            const invPos =  (rPos + 2) %4
+            const invPos = (rPos + 2) % 4
             if (rPos !== false) {
                 visited[`${last[0]}-${last[1]}`].push(invPos)
                 cell.push(rPos)
             }
-
         }
-        if (!visited[`${pos[0]}-${pos[1]}`]) visited[`${pos[0]}-${pos[1]}`] = cell;
+        if (!visited[`${pos[0]}-${pos[1]}`])
+            visited[`${pos[0]}-${pos[1]}`] = cell
         const near = nearTiles(pos, visited, scaledMap.cols, scaledMap.rows)
 
         if (near.length > 0) {
@@ -60,14 +69,13 @@ export function generateMaze(map, gameState) {
         }
     }
     const c = [map.cols / 2, map.rows / 2]
- 
+
     mazeBorders(map, visited, f)
     clearCenterMap(map, c, 10)
     gameState.setState("mazepath", visited)
     gameState.setState("mazestack", mazestack)
-    gameState.setState("originalMaze", true);
+    gameState.setState("originalMaze", true)
 
-    
     return { ...map, scaleFactor: f }
 }
 
@@ -80,7 +88,6 @@ function addEntities(map, centers, num, entityFn) {
         const idx = Math.floor(Math.random() * centers.length)
         const sel = centers.splice(idx, 1)[0]
         entities.push(entityFn(t2p(sel, map.tsize)))
-        //entities.push(entityFn(t2p([50, 60], map.tsize)));
     }
 
     return entities
@@ -110,8 +117,7 @@ export function generateEntities(gameState, map, config = {}) {
         config["404"].n +
         config["exit"].n +
         config["auth"].n +
-        config["403"].n +
-        config["401"].n
+        config["401"].map((e) => e.n).reduce((a, b) => a + b, 0).n
 
     const takeRandom = (list, num) => {
         const out = []
@@ -164,25 +170,24 @@ export function generateEntities(gameState, map, config = {}) {
             return { position, type: "auth" }
         }),
     ]
+
     entities = [
         ...entities,
-        ...addEntities(map, centers, config["403"].n, (position) => {
-            return {
-                position,
-                type: "403",
-                speed: config["403"].speed || 3,
-            }
-        }),
-    ]
-    entities = [
-        ...entities,
-        ...addEntities(map, centers, config["401"].n, (position) => {
-            return {
-                position,
-                type: "401",
-                speed: config["401"].speed || 3,
-            }
-        }),
+        ...config["401"]
+            .map((c) =>
+                addEntities(map, centers, c.n, (position) => {
+                    const { speed, updatePathEvery, maxDist, maxPath } = c
+                    return {
+                        position,
+                        type: "401",
+                        speed: speed || 3,
+                        updatePathEvery,
+                        maxDist,
+                        maxPath,
+                    }
+                })
+            )
+            .flat(),
     ]
 
     return entities

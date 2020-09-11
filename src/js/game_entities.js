@@ -1,16 +1,18 @@
 import createEntity from "./entities.js";
 import { dstBtw2Pnts, pntBtw2Pnts, findPath, tilePosition } from "./map.js";
 import { easeInOutCubic, drawFile } from "./rendering.js";
-import { render403, render401 } from "./game_rendering.js";
+import { render401 } from "./game_rendering.js";
 import {pickExit} from "./game_audio.js"
 
 const goTo = (gameState, element) => {
-  const { map, player } = gameState.getByKeys(["map", "player"]);
+  const { map, player } = gameState.getByKeys(["map", "player"]),
+        { position, updatePathEvery, updatePath, maxPath, maxDist } = element,
+        { auth = false } = player.equip || {};
 
+  if (auth || player.ghost || dstBtw2Pnts(player.position, position) > maxDist) {
+    return element;
 
-  const { position, updatePathEvery, updatePath, maxPath } = element;
-  if (player.ghost || dstBtw2Pnts(player.position, position) > maxPath) return element;
-
+  }
   if (updatePath > updatePathEvery) {
     element.path = findPath(
       [
@@ -18,7 +20,7 @@ const goTo = (gameState, element) => {
         Math.floor(element.position.y / map.tsize),
       ],
       [Math.floor(player.currentTile.c), Math.floor(player.currentTile.r)],
-      map
+      map, maxPath
     );
     element.updatePath = 0;
   } else {
@@ -49,7 +51,7 @@ const goTo = (gameState, element) => {
 
   return element;
 };
-function movingEntitity(start, steps, speed, loop = false) {
+function movingEntitity(start, steps, speed,updatePathEvery = 20, maxDist=400,  maxPath=200) {
   return {
     start: { ...start },
     steps: [...steps],
@@ -62,30 +64,22 @@ function movingEntitity(start, steps, speed, loop = false) {
     easingTicks: 0,
     direction: 0,
     blocked: { t: false, r: false, b: false, l: false },
-    loop,
     updatePath: Math.floor(Math.random() * 10),
-    updatePathEvery: 20,
-    maxPath: 400,
+    updatePathEvery,
+    maxDist,
+    maxPath,
     run: goTo,
   };
 }
 
 function createEnemyEntity(baseData) {
-  const { position, speed = 4, steps = [] } = baseData;
+  const { position, speed = 4, steps = [],updatePathEvery = 20, maxDist= 400, maxPath=200 } = baseData;
   return createEntity({
-    ...movingEntitity(position, steps, speed),
+    ...movingEntitity(position, steps, speed, updatePathEvery, maxDist, maxPath),
     r: 10,
     enemy: true,
     collide: true,
   });
-}
-
-export function create403Entity(baseData) {
-  return {
-    ...createEnemyEntity(baseData),
-    type: "403",
-    render: render403,
-  };
 }
 
 export function create401Entity(baseData) {
@@ -192,6 +186,7 @@ export function createAuthEntity(baseData) {
   return createEntity({
     ...baseData,
     type: "auth",
+    onCollide: () =>true,
     collide: true,
     r: 4,
     ttl: 5,

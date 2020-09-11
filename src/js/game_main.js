@@ -7,7 +7,7 @@ import initPlayer from "./game_player.js"
 import { initMainMenu, initPauseMenu, initGameOverMenu } from "./game_menu.js"
 import { levels } from "./game_maps.js"
 import gameControllers from "./game_ctrls.js"
-import {create404Entity,create403Entity,create401Entity,createExitEntity,createAuthEntity,} from "./game_entities.js"
+import {create404Entity,create401Entity,createExitEntity,createAuthEntity,} from "./game_entities.js"
 import { setStageDim } from "./domUtils.js"
 
 /**
@@ -47,7 +47,6 @@ function loadEntities(entitiesData) {
     const entitiesFactory = {
         404: create404Entity,
         auth: createAuthEntity,
-        403: create403Entity,
         401: create401Entity,
         exit: createExitEntity,
     }

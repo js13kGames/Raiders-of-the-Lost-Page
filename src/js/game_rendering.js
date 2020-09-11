@@ -11,51 +11,10 @@ function circleWithSlashes(ctx, center, r, slashes = []) {
     })
 }
 
-export function render403(gameState, element, relPos) {
-    const { ctx, map } = gameState.getByKeys(["ctx", "map"])
-    const r = element.r
-
-    ctx.beginPath()
-
-    circleWithSlashes(ctx, relPos, r, [
-        [225, 45],
-        [315, 135],
-    ])
-    ctx.strokeStyle = "red"
-    ctx.lineWidth = 3.5
-    ctx.stroke()
-    ctx.beginPath()
-
-    ctx.rect(relPos.x - r - 2, relPos.y + r / 2, 25, 13)
-    ctx.fillStyle = "rgba(255,0,0,0.8)"
-    ctx.fill()
-    ctx.beginPath()
-
-    ctx.font = "12px serif"
-    ctx.fillStyle = "white"
-    ctx.fillText(element.type, relPos.x - r + 1, relPos.y + r + 6)
-
-    ctx.beginPath()
-
-    element.path = element.path || []
-
-    element.path.forEach((t) => {
-        ctx.rect(
-            t.coord[0] * map.tsize + map.pov.x,
-            t.coord[1] * map.tsize + map.pov.y,
-            map.tsize,
-            map.tsize
-        )
-    })
-
-    ctx.fillStyle = "pink"
-    ctx.fill()
-}
-
 export function render401(gameState, element, relPos) {
-    const { ctx } = gameState.getByKeys(["ctx", "player"])
-
-    const r = element.r
+    const { ctx, player, map } = gameState.getByKeys(["ctx", "player", "map"]),
+        r = element.r,
+        isFollowing = element.path && element.path.length
 
     ctx.beginPath()
 
@@ -78,6 +37,19 @@ export function render401(gameState, element, relPos) {
     ctx.font = "12px serif"
     ctx.fillStyle = "white"
     ctx.fillText(element.type, relPos.x - r + 1, relPos.y + r + 6)
+    ctx.beginPath()
+
+
+    // RENDER the path
+    element.path = element.path || []
+    ctx.moveTo(relPos.x, relPos.y)
+    element.path.forEach((t) => {
+        ctx.lineTo(t.coord[0] * map.tsize + map.pov.x,t.coord[1] * map.tsize + map.pov.y,)
+    })
+
+    ctx.strokeStyle = "pink"
+    ctx.lineWidth = 0.5
+    ctx.stroke()
 }
 
 export function renderBackground(ctx, canvas, map, pov) {
@@ -155,7 +127,6 @@ export function renderArrows(gameState) {
                 ctx.fillStyle = "blue"
                 draw = true
                 break
-            case "403":
             case "401":
                 ctx.fillStyle = "red"
                 draw = false

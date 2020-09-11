@@ -58,7 +58,7 @@ function elementTiles(element, map) {
     }
 
     const tiles = []
-    const dimension = Math.round(element.r / map.tsize)
+    const dimension = Math.max(Math.round(element.r / map.tsize),1)
     for (let c = -dimension; c < dimension; c++) {
         for (let r = -dimension; r < dimension; r++) {
             tiles.push({
@@ -151,15 +151,15 @@ export default function gameLoop(gameState) {
                 .map((element) => {
                     if (typeof element.run === "function") {
                         element = element.run(gameState, element)
-
-                        if (element) {
-                            element.currentTiles = elementTiles(element, map)
-                            element.blocked = calcBlocked(
-                                element.currentTiles,
-                                map
-                            )
-                        }
                     }
+                    if (element) {
+                        element.currentTiles = elementTiles(element, map)
+                        element.blocked = calcBlocked(
+                            element.currentTiles,
+                            map
+                        )
+                    }
+
                     return element
                 })
                 .filter((element) => !!element),
