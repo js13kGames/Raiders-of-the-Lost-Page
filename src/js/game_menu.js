@@ -181,10 +181,10 @@ export function initPauseMenu(gameState) {
             render: (gameState) => {
                 // Dynamic menu ps
                 const canvas = gameState.getState("canvas")
-                element.style.ps = "absolute"
+                element.style.position = "absolute"
 
-                element.style.top = `${canvas.height - 50}px`
-                element.style.left = `${canvas.width - 100}px`
+                element.style.top = `${canvas.height - 60}px`
+                element.style.left = `${canvas.width - 50}px`
                 if (gameState.gameStatus() === "play") {
                     show(element)
                 } else {

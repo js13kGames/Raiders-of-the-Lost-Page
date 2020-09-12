@@ -298,26 +298,28 @@ export function renderLoop(gameState) {
                 renderTiles(gameState)
                 // RENDER maze stack for debug
 
-                //const maze = gameState.getState("mazestack")
+                if (debug){
+                    const maze = gameState.getState("mazestack")
 
-                // ctx.beginPath()
-                // ctx.strokeStyle = "lime"
-
-                // maze.forEach((m) => {
-                //     const [x, y] = [
-                //         m[0] * map.scaleFactor * map.tsize + pov.x,
-                //         m[1] * map.scaleFactor * map.tsize + pov.y
-                //     ]
-
-                //     ctx.rect(
-                //         x,
-                //         y,
-                //         map.scaleFactor * map.tsize,
-                //         map.scaleFactor * map.tsize
-                //     )
-                // })
-
-                // ctx.stroke()
+                    ctx.beginPath()
+                    ctx.strokeStyle = "lime"
+    
+                    maze.forEach((m) => {
+                        const [x, y] = [
+                            m[0] * map.scaleFactor * map.tsize + pov.x,
+                            m[1] * map.scaleFactor * map.tsize + pov.y
+                        ]
+    
+                        ctx.rect(
+                            x,
+                            y,
+                            map.scaleFactor * map.tsize,
+                            map.scaleFactor * map.tsize
+                        )
+                    })
+    
+                    ctx.stroke()
+                }
 
                 if (player && typeof player.render === "function") {
                     player.render(gameState, player)
@@ -375,20 +377,20 @@ export function renderLoop(gameState) {
             if (gameState.gameStatus() === "play") renderHUD(gameState)
 
             renderFps(`${gameState.getState("actualFps")} FPS`, {
-                x: canvas.width - 80,
-                y: 85
+                x: 30,
+                y: canvas.height -50
             })
             renderFps(`${gameState.getState("actualFpsRender")} FPSR`, {
-                x: canvas.width - 80,
-                y: 100
+                x: 30,
+                y: canvas.height -35
             })
 
             if (player.currentTile) {
                 renderFps(
                     `c: ${player.currentTile.c}, r: ${player.currentTile.r}`,
                     {
-                        x: canvas.width - 80,
-                        y: 115
+                        x: 30,
+                        y: canvas.height -20
                     }
                 )
             }
