@@ -24,22 +24,7 @@ export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
             changeSizeBtn = domElement("#main-screen-size"),
             howToScreen = domElement("#tutorial"),
             escTutorialBtn = domElement("#esc-tutorial"),
-            { unlockedLevels } = gameState.getByKeys(["unlockedLevels"])
-
-        for (let i = 0; i <= unlockedLevels; i++) {
-            const levelName = i + 1
-            const startLevel = levelsFn[i]
-            if (typeof startLevel === "function") {
-                const el = document.createElement("li")
-                el.innerHTML = `<button role="button" id="mm-level-${i}" class="btn">Load level ${levelName}</button>`
-                domElement("#mm-container ul").appendChild(el)
-                el.addEventListener("click", (evt) => {
-                    evt.preventDefault()
-                    startLevel(gameState)
-                })
-            }
-        }
-
+            continueMaxBtn = domElement("#mm-continue-max")
         startBtn.addEventListener("click", (evt) => {
             evt.preventDefault()
             startFn(gameState)
@@ -64,6 +49,11 @@ export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
         escTutorialBtn.addEventListener("click", (evt) => {
             evt.preventDefault()
             gameState.updateGameStatus(gameState.getState("prevState"))
+        })
+
+        continueMaxBtn.addEventListener("click", (evt) => {
+            evt.preventDefault()
+            levelsFn[gameState.getState("maxReached")](gameState)
         })
 
         const rstButton = domElement("#restart-btn-finished")
@@ -115,8 +105,19 @@ export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
 
         const m = {
             render: (gameState) => {
-                const audio = gameState.getState("audio")
+                const {audio, currentLevel,maxReached} = gameState.getByKeys(["audio", "currentLevel", "maxReached"])
 
+
+                if (typeof currentLevel !== "undefined") {
+                    continueBtn.innerText = `Continue Level ${currentLevel+1}`
+                }
+
+                if (maxReached) {
+                    show(continueMaxBtn)
+                    continueMaxBtn.innerText = `Load Level ${maxReached+1}`
+                } else {
+                    hide(continueMaxBtn)
+                }
                 if (audio) {
                     audioButton.innerText = "Disable Sound"
                 } else {
@@ -124,7 +125,6 @@ export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
                 }
 
                 switch (gameState.gameStatus()) {
-                    //switch ("finished") {
                     case "tutorial":
                         hide(continueBtn)
                         hide(menuContainer)
@@ -134,7 +134,7 @@ export function initMainMenu(gameState, startFn, levelsFn, restartFn) {
                     case "paused":
                         show(continueBtn)
                         show(menuContainer)
-                        hide(startBtn)
+                        show(startBtn)
                         hide(howToScreen)
                         break
                     case "init":

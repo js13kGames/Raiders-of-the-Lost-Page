@@ -38,7 +38,7 @@ for (let i = 10; i < 200; i++) {
         cols: s,
         rows: s,
         entities: {
-            404: { n: Math.ceil(Math.ceil(i / 10) / 2) },
+            404: { n: Math.ceil(Math.ceil(i / 10) + Math.ceil(i % 10)) },
             exit: { n: 1 },
             401: [],
             auth: { n: Math.floor(Math.random() * 3) + 3 }

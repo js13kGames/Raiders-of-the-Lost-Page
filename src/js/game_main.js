@@ -31,6 +31,8 @@ const startingLives = 3
 const tileSize = 10
 function initGameState() {
     const loading = domElement("#loading")
+    const maxReached = parseInt(localStorage.getItem('obi_serra_rotlp_maxLev') || "0",10);
+
 
     const screenSizeAv = [viewportDims(), [1200, 700], [800, 600]]
     const state = createState({
@@ -40,6 +42,7 @@ function initGameState() {
         unlockedLevels,
         screenSizeAv,
         screenSize: screenSizeAv[0],
+        maxReached, 
         currentScreenSize: 0,
         levels,
         tileSize,
@@ -78,7 +81,7 @@ function loadEntities(entitiesData) {
 // TODO refactor
 function loadLevel(levelConfig = {}, levelIdx = 0) {
     return (gameState) => {
-        const { canvas } = gameState.getByKeys(["canvas"])
+        const { canvas, maxReached } = gameState.getByKeys(["canvas", "maxReached"])
         const loading = domElement("#loading")
 
         gameState.updateGameStatus("loading")
@@ -114,13 +117,17 @@ function loadLevel(levelConfig = {}, levelIdx = 0) {
                 nextMin: 200
             }
             hide(loading)
+            const maxLev = Math.max(maxReached, levelIdx)
+
+            localStorage.setItem('obi_serra_rotlp_maxLev', maxLev);
+
             gameState.updateGameStatus("play").updateState((gameData) => ({
                 ...gameData,
                 currentLevel: levelIdx,
-                unlockedLevels: Math.min(levelIdx, gameData.levels.length),
                 player: { ...player, equip: {} },
                 entities: [...entities],
-                levelConfig: mazeConfig
+                levelConfig: mazeConfig,
+                maxReached: maxLev
             }))
         }, 100)
 
@@ -140,7 +147,7 @@ function initGame() {
 
     gameControllers(gameState)
     // load from localStorage
-
+    
     const newLevel = (gameState) => {
         const { currentLevel, levels } = gameState.getByKeys([
             "currentLevel",
@@ -148,10 +155,7 @@ function initGame() {
         ])
 
         if (currentLevel < levels.length - 1) {
-            // TODO create function for transition between states
             const nextLevel = currentLevel + 1
-            //gameState.updateGameStatus("play");
-
             loadLevel(levels[nextLevel], nextLevel)(gameState)
         } else {
             gameState.updateGameStatus("finished")
