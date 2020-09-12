@@ -23,7 +23,7 @@ import {
 
 // Load from local storage
 
-const unlockedLevels = 10
+const unlockedLevels = 0
 
 const startingLives = 3
 // Starting the game

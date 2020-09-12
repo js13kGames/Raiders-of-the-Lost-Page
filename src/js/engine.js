@@ -298,26 +298,26 @@ export function renderLoop(gameState) {
                 renderTiles(gameState)
                 // RENDER maze stack for debug
 
-                const maze = gameState.getState("mazestack")
+                //const maze = gameState.getState("mazestack")
 
-                ctx.beginPath()
-                ctx.strokeStyle = "lime"
+                // ctx.beginPath()
+                // ctx.strokeStyle = "lime"
 
-                maze.forEach((m) => {
-                    const [x, y] = [
-                        m[0] * map.scaleFactor * map.tsize + pov.x,
-                        m[1] * map.scaleFactor * map.tsize + pov.y
-                    ]
+                // maze.forEach((m) => {
+                //     const [x, y] = [
+                //         m[0] * map.scaleFactor * map.tsize + pov.x,
+                //         m[1] * map.scaleFactor * map.tsize + pov.y
+                //     ]
 
-                    ctx.rect(
-                        x,
-                        y,
-                        map.scaleFactor * map.tsize,
-                        map.scaleFactor * map.tsize
-                    )
-                })
+                //     ctx.rect(
+                //         x,
+                //         y,
+                //         map.scaleFactor * map.tsize,
+                //         map.scaleFactor * map.tsize
+                //     )
+                // })
 
-                ctx.stroke()
+                // ctx.stroke()
 
                 if (player && typeof player.render === "function") {
                     player.render(gameState, player)
