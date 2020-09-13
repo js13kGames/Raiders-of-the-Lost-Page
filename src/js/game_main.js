@@ -3,7 +3,7 @@ import createState from "./state.js"
 import { generateMap, setVOF } from "./map.js"
 import { generateMaze, generateEntities } from "./map_generator.js"
 // game specific
-import initPlayer from "./game_player.js"
+import gp2 from "./game_player.js"
 import { initMainMenu, initPauseMenu, initGameOverMenu } from "./game_menu.js"
 import { levels } from "./game_maps.js"
 import gameControllers from "./game_ctrls.js"
@@ -16,9 +16,9 @@ import {
 import {
     setStageDim,
     viewportDims,
-    domElement,
-    show,
-    hide
+    d1,
+    d5,
+    d2
 } from "./domUtils.js"
 
 // Load from local storage
@@ -30,15 +30,14 @@ const startingLives = 3
 
 const tileSize = 10
 function initGameState() {
-    const loading = domElement("#loading")
+    const loading = d1("#loading")
     const maxReached = parseInt(localStorage.getItem('obi_serra_rotlp_maxLev') || "0",10);
 
 
     const screenSizeAv = [viewportDims(), [1200, 700], [800, 600]]
     const state = createState({
-        debug: false,
         audio: true,
-        showFps: true,
+        d5Fps: true,
         unlockedLevels,
         screenSizeAv,
         screenSize: screenSizeAv[0],
@@ -58,7 +57,7 @@ function initGameState() {
     )
     state.setState("canvas", canvas)
     state.setState("ctx", canvas.getContext("2d"))
-    hide(loading)
+    d2(loading)
     return state
 }
 
@@ -81,11 +80,11 @@ function loadEntities(entitiesData) {
 // TODO refactor
 function loadLevel(levelConfig = {}, levelIdx = 0) {
     return (gameState) => {
-        const { canvas, maxReached } = gameState.getByKeys(["canvas", "maxReached"])
-        const loading = domElement("#loading")
+        const { canvas, maxReached } = gameState.gbk(["canvas", "maxReached"])
+        const loading = d1("#loading")
 
         gameState.updateGameStatus("loading")
-        show(loading, "flex")
+        d5(loading, "flex")
         setTimeout(() => {
             const cols = levelConfig.cols || 100
             const rows = levelConfig.rows || 100
@@ -99,7 +98,7 @@ function loadLevel(levelConfig = {}, levelIdx = 0) {
                 ...map,
                 ...generateMaze(map, gameState)
             })
-            const player = initPlayer(gameState)
+            const player = gp2(gameState)
 
             const entities = loadEntities(
                 generateEntities(
@@ -116,7 +115,7 @@ function loadLevel(levelConfig = {}, levelIdx = 0) {
                 nextRand: 300,
                 nextMin: 200
             }
-            hide(loading)
+            d2(loading)
             const maxLev = Math.max(maxReached, levelIdx)
 
             localStorage.setItem('obi_serra_rotlp_maxLev', maxLev);
@@ -139,7 +138,7 @@ function loadLevel(levelConfig = {}, levelIdx = 0) {
 
 function initGame() {
     const gameState = initGameState()
-    const loading = domElement("#loading")
+    const loading = d1("#loading")
 
     gameState.updateGameStatus("init")
 
@@ -149,7 +148,7 @@ function initGame() {
     // load from localStorage
     
     const newLevel = (gameState) => {
-        const { currentLevel, levels } = gameState.getByKeys([
+        const { currentLevel, levels } = gameState.gbk([
             "currentLevel",
             "levels"
         ])
@@ -178,7 +177,7 @@ function initGame() {
         restartFn
     )
     const gameOverMenu = initGameOverMenu(gameState, restartFn)
-    hide(loading)
+    d2(loading)
     gameState.updateState((state) => {
         return {
             ...state,

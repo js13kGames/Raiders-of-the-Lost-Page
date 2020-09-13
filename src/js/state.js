@@ -1,4 +1,4 @@
-import createAudioCtrl from "./audio.js"
+import a1 from "./audio.js"
 
 function setState(state, key, value) {
     const newState = { ...state }
@@ -21,7 +21,7 @@ export default function createState(initialState = {}) {
         ctrl: {},
         minFpsRender: Infinity,
         minFps: Infinity,
-        audioCtrl: createAudioCtrl()
+        audioCtrl: a1()
     }
 
     let stateData = { ...defaultStateData, ...initialState }
@@ -37,7 +37,7 @@ export default function createState(initialState = {}) {
 
     // TODO add some special fields (status)
     const stateModel = {
-        getByKeys: (keys) => {
+        gbk: (keys) => {
             const ret = {}
             for (const k of keys) {
                 if (typeof stateData[k] !== "undefined") {

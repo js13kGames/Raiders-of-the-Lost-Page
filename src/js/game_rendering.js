@@ -17,16 +17,23 @@ function pltToRgba(idx, a = 1) {
     return `rgba(${plt[idx].join(",")}, ${a})`
 }
 
+function shCols(ctx, sc, sb = 0) {
+    ctx.shadowColor = sc
+    ctx.shadowBlur = sb
+}
+
+function fdSt(ctx, ss, fs) {
+    ctx.strokeStyle = ss
+    ctx.fillStyle = fs
+}
+
 function drawEnemy(ctx, pos, r, disabled, pt = null) {
     const shCol = ctx.shadowColor,
         shBlur = ctx.shadowBlur
 
-    ctx.shadowColor = pltToRgba(6, 0.5)
-    ctx.shadowBlur = 0
     let angle = 0
     if (pt) {
-        ctx.shadowColor = "rgb(255,0,0)"
-        ctx.shadowBlur = 20
+        shCols(ctx, "rgb(255,0,0)", 20)
         angle = angle2pts([pos.x, pos.y], pt)
     }
 
@@ -42,19 +49,16 @@ function drawEnemy(ctx, pos, r, disabled, pt = null) {
     }
 
     if (!disabled) {
-        ctx.strokeStyle = pltToRgba(6, 1)
-        ctx.fillStyle = pltToRgba(7, 0.8)
+        fdSt(ctx, pltToRgba(6, 1), pltToRgba(7, 0.8))
     } else {
-        ctx.strokeStyle = pltToRgba(7, 0.5)
-        ctx.fillStyle = pltToRgba(6, 0.2)
+        fdSt(ctx, pltToRgba(7, 0.5), pltToRgba(6, 0.2))
     }
     ctx.lineWidth = 1
 
     ctx.stroke()
     ctx.fill()
 
-    ctx.shadowColor = shCol
-    ctx.shadowBlur = shBlur
+    shCols(ctx, shCol, shBlur)
 }
 
 function draw404(ctx, pos, r) {
@@ -75,12 +79,11 @@ function draw404(ctx, pos, r) {
     ctx.fill()
     ctx.stroke()
 
-    ctx.shadowColor = shCol
-    ctx.shadowBlur = shBlur
+    shCols(ctx, shCol, shBlur)
 }
 
 export function render401(gameState, element, relPos) {
-    const { ctx, map } = gameState.getByKeys(["ctx", "map"]),
+    const { ctx, map } = gameState.gbk(["ctx", "map"]),
         r = element.r
     element.path = element.path || []
     let direction = null
@@ -97,7 +100,7 @@ export function render401(gameState, element, relPos) {
 }
 
 export function renderTiles(gameState) {
-    const { ctx, map } = gameState.getByKeys(["ctx", "map", "levelConfig"]),
+    const { ctx, map } = gameState.gbk(["ctx", "map", "levelConfig"]),
         { pov } = map,
         borders = [],
         shCol = ctx.shadowColor,
@@ -131,12 +134,11 @@ export function renderTiles(gameState) {
     })
     ctx.fill()
     ctx.stroke()
-    ctx.shadowColor = shCol
-    ctx.shadowBlur = shBlur
+    shCols(ctx, shCol, shBlur)
 }
 
 export function renderArrows(gameState) {
-    const { entities, player, ctx, map } = gameState.getByKeys([
+    const { entities, player, ctx, map } = gameState.gbk([
             "entities",
             "player",
             "ctx",
@@ -190,12 +192,11 @@ export function renderArrows(gameState) {
         }
     })
 
-    ctx.shadowColor = shCol
-    ctx.shadowBlur = shBlur
+    shCols(ctx, shCol, shBlur)
 }
 
 export function render404(gameState, element, relPos) {
-    const { ctx } = gameState.getByKeys(["ctx"])
+    const { ctx } = gameState.gbk(["ctx"])
     draw404(ctx, relPos, element.r)
 }
 
@@ -218,12 +219,11 @@ function drawExit(ctx, pos, r, open) {
     ctx.arc(pos.x, pos.y, r, 2 * Math.PI, 0)
     ctx.stroke()
     ctx.fill()
-    ctx.shadowColor = shCol
-    ctx.shadowBlur = shBlur
+    shCols(ctx, shCol, shBlur)
 }
 
 export function renderExit(gameState, element, relPos) {
-    const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"])
+    const { ctx } = gameState.gbk(["ctx", "map", "canvas"])
 
     drawExit(ctx, relPos, element.r, element.opened)
 }
@@ -245,12 +245,11 @@ function drawAuth(ctx, pos, r) {
 
     ctx.fill()
     ctx.stroke()
-    ctx.shadowColor = shCol
-    ctx.shadowBlur = shBlur
+    shCols(ctx, shCol, shBlur)
 }
 
 export function renderAuth(gameState, element, relPos) {
-    const { ctx } = gameState.getByKeys(["ctx", "map", "canvas"])
+    const { ctx } = gameState.gbk(["ctx", "map", "canvas"])
     drawAuth(ctx, relPos, element.r)
 }
 export function renderTutorialEnemy(canvas) {
@@ -294,11 +293,7 @@ function pinkRadiant(pos, ctx) {
     return liveColor
 }
 function renderLivesHUD(gameState) {
-    const { canvas, ctx, player } = gameState.getByKeys([
-        "canvas",
-        "ctx",
-        "player"
-    ])
+    const { canvas, ctx, player } = gameState.gbk(["canvas", "ctx", "player"])
     const lives = player.lives
     const fontSize = 20
     const font = `${fontSize}px sans-serif`
@@ -324,7 +319,7 @@ function renderLivesHUD(gameState) {
 }
 
 function renderCurrentLevelHUD(gameState) {
-    const { currentLevel, ctx } = gameState.getByKeys(["currentLevel", "ctx"])
+    const { currentLevel, ctx } = gameState.gbk(["currentLevel", "ctx"])
     const fontSize = 20
     const font = `${fontSize}px sans-serif`
     const levelstr = `Level: ${currentLevel + 1}`
@@ -337,11 +332,7 @@ function renderCurrentLevelHUD(gameState) {
 }
 
 export function renderHUD(gameState) {
-    const { canvas, ctx } = gameState.getByKeys([
-        "currentLevel",
-        "canvas",
-        "ctx"
-    ])
+    const { canvas, ctx } = gameState.gbk(["currentLevel", "canvas", "ctx"])
     ctx.beginPath()
     ctx.rect(0, 0, canvas.width, 50)
 

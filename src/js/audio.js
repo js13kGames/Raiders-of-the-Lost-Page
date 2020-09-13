@@ -1,4 +1,4 @@
-export default function createAudioCtrl() {
+export default function a1() {
     const ctrl = {}
     const context = new AudioContext()
     ctrl.context = context
@@ -37,7 +37,7 @@ const notes = [
         B: 493.88
     }
 ]
-function noteToFrequency(note) {
+function a2(note) {
     const oct = note.replace(/.*([0-9]+).*/g, "$1")
     const tone = note.replace(/[0-9]/gi, "")
     const freq = notes[parseInt(oct)][tone]
@@ -48,7 +48,7 @@ function noteToFrequency(note) {
     return freq
 }
 
-export function playSound(gameState, soundConf = {}) {
+export function a3(gameState, soundConf = {}) {
     // "sine", "square", "sawtooth", "triangle"
     const sound = {
         ...{ note: "A4", duration: 0.05, volume: 0.3, oscillator: "square" },
@@ -61,7 +61,7 @@ export function playSound(gameState, soundConf = {}) {
         masterGainNode.gain.setValueAtTime(sound.volume, context.currentTime)
 
         const oscillator = context.createOscillator()
-        const freq = noteToFrequency(sound.note)
+        const freq = a2(sound.note)
         oscillator.type = sound.oscillator
         oscillator.frequency.setValueAtTime(freq, context.currentTime) // value in hertz
         oscillator.connect(context.destination)

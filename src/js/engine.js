@@ -1,19 +1,18 @@
 import { renderText, genFont, resetBlur } from "./rendering.js"
 import {
-    tileToCanvasPos,
     getTilesInView,
     isBorder,
     mazeBorders,
     clearCenterMap
 } from "./map.js"
-import { addClass, removeClass } from "./domUtils.js"
+import { d3, d4 } from "./domUtils.js"
 import { renderTiles, renderArrows, renderHUD } from "./game_rendering.js"
 import { reverseDirs } from "./utils.js"
 
 const loopSpeed = Math.round(1000 / 75)
 
-function calcBlocked(elementTiles, map) {
-    const blocked = { t: false, r: false, b: false, l: false }
+function calcblk(elementTiles, map) {
+    const blk = { t: false, r: false, b: false, l: false }
     const vtx = elementTiles.reduce((acc, v) => {
         if (typeof acc.tr === "undefined" || v.r > acc.tr) {
             acc.tr = v.r
@@ -39,23 +38,23 @@ function calcBlocked(elementTiles, map) {
 
             if (tile > 0 || border) {
                 if (r === rs[0] && (c === cs[1] || c === cs[3])) {
-                    blocked.t = true
+                    blk.t = true
                 }
                 if (r === rs[2] && (c === cs[1] || c === cs[3])) {
-                    blocked.b = true
+                    blk.b = true
                 }
 
                 if (c === cs[0] && (r === rs[1] || r === rs[3])) {
-                    blocked.l = true
+                    blk.l = true
                 }
                 if (c === cs[2] && (r === rs[1] || r === rs[3])) {
-                    blocked.r = true
+                    blk.r = true
                 }
             }
         }
     }
 
-    return blocked
+    return blk
 }
 function elementTiles(element, map) {
     const centerTile = {
@@ -80,7 +79,7 @@ const chance = (ch) => Math.floor(Math.random() * 100) <= ch
 
 const updateWalls = (gameState, map) => {
     const percRem = 10
-    const { mazepath } = gameState.getByKeys(["mazepath"])
+    const { mazepath } = gameState.gbk(["mazepath"])
     for (const k in mazepath) {
         if (mazepath.hasOwnProperty(k)) {
             const missing = reverseDirs(mazepath[k])
@@ -91,7 +90,7 @@ const updateWalls = (gameState, map) => {
         }
     }
 
-    mazeBorders(map, mazepath, map.scaleFactor)
+    mazeBorders(map, mazepath, map.sf)
     clearCenterMap(map, [
         Math.floor(map.cols / 2),
         Math.floor(map.rows / 2),
@@ -112,7 +111,7 @@ export default function gameLoop(gameState) {
     gameState.setState("tick", tick + 1)
 
     if (gameState.gameStatus() === "play") {
-        let { player, map, levelConfig } = gameState.getByKeys([
+        let { player, map, levelConfig } = gameState.gbk([
             "player",
             "map",
             "levelConfig"
@@ -148,7 +147,7 @@ export default function gameLoop(gameState) {
 
             player = player.run(gameState, player)
             player.currentTiles = elementTiles(player, map)
-            player.blocked = calcBlocked(player.currentTiles, map)
+            player.blk = calcblk(player.currentTiles, map)
 
             gameState.setState("player", player)
         }
@@ -162,7 +161,7 @@ export default function gameLoop(gameState) {
                     }
                     if (element) {
                         element.currentTiles = elementTiles(element, map)
-                        element.blocked = calcBlocked(element.currentTiles, map)
+                        element.blk = calcblk(element.currentTiles, map)
                     }
 
                     return element
@@ -199,21 +198,6 @@ export default function gameLoop(gameState) {
     setTimeout(() => gameLoop(gameState), loopSpeed)
 }
 
-function drawBox(gameState, entity) {
-    const { ctx, canvas, map } = gameState.getByKeys(["ctx", "canvas", "map"])
-    if (!entity.currentTiles) return
-
-    ctx.beginPath() // Start a new path
-    ctx.strokeStyle = "green"
-    ctx.lineWidth = 1
-    entity.currentTiles.forEach((t) => {
-        const pos = tileToCanvasPos(t.c, t.r, canvas, map)
-        ctx.rect(pos.x, pos.y, map.tsize, map.tsize)
-    })
-
-    ctx.stroke()
-}
-
 export function renderLoop(gameState) {
     const renderFps = (msg, pos) =>
         renderText(gameState, msg, pos, "lime", genFont({ size: "10px" }))
@@ -222,27 +206,25 @@ export function renderLoop(gameState) {
         canvas,
         map,
         player,
-        debug,
         levelConfig,
         tick
-    } = gameState.getByKeys([
+    } = gameState.gbk([
         "ctx",
         "canvas",
         "map",
         "player",
-        "debug",
         "levelConfig",
         "tick"
     ])
     const status = gameState.gameStatus()
     // TODO refactor
     const classStatus = `status-${status}`
-    removeClass(canvas, "status-init")
-    removeClass(canvas, "status-play")
-    removeClass(canvas, "status-paused")
-    removeClass(canvas, "status-gameover")
-    removeClass(canvas, "status-died")
-    addClass(canvas, classStatus)
+    d4(canvas, "status-init")
+    d4(canvas, "status-play")
+    d4(canvas, "status-paused")
+    d4(canvas, "status-gameover")
+    d4(canvas, "status-died")
+    d3(canvas, classStatus)
 
     const lastTime = gameState.getState("lastTimeRender", +new Date())
 
@@ -298,32 +280,8 @@ export function renderLoop(gameState) {
                 renderTiles(gameState)
                 // RENDER maze stack for debug
 
-                if (debug){
-                    const maze = gameState.getState("mazestack")
-
-                    ctx.beginPath()
-                    ctx.strokeStyle = "lime"
-    
-                    maze.forEach((m) => {
-                        const [x, y] = [
-                            m[0] * map.scaleFactor * map.tsize + pov.x,
-                            m[1] * map.scaleFactor * map.tsize + pov.y
-                        ]
-    
-                        ctx.rect(
-                            x,
-                            y,
-                            map.scaleFactor * map.tsize,
-                            map.scaleFactor * map.tsize
-                        )
-                    })
-    
-                    ctx.stroke()
-                }
-
                 if (player && typeof player.render === "function") {
                     player.render(gameState, player)
-                    if (debug) drawBox(gameState, player)
                 }
                 const { startCol, endCol, startRow, endRow } = getTilesInView(
                     map
@@ -343,8 +301,6 @@ export function renderLoop(gameState) {
                                 y: element.ps.y + pov.y
                             })
                         }
-
-                        if (debug) drawBox(gameState, element)
                     }
                 })
 
@@ -353,9 +309,8 @@ export function renderLoop(gameState) {
         }
 
         if (status !== "loading") {
-            const menus = gameState.getState("menus")
-            const ctrls = gameState.getState("ctrls")
-
+            const {menus, ctrls} = gameState.gbk(["menus", "ctrls"])
+        
             // Render menus
             for (const menuName in menus) {
                 if (menus.hasOwnProperty(menuName)) {

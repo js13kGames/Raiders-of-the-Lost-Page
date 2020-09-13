@@ -1,7 +1,7 @@
 import createEntity, { removeEntityById } from "./entities.js"
 import { pxXSecond } from "./map.js"
 import { easeInOutCubic, resetBlur } from "./rendering.js"
-import { domElement, addClass, removeClass, hide, show } from "./domUtils.js"
+import { d1, d3, d4, d2, d5 } from "./domUtils.js"
 import { partial, compose } from "./utils.js"
 import { pick404, lifeLost } from "./game_audio.js"
 
@@ -64,7 +64,7 @@ function renderFF(canvas, ctx, element) {
     }
 }
 // Utility functions
-function changePlayerps(newps, gameData) {
+function cpp(newps, gameData) {
     return {
         ...gameData,
         player: {
@@ -74,7 +74,7 @@ function changePlayerps(newps, gameData) {
     }
 }
 
-function changePlayerLive(updateFn, gameData) {
+function cpl(updateFn, gameData) {
     return {
         ...gameData,
         player: {
@@ -94,7 +94,7 @@ function playerPickup404(pointAdded, gameData) {
     }
 }
 
-function setPlayerGhost(val, gameData) {
+function spg(val, gameData) {
     return {
         ...gameData,
         player: {
@@ -105,51 +105,50 @@ function setPlayerGhost(val, gameData) {
 }
 
 //
-function playerCollideEnemy(gameState, player) {
+function gp1(gameState, player) {
     const dieDuration = 3000
     const ghostDuration = 2000
     const playerResume = 2500
 
     if (player.ghost) return
-    const youDiedEl = domElement(".you-died-screen")
+    const youDiedEl = d1(".you-died-screen")
     const canvas = gameState.getState("canvas")
     if (player.lives > 0) {
-        //TODO refactor move this to a function
         gameState.updateGameStatus("died")
         lifeLost(gameState)
-        show(youDiedEl, "flex")
-        addClass(youDiedEl, "fade-in-out")
-        addClass(canvas, "fade-in")
+        d5(youDiedEl, "flex")
+        d3(youDiedEl, "fade-in-out")
+        d3(canvas, "fade-in")
         canvas.style.opacity = 0
         setTimeout(() => {
             canvas.style.opacity = 1
-            removeClass(canvas, "fade-in")
+            d4(canvas, "fade-in")
 
             setTimeout(() => {
                 gameState.updateState((gameData) => {
-                    return setPlayerGhost(false, gameData)
+                    return spg(false, gameData)
                 })
             }, ghostDuration)
         }, dieDuration)
         setTimeout(() => {
             gameState.updateState((gameData) => {
-                removeClass(youDiedEl, "fade-in-out")
+                d4(youDiedEl, "fade-in-out")
                 return compose(
-                    partial(changePlayerLive, (l) => l - 1),
-                    partial(changePlayerps, gameData.player.lastps),
-                    partial(setPlayerGhost, true)
+                    partial(cpl, (l) => l - 1),
+                    partial(cpp, gameData.player.lastps),
+                    partial(spg, true)
                 )(gameData)
             })
 
             gameState.updateGameStatus("play")
 
-            hide(youDiedEl)
+            d2(youDiedEl)
         }, playerResume)
     } else {
         gameState.updateGameStatus("gameover")
     }
 }
-export default function initPlayer(gameState) {
+export default function gp2(gameState) {
     const playerData = gameState.getState("player")
     const map = gameState.getState("map")
     if (!map) {
@@ -173,7 +172,7 @@ export default function initPlayer(gameState) {
         pts: 0,
         collide: true,
         render: (gameState, player) => {
-            const { ctx, canvas } = gameState.getByKeys([
+            const { ctx, canvas } = gameState.gbk([
                 "ctx",
                 "map",
                 "canvas"
@@ -192,7 +191,7 @@ export default function initPlayer(gameState) {
                     )
                 )
             } else if (obstacle.enemy) {
-                playerCollideEnemy(gameState, player)
+                gp1(gameState, player)
             } else if (typeof obstacle.onCollect === "function") {
                 gameState.updateState(
                     compose((gameData) => {
@@ -211,7 +210,7 @@ export default function initPlayer(gameState) {
             }
         },
         run: (gameState, element) => {
-            const { moveV, moveH, map } = gameState.getByKeys([
+            const { moveV, moveH, map } = gameState.gbk([
                 "moveV",
                 "moveH",
                 "map"
@@ -227,7 +226,7 @@ export default function initPlayer(gameState) {
                 }
             }
 
-            if (element.borderCollide) {
+            if (element.bc) {
                 gameState.updateState((gameData) => {
                     let cameraPos = gameData.map.cameraPos
                     const newData = {
@@ -238,7 +237,7 @@ export default function initPlayer(gameState) {
                 })
             }
 
-            const blocked = element.blocked
+            const blk = element.blk
             // TODO refactor
             if (moveV === "up" && moveH === "left") {
                 element.angle = 1.8
@@ -264,27 +263,27 @@ export default function initPlayer(gameState) {
             )
             if (
                 moveV === "up" &&
-                element.borderCollide !== "top" &&
-                !blocked.t
+                element.bc !== "top" &&
+                !blk.t
             ) {
                 element.ps.y -= speed * speedMult
             } else if (
                 moveV === "down" &&
-                element.borderCollide !== "bottom" &&
-                !blocked.b
+                element.bc !== "bottom" &&
+                !blk.b
             ) {
                 element.ps.y += speed * speedMult
             }
             if (
                 moveH === "left" &&
-                element.borderCollide !== "left" &&
-                !blocked.l
+                element.bc !== "left" &&
+                !blk.l
             ) {
                 element.ps.x -= speed * speedMult
             } else if (
                 moveH === "right" &&
-                element.borderCollide !== "right" &&
-                !blocked.r
+                element.bc !== "right" &&
+                !blk.r
             ) {
                 element.ps.x += speed * speedMult
             }

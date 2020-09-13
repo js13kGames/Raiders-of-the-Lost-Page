@@ -71,9 +71,8 @@ export function generateMaze(map, gameState) {
     clearCenterMap(map, c, 10)
     gameState.setState("mazepath", visited)
     gameState.setState("mazestack", mazestack)
-    gameState.setState("originalMaze", true)
 
-    return { ...map, scaleFactor: f }
+    return { ...map, sf: f }
 }
 
 const t2p = (t, tsize) => ({ x: t[0] * tsize, y: t[1] * tsize })
@@ -109,7 +108,7 @@ export function generateEntities(gameState, map, config = {}) {
         const p1 = { x: map.centerTile.c, y: map.centerTile.r }
         return dstBtw2Pnts(p1, { x: c, y: r }) > minDist
     })
-
+    
     const eNum =
         config["404"].n +
         config["exit"].n +
@@ -137,13 +136,13 @@ export function generateEntities(gameState, map, config = {}) {
     }
 
     // TODO check is
-    const blocked = centers.filter(
+    const blk = centers.filter(
         ([i, j]) => !calcRoute([i, j], [map.cols / 2, map.rows / 2], map)
     )
 
     gameState.updateState((stateData) => ({
         ...stateData,
-        map: { ...stateData.map, centers, blocked }
+        map: { ...stateData.map, centers, blk }
     }))
 
     // TODO CHECK there are enough

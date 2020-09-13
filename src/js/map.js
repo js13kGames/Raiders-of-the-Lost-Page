@@ -78,13 +78,6 @@ export function clearCenterMap(map, c, w = 10) {
     }
 }
 
-export function tileToCanvasPos(c, r, canvas, map) {
-    return {
-        x: Math.round(c * map.tsize + map.pov.x),
-        y: Math.round(r * map.tsize + map.pov.y)
-    }
-}
-
 export function pxXSecond(map, tXs) {
     return tXs * map.tsize
 }
@@ -164,7 +157,7 @@ export function pntBtw2Pnts(p1, p2, dist) {
     }
 }
 export function isCenterBlock(c, r, map) {
-    return c % (map.scaleFactor / 2) === 0 && r % (map.scaleFactor / 2) === 0
+    return c % (map.sf / 2) === 0 && r % (map.sf / 2) === 0
 }
 
 export function surrounding(map, center, range) {

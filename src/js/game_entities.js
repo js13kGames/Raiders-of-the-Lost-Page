@@ -10,7 +10,7 @@ import {
 import { pickExit } from "./game_audio.js"
 
 const goTo = (gameState, element) => {
-    const { map, player } = gameState.getByKeys(["map", "player"]),
+    const { map, player } = gameState.gbk(["map", "player"]),
         { ps, updatePathEvery, updatePath, maxPath, maxDist } = element,
         { auth = false } = player.equip || {}
 
@@ -81,7 +81,7 @@ function movingEntitity(
         lastVisited: 0,
         easingTicks: 0,
         direction: 0,
-        blocked: { t: false, r: false, b: false, l: false },
+        blk: { t: false, r: false, b: false, l: false },
         updatePath: Math.floor(Math.random() * 10),
         updatePathEvery,
         maxDist,
@@ -113,7 +113,7 @@ export function create401Entity(baseData) {
         ...baseEntity,
         disabled: false,
         run: (gameState, element) => {
-            const { player } = gameState.getByKeys(["player"])
+            const { player } = gameState.gbk(["player"])
             const { auth = false } = player.equip || {}
             if (auth) {
                 element.disabled = true
@@ -156,7 +156,7 @@ export function createExitEntity(baseData) {
         render: renderExit,
         onCollide: (gameState, entity, oth) => {
             if (oth.player && entity.opened) {
-                const { newLevel } = gameState.getByKeys(["newLevel"])
+                const { newLevel } = gameState.gbk(["newLevel"])
                 pickExit(gameState)
                 newLevel(gameState)
             }

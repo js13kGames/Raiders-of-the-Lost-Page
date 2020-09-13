@@ -1,7 +1,7 @@
-export function domElement(selector, parent = document) {
+export function d1(selector, parent = document) {
     return parent.querySelector(selector)
 }
-export function hide(el) {
+export function d2(el) {
     if (!el) return false
     el.style.display = "none"
 }
@@ -13,13 +13,13 @@ export function hasClass(el, className) {
         : new RegExp("\\b" + className + "\\b").test(el.className)
 }
 
-export function addClass(el, className) {
+export function d3(el, className) {
     if (!el) return false
     if (el.classList) el.classList.add(className)
     else if (!hasClass(el, className)) el.className += " " + className
 }
 
-export function removeClass(el, className) {
+export function d4(el, className) {
     if (!el) return false
     if (el.classList) el.classList.remove(className)
     else
@@ -29,7 +29,7 @@ export function removeClass(el, className) {
         )
 }
 
-export function show(el, display = "block") {
+export function d5(el, display = "block") {
     if (!el) return false
     el.style.display = display
 }

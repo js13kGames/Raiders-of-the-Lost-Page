@@ -1,4 +1,4 @@
-import { playSound } from "./audio.js"
+import { a3 } from "./audio.js"
 
 const squareNote = (note) => ({ ...note, oscillator: "square" })
 const sectOctave = (note, oct) => `${note}${oct}`
@@ -10,18 +10,18 @@ const soundEnabled = (gameState, handler) => {
 
 export function pick404(gameState) {
     soundEnabled(gameState, () => {
-        playSound(
+        a3(
             gameState,
             squareNote({ note: sectOctave("A", 0), duration: 0.1 })
         )
             .then(() =>
-                playSound(
+                a3(
                     gameState,
                     squareNote({ note: sectOctave("B", 0), duration: 0.1 })
                 )
             )
             .then(() =>
-                playSound(
+                a3(
                     gameState,
                     squareNote({ note: sectOctave("G", 1), duration: 0.1 })
                 )
@@ -31,24 +31,24 @@ export function pick404(gameState) {
 
 export function pickExit(gameState) {
     soundEnabled(gameState, () => {
-        playSound(
+        a3(
             gameState,
             squareNote({ note: sectOctave("A", 0), duration: 0.1 })
         )
             .then(() =>
-                playSound(
+                a3(
                     gameState,
                     squareNote({ note: sectOctave("B", 0), duration: 0.1 })
                 )
             )
             .then(() =>
-                playSound(
+                a3(
                     gameState,
                     squareNote({ note: sectOctave("C#", 1), duration: 0.1 })
                 )
             )
             .then(() =>
-                playSound(
+                a3(
                     gameState,
                     squareNote({ note: sectOctave("F#", 1), duration: 0.1 })
                 )
@@ -58,24 +58,24 @@ export function pickExit(gameState) {
 
 export function lifeLost(gameState) {
     soundEnabled(gameState, () => {
-        playSound(
+        a3(
             gameState,
             squareNote({ note: sectOctave("F#", 1), duration: 0.1 })
         )
             .then(() =>
-                playSound(
+                a3(
                     gameState,
                     squareNote({ note: sectOctave("C#", 1), duration: 0.1 })
                 )
             )
             .then(() =>
-                playSound(
+                a3(
                     gameState,
                     squareNote({ note: sectOctave("B", 0), duration: 0.1 })
                 )
             )
             .then(() =>
-                playSound(
+                a3(
                     gameState,
                     squareNote({ note: sectOctave("A", 0), duration: 0.2 })
                 )
