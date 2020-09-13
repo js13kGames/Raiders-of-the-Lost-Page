@@ -23,11 +23,33 @@ const level1 = {
         exit: { n: 1 }
     }
 }
-
+const level2 = {
+    cols: 100,
+    rows: 100,
+    entities: {
+        404: { n: 10 },
+        401: [
+            { n: 5, speed: 2, updatePathEvery: 20, maxDist: 400, maxPath: 800 }
+        ],
+        auth: { n: 2 },
+        exit: { n: 1 }
+    }
+}
 
 const oth = []
-for (let i = 10; i < 200; i++) {
-    const s = Math.floor(i / 10) * 10 + 50
+for (let i = 0; i < 100; i++) {
+    
+    const diffMaj = Math.floor(i / 10);
+
+    let s = 50
+
+    if (diffMaj<3) {
+        s = 100
+    } else  if (diffMaj<7){
+        s=150
+    } else {
+        s= 200
+    }
     let e401 = Math.ceil(Math.ceil(i / 10)) 
     if (i>20) e401 += Math.floor(Math.random() * 2)
     else if (i>40) e401 += Math.floor(Math.random() * 2) + 2
@@ -38,7 +60,7 @@ for (let i = 10; i < 200; i++) {
         cols: s,
         rows: s,
         entities: {
-            404: { n: Math.ceil(Math.ceil(i / 10) + Math.ceil(i % 10)) },
+            404: { n: Math.ceil(Math.ceil(i / 10) / 2) },
             exit: { n: 1 },
             401: [],
             auth: { n: Math.floor(Math.random() * 3) + 3 }
@@ -59,4 +81,4 @@ for (let i = 10; i < 200; i++) {
     }
     oth.push(lev)
 }
-export const levels = [level0, level1, ...oth]
+export const levels = [...oth]
